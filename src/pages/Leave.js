@@ -15,6 +15,7 @@ function Leave() {
       <HeaderTop />
       <RightSidebar />
       <LeftSidebar />
+      
 
       <div className="page">
         {/* Header Section */}
