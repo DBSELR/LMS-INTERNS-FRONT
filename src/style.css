@@ -1,0 +1,3123 @@
+
+video::-internal-media-controls-download-button {
+  display: none;
+}
+video::-webkit-media-controls-enclosure {
+  overflow: hidden;
+}
+
+
+/* ===== BASE SIDEBAR STYLE ===== */
+thead.dark-header th {
+  background-color: #5f5f5f !important;
+  color: white !important;
+  text-align: center;
+}
+#header_top {
+  z-index: 99999;
+}
+
+/* AdminDashboard – lock the canvas to white (no grey) */
+.page.admin-dashboard,
+.page.admin-dashboard ,
+.page.admin-dashboard , .section-body  {
+  background: #fff !important;
+}
+
+ /* .container-fluid{
+  background: #fff !important;
+} */
+
+
+@media (max-width: 992px) {
+ 
+ .section-body .row {
+  flex-direction: row !important;
+  /* gap:5px; */
+ }
+
+ .page-header-tab .nav-item:nth-child(2),.page-header-tab .nav-item:nth-child(3),.page-header-tab .nav-item:nth-child(5) {
+
+  display: flex !important;
+ }
+ 
+}
+
+@media (min-width : 767px){
+  #header_top .hright{
+    margin-bottom: 20px !important;
+  }
+}
+
+
+ @media (max-width:767px) {
+ #header_top {
+    padding: 0.25rem;
+    position: sticky !important;
+  }
+   #header_top .dropdown {
+    gap: 10px;
+    margin-left: 2rem;
+  }
+   #header_top .hright {
+    margin-top: 0px !important;
+  }
+   #left-sidebar{
+    top:4rem !important;
+  }
+   #header_top .nav-link {
+   margin-top: 0 !important;
+  }
+
+  .modal{
+    top:4rem !important; 
+  }
+}
+
+
+
+@media (max-width: 576px) {
+  #header_top {
+    padding: 0.25rem;
+    position: sticky !important;
+  }
+
+
+  #header_top .navbar-brand img {
+    max-height: 32px;
+  }
+  #header_top .hright {
+    margin-top: 0px !important;
+  }
+  #header_top .dropdown {
+    gap: 7px;
+  }
+  #left-sidebar{
+    top:4rem !important;
+  }
+
+  #header_top .nav-link {
+   margin-top: 0 !important;
+  }
+  .modal{
+    top:4rem !important; 
+  }
+
+}
+
+#left-sidebar {
+  position: fixed;
+  top: 0px; /* adjust based on header height */
+  left: 0px !important ;
+  width: 280px;
+  height: 100%;
+  background: #fff;
+  z-index: 1030;
+  transition: all 0.3s ease;
+  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== ALL DEVICES: Toggle Behavior ===== */
+body:not(.sidebar-open) #left-sidebar {
+  transform: translateX(-260px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.sidebar-open #left-sidebar {
+  transform: translateX(0);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Main Content Area Adjustment */
+.page {
+  transition: all 0.3s ease;
+}
+
+/* When sidebar is open, adjust main content */
+body.sidebar-open .page {
+  left: 280px !important;
+  margin-left: 0 !important;
+  width: calc(100% - 280px) !important;
+}
+
+/* When sidebar is closed, use full width */
+body:not(.sidebar-open) .page {
+  left: 25px !important;
+  margin-left: 0 !important;
+  width: 100% !important;
+}
+
+/* AdminDashboardTabs css start */
+.nav-link, .nav-item {
+  padding: 0 2.5rem;
+}
+
+/* AdminDashboardTabs css end */
+
+/* SubjectBank CSS Start */
+
+/* responsive-card replaces fixed 500px height */
+/* Card containers: flexible heights, scroll inside */
+.card-subject {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 160px); /* leaves room for header/footer */
+  overflow: hidden;
+  padding: 0;
+}
+.subject-body {
+  padding: 12px;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Table wrapper & modal table */
+.table-wrapper { width: 100%; }
+.table-responsive { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* Modal table wrapper */
+.modal-table-wrap {
+  max-height: 50vh; /* vertical scroll inside modal */
+  overflow-y: auto;
+}
+
+/* Search input responsive */
+.search-input { max-width: 170px; width: 100%; }
+
+/* Actions cell spacing */
+.actions-cell .btn { margin-right: 4px; }
+
+/* Small-screen adjustments */
+@media (max-width: 425px) {
+  .subject-body { padding: 10px; }
+  .search-input { max-width: 100%; }
+  .actions-cell .btn { display: block; width: 100%; margin-bottom: 6px; }
+  .card-subject { max-height: calc(100vh - 120px); }
+  .modal-table-wrap { max-height: 55vh; }
+}
+
+/* Very small screens (320/375) */
+@media (max-width: 375px) {
+  h5 { font-size: 16px; }
+  .subject-body input.form-control, .subject-body .react-select__control { font-size: 14px; padding: 6px; }
+  .actions-cell .btn { font-size: 13px; padding: .35rem .5rem; margin: auto;align-items: center;justify-content: center;text-align: center; }
+}
+
+/* SubjectBank CSS End */
+
+
+
+/* Mobile responsive adjustments */
+@media (max-width: 767px) {
+  body.sidebar-open .page,
+  body:not(.sidebar-open) .page {
+    left: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+
+
+
+}
+
+.metismenu:not(.grid) li a{
+  font-weight: 0;
+}
+
+
+/* CoursesTab.css start*/
+
+/* ========= Container ========= */
+/* .container {
+  max-width: 900px;
+} */
+
+/* ========= Glass Card ========= */
+.bg-glass {
+  background: none;
+  backdrop-filter: blur(10px);
+  /* border: 0px solid rgba(255, 255, 255, 0.2); */
+  /* border-radius: 2rem !important; */
+  padding: 1.5rem;
+  border: 0px solid #dee2e6 !important;
+}
+
+/* ========= Form Inputs ========= */
+form .form-control {
+  border-radius: 18px;
+  padding: 0.5rem 0.75rem;
+  font-size: 15px;
+}
+
+form .form-label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* ========= Buttons ========= */
+button, .btn {
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #218838);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
+
+.btn-outline-info:hover,
+.btn-outline-danger:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+/* ========= Course Collapsible Card ========= */
+.course-card {
+  background-color: #f9f9f9;
+  border-left: 5px solid #5a67d8;
+  border-radius: 18px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* ========= Responsive Modal ========= */
+.custom-modal .modal-content {
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+/* ========= Responsive Design ========= */
+@media (max-width: 768px) {
+  .bg-glass {
+    padding: 1rem;
+  }
+
+  .course-card {
+    font-size: 14px;
+    padding: 0.75rem;
+  }
+
+  .form-label {
+    font-size: 14px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 0.4rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .custom-modal .modal-dialog {
+    margin: 1rem;
+  }
+
+  .custom-modal .modal-body {
+    font-size: 14px;
+  }
+
+  .custom-modal .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+.btn-dark {
+    color: #fff;
+    background-color: #5a67d8;
+    border-color: #5a67d8;
+    border-radius: 18px;
+}
+
+.card-header{
+  width: 100% !important;
+  border-radius: 18px !important;
+}
+
+.list-group-item{
+  padding: .75rem 2.55rem;
+}
+
+.card-body{
+  border-radius: 18px;
+  background: transparent;
+}
+
+.form-check{
+  padding-left: 10rem;
+}
+
+.bg-glass {
+  /* background: rgba(255, 255, 255, 0.75); */
+  /* backdrop-filter: blur(8px); */
+  /* -webkit-backdrop-filter: blur(8px); */
+  border-radius: 12px;
+}
+
+/* Media Queries for better spacing and button alignment */
+@media (max-width: 768px) {
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  .form-control {
+    font-size: 0.95rem;
+  }
+  .btn {
+    font-size: 0.95rem;
+    padding: 10px 16px;
+  }
+
+  .page-title{
+    font-size: 0.68rem;
+  }
+
+  .form-check {
+    padding-left: 1rem;
+}
+}
+
+
+
+/* CoursesTab.css end*/
+
+/* GroupsTab.css start */
+
+/* ========= Base Layout ========= */
+.container {
+  /* max-width: 900px; */
+  width: 100%;
+  border-radius: 18px;
+  padding: 0.5rem 0.75rem;
+  /* border: 1px solid #dee2e6; */
+   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+}
+
+
+
+/* ========= Form Styling ========= */
+form .form-control {
+  border-radius: 18px;
+  padding: 0.5rem 0.75rem;
+  font-size: 15px;
+}
+
+form .form-label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+}
+
+/* ========= Button Styling ========= */
+button, .btn {
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.3s ease-in-out;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #28a745, #218838);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #218838, #1e7e34);
+}
+
+.btn-outline-info:hover,
+.btn-outline-danger:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+/* ========= Groups List Card ========= */
+.group-card {
+  border-radius: 18px;
+  padding: 1rem;
+  background: transparent;
+  border-left: 5px solid #5a67d8;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+/* ========= Responsive Modal ========= */
+.custom-modal .modal-content {
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+@media (max-width: 768px) {
+  .bg-glass {
+    padding: 1rem;
+  }
+
+  .group-card {
+    font-size: 14px;
+    padding: 0.75rem;
+  }
+
+  .form-label {
+    font-size: 14px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 0.4rem 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .custom-modal .modal-dialog {
+    margin: 1rem;
+  }
+
+  .custom-modal .modal-body {
+    font-size: 14px;
+  }
+
+  .custom-modal .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+/* Grid wrapper for the form row */
+.groups-form-row {
+  display: grid;
+  grid-template-columns: 1fr;          /* phones */
+  gap: 12px;
+  margin: auto;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+}
+
+/* ≥576px (SM - tablets portrait) -> 2 columns */
+@media (min-width: 576px) {
+  .groups-form-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: auto;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+  }
+}
+
+/* ≥992px (LG - laptops) -> 3 columns */
+@media (min-width: 992px) {
+  .groups-form-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    align-items: end;
+    margin: auto;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+  }
+}
+
+/* ≥1200px (XL - large desktops) -> 3 inputs + dedicated Save column (side-by-side) */
+@media (min-width: 1200px) {
+  .groups-form-row {
+    grid-template-columns: 1.2fr 1fr 1fr auto;
+    align-items: end;
+    margin: auto;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+  }
+}
+
+/* Each cell */
+.groups-form-col {
+  min-width: 0;
+}
+
+/* Keep form groups tight so rows don't look gappy */
+.groups-form-col .form-group,
+.groups-form-col .form-group.mb-0 {
+  margin-bottom: 0;
+}
+
+/* Save cell */
+.groups-form-save {
+  display: flex;
+  align-items: end;
+  justify-content: flex-start;   /* left on small screens */
+  gap: 8px;
+}
+
+/* On larger screens push Save to the right to visually balance */
+@media (min-width: 1200px) {
+  .groups-form-save {
+    justify-content: flex-end;
+  }
+}
+
+/* Make sure Save button is not cramped and has breathing room */
+.class-save-btn {
+  white-space: nowrap;
+  height: 38px;               /* matches typical .form-control height */
+  line-height: 1;
+}
+
+/* Optional: tighter table look */
+.table td, .table th {
+  vertical-align: middle;
+}
+
+/* GroupsTab.css end */
+
+
+/* SubjectsBankTab.css start */
+
+
+/* Red scrollbar style */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: #5a67d8;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+
+
+
+/* Form Controls */
+form .form-control {
+  border-radius: 18px;
+  padding: 0.5rem 0.75rem;
+  font-size: 15px;
+  
+}
+
+form .form-label {
+  font-weight: 600;
+}
+
+/* Section headers (e.g., Internal Marks, Theory Marks) */
+form h6 {
+  font-weight: 600;
+  color: #1d3557;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 50px;
+  font-weight: 600;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-success {
+  background: linear-gradient(135deg, #2ecc71, #27ae60);
+  border: none;
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #27ae60, #219150);
+}
+
+.btn-link {
+  text-decoration: none;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Table Styling */
+table {
+  background: white;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+table thead th {
+  background-color: #f1f1f1;
+  font-weight: 600;
+  text-align: center;
+  vertical-align: middle;
+}
+
+table td, table th {
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Toastify overrides */
+.Toastify__toast {
+  border-radius: 18px;
+  font-size: 14px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .bg-glass {
+    padding: 1rem;
+  }
+
+  .form-label {
+    font-size: 14px;
+  }
+
+  .btn {
+    font-size: 14px;
+    padding: 0.4rem 1rem;
+  }
+
+  .table th, .table td {
+    font-size: 13px;
+    padding: 0.5rem;
+  }
+
+  .react-select__control {
+    font-size: 14px;
+  }
+}
+
+/* ===== Unit Modal Styles ===== */
+.unit-modal .modal-header {
+  background-color: #f0f8ff;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.unit-modal .modal-title {
+  font-weight: bold;
+  font-size: 1.5rem;
+}
+
+.unit-modal table {
+  font-size: 0.95rem;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.unit-modal th,
+.unit-modal td {
+  vertical-align: middle;
+  padding: 0.5rem;
+}
+
+.unit-modal th {
+  background-color: #e9ecef;
+  text-align: center;
+}
+
+.unit-modal td input {
+  width: 100%;
+  padding: 0.3rem;
+}
+
+.unit-modal .btn {
+  font-size: 0.85rem;
+  margin: 0 2px;
+}
+
+.unit-modal .btn-warning {
+  color: #fff;
+}
+
+.unit-modal .modal-body {
+  padding: 1.5rem;
+}
+
+.unit-modal .action-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+/* ===== Responsive Design ===== */
+@media (max-width: 768px) {
+  .unit-modal table {
+    font-size: 0.85rem;
+  }
+
+  .unit-modal .modal-title {
+    font-size: 1.2rem;
+  }
+
+  .unit-modal .btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+
+  .unit-modal td input {
+    font-size: 0.85rem;
+  }
+
+  .unit-modal .action-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+/* SubjectsBankTab.css end  */
+
+/* File: src/components/ConfirmationPopup.css start */
+
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1050;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-box {
+  background-color: #fff;
+  padding: 24px 30px;
+  border-radius: 18px;
+  max-width: 95%;
+  width: 360px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  animation: popupFade 0.3s ease;
+}
+
+.popup-box h5 {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.popup-box p {
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.popup-actions button {
+  min-width: 100px;
+}
+
+@media (max-width: 576px) {
+  .popup-box {
+    width: 90%;
+    padding: 20px;
+  }
+
+  .popup-actions {
+    flex-direction: column;
+  }
+
+  .popup-actions button {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+}
+
+@keyframes popupFade {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+
+/* File: src/components/ConfirmationPopup.css end  */
+
+/* InstructorLiveClassManage.css start */
+
+.form-row-responsive > div {
+  padding-right: 10px;
+}
+
+@media (max-width: 1199px) {
+  .form-row-responsive > div {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row-responsive {
+    display: block;
+  }
+
+  .form-row-responsive > div {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+}
+.form-row-responsive > div {
+  padding-right: 10px;
+}
+
+@media (max-width: 1199px) {
+  .form-row-responsive > div {
+    margin-bottom: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row-responsive {
+    display: block;
+  }
+
+  .form-row-responsive > div {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+}
+
+/* .tab-btn {
+  padding: 8px 20px;
+  border: none;
+  border-radius: 6px;
+  background-color: #5a67d8;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s, color 0.3s;
+}
+.tab-btn.active {
+  background-color: #5a67d88c;
+  color: white;
+}
+.tab-btn:hover {
+  background-color: #5a67d888;
+  border: 0px solid transparent !important;
+}
+
+
+.tab-buttons-container {
+  flex-wrap: wrap;
+} */
+
+.tab-btn {
+  background: #f5f5f5;
+  border: 2px solid #5a67d8;
+  color: #5a67d8;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+}
+
+.tab-btn:hover {
+  background: #5a67d8;
+  color: white;
+}
+
+.tab-btn.active {
+  background: #5a67d8;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  .tab-btn {
+    flex: 1 1 100%;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+}
+
+
+
+/* InstructorLiveClassManage.css end */
+
+
+
+/* Section-wrapper css start */
+
+.section-wrapper{
+  margin-left: 30px;
+}
+
+@media (max-width: 767px) {
+  .section-wrapper{
+    margin-left: 0px;
+  }
+}
+
+/* Section-wrapper css end */
+
+/* Batch Save btn CSS Start */
+@media (max-width:480px){
+   .input-batch input.form-control{
+    line-height: 1.2;
+    background-color: #fff;
+    color: #333;
+    width: 90%;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+
+   }
+
+  .select-batch select.form-control{
+    line-height: 1.2;
+    background-color: #fff;
+    color: #333;
+    width: 90%;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .batch-save-btn{
+    line-height: 1.2;
+    background-color: #fff;
+    color: #333;
+    width: 90%;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .class-save-btn{
+    width: 100% !important;
+    margin-left: 120px !important;
+    margin-bottom: 10px !important;
+  }
+  .taskboard-page{
+    width: 80% !important;
+    margin-left: 0px !important;
+    margin-bottom: 10px !important;
+  }
+  .taskboard-icon{
+    /* width: 20% !important; */
+    margin-bottom: 10px;
+    height: 40px;
+  }
+}
+/* Batch Save btn CSS End */
+
+
+
+/* WelcomeCard.css Start*/
+
+/* Card container */
+/* ===== Existing base (kept) ===== */
+.welcome-card {
+  background: linear-gradient(135deg, #f0f0ff, #ffffff);
+  border-radius: 18px;
+  padding: 10px 5px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 120px;
+  align-items: center;
+  justify-content: center;
+  /* margin-left: 30px; */
+}
+.welcome-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.12);
+}
+
+/* ===== Compact tweaks for THIS page only ===== */
+.admin-dashboard .dashboard-hero {
+  /* margin-left: 30px; */
+  padding: 10px 12px;             /* was ~p-3/p-4 */
+  min-height: unset;
+}
+.admin-dashboard .dashboard-hero-title {
+  font-size: 1.1rem;               /* smaller heading */
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.admin-dashboard .dashboard-hero-sub {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+/* Compact cards */
+.admin-dashboard .dashboard-card {
+  padding: 10px 8px;               /* tighter padding */
+  min-height: 90px;                /* was 120px via .welcome-card */
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 4px;
+}
+
+/* Reduce icon + text sizes */
+.admin-dashboard .dashboard-icon {
+  font-size: 1.35rem;              /* smaller than fa-2x */
+  margin-bottom: 2px;
+}
+.admin-dashboard .dashboard-label {
+  font-size: 0.85rem;
+}
+.admin-dashboard .dashboard-count {
+  font-size: 1.35rem;              /* smaller count */
+  line-height: 1.15;
+}
+
+/* Optional: slightly tighter columns spacing */
+@media (min-width: 992px) {
+  .admin-dashboard .col-lg-3.mb-3 { margin-bottom: 0.9rem !important; }
+}
+
+/* (Your existing text animation helpers kept as-is) */
+.welcome-greet { font-size: 0.9rem; color: #6c757d; margin-bottom: 4px; font-weight: 500; animation: fadeSlideIn 0.4s ease-out forwards; text-align: center; }
+.welcome-name  { font-size: 0.9rem; color: #5a67d8; margin-bottom: 4px; font-weight: 500; animation: fadeSlideIn 0.4s ease-out forwards; }
+.welcome-role  { font-size: 0.9rem; color: #555; font-weight: 500; animation: fadeSlideIn 0.8s ease-out forwards; animation-delay: 0.2s; opacity: 0; }
+
+/* DepartmentJS CSS Start */
+
+/* Departments.css — compact like AdminDashboard, NO color changes */
+.departments-page{
+background-color: #fff !important;
+}
+
+/* Scope to this page only */
+.departments-page .jumbotron {
+  /* compact header like AdminDashboard */
+  padding: 10px 12px !important;
+  min-height: unset;
+}
+.departments-page .jumbotron .page-title {
+  font-size: 1.1rem;
+  line-height: 1.2;
+  margin-bottom: 2px;
+}
+.departments-page .jumbotron .text-muted {
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+/* Cards — spacing only */
+.departments-page .card-header {
+  padding: 10px 12px;
+  /* no color/border/shadow changes */
+}
+.departments-page .card-body {
+  padding: 12px;
+}
+.departments-page .card-footer {
+  padding: 10px 12px;
+}
+
+/* Tighter grid spacing like compact dashboard */
+@media (min-width: 992px) {
+  .departments-page .col-lg-4.mb-4 {
+    margin-bottom: 0.9rem !important;
+  }
+}
+
+/* Lists inside cards: tidy spacing only */
+.departments-page .list-unstyled li {
+  margin-bottom: 4px;
+}
+
+/* Buttons: keep existing colors; shape unchanged */
+
+
+/* DepartmentJS CSS End */
+
+/* Keyframe animation */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* WelcomeCard.css End*/
+
+/* InstructorCourseViewPage.css start */
+
+.video-responsive {
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 */
+  padding-top: 25px;
+  height: 0;
+}
+
+.video-responsive video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Optional: Responsive fix for modal padding */
+@media (max-width: 576px) {
+  .modal-content {
+    padding: 0.5rem;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+}
+
+.pdf-responsive-container {
+  overflow: auto;
+  width: 100%;
+  height: 80vh;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Disable print shortcut */
+body {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
+
+.unit-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 1rem;
+  justify-content: center;
+  background-color: transparent;
+}
+
+.unit-tab {
+  padding: 6px 12px;
+  background-color: transparent;
+  border: none;
+  border-radius: 0px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background 0.3s, color 0.3s;
+  border-bottom: solid 1px #000;
+}
+
+.unit-tab.active {
+  background-color: #5a67d8;
+  color: white;
+}
+
+.unit-tab:hover {
+  /* background-color: #333; */
+  color: #000;
+}
+
+.unit-title {
+  font-size: 1.5rem;
+  color: #5a67d8;
+  font-weight: 700;
+}
+
+
+@media (max-width: 576px) {
+  .unit-tab {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+}
+
+.video-wrapper {
+          position: relative;
+          width: 100%;
+          padding-bottom: 56.25%; /* 16:9 */
+          height: 0;
+          background: #000;
+          border-radius: 8px;
+          overflow: hidden;
+        }
+        .video-wrapper iframe,
+        .video-wrapper video {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          border: 0;
+          border-radius: 8px;
+        }
+        .modal-lg .modal-body { padding: 0.75rem 1rem; }
+      
+
+      
+        .wm-overlay {
+          position: absolute;
+          inset: 0;
+          z-index: 999999;
+          pointer-events: none;
+          overflow: hidden;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+        }
+        .wm-chip {
+          position: absolute;
+          top: 0px; 
+          left: 0px;
+          max-width: 40%;
+          padding: 6px 12px;
+          border-radius: 8px;
+          background: rgba(0,0,0,0.15);
+          backdrop-filter: blur(2px);
+          color: #fff;
+          font-weight: 700;
+          letter-spacing: 0.04em;
+          font-size: min(2vw, 12px);
+          line-height: 1;
+          opacity: 1;
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+          text-transform: uppercase;
+          pointer-events: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+          transform: translate3d(0px, 0px, 0px);
+          will-change: transform;
+        }
+        .relative-wrap { 
+          position: relative; 
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+        }
+        
+        /* Enhanced security for video and PDF containers */
+        .video-wrapper, .pdf-container {
+          user-select: none;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+        
+        .video-wrapper, .pdf-container, .wm-overlay, .relative-wrap {
+          -webkit-touch-callout: none;
+          -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Delete button styling */
+        .resource-card { position: relative; }
+        .delete-btn {
+          position: absolute;
+          top: 8px;
+          right: 10px;
+          border: none;
+          background: #ffffff;
+          border-radius: 999px;
+          padding: 6px 8px;
+          box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+          cursor: pointer;
+          opacity: 0.92;
+          z-index: 1000;            /* ensure on top */
+          pointer-events: auto;     /* ensure clickable */
+        }
+        .delete-btn:hover { opacity: 1; }
+        .delete-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* InstructorCourseViewPage.css end */
+
+/* AdminDashboardTabs.css start */
+
+
+/* Prevent page width jump when scrollbars appear */
+/* :root { scrollbar-gutter: stable; } */
+/* html { overflow-y: scroll; } */
+
+/* Inner scroll ONLY for the tab content under "LMS Board Configuration" */
+.board-tabs-body {
+  max-height: min(62vh, 680px);   /* tweak if you want a taller/shorter pane */
+  overflow-y: auto;
+  overscroll-behavior: contain;    /* stops scroll chaining to the page */
+  scrollbar-gutter: stable both-edges;
+  padding-right: .25rem;           /* tiny gutter so text doesn’t touch scrollbar */
+}
+
+/* Optional: tighter cap on small screens */
+@media (max-width: 576px) {
+  .board-tabs-body { max-height: 58vh; }
+}
+
+
+
+/* AdminDashboardTabs.css end */
+
+/* AdminReportsDashboard.css start */
+/* Inner scroll ONLY for Reports tab content */
+.reports-tabs-body {
+  max-height: min(62vh, 680px);  /* adjust if you want taller/shorter */
+  overflow-y: auto;
+  overscroll-behavior: contain;   /* no scroll chaining to the page */
+  scrollbar-gutter: stable both-edges;
+  padding-right: .25rem;          /* small gutter so text doesn't hug scrollbar */
+}
+
+/* Optional: slightly shorter on small screens */
+@media (max-width: 576px) {
+  .reports-tabs-body { max-height: 58vh; }
+}
+
+/* AdminReportsDashboard.css end */
+
+/* Input Label Animation  CSS Start*/
+
+.form-item{
+  position: relative;
+  margin-bottom: 15px
+}
+.form-item input{
+  display: block;
+  /* width: unset; */
+  height: 40px;
+  background: #fff;
+  /* border: solid 0px #ccc; */
+  transition: all .3s ease;
+  padding: 0 15px
+}
+.form-item input:focus{
+  border-color: #ccc;
+}
+.form-item label{
+  border-radius: 15px;
+  position: absolute;
+  cursor: text;
+  z-index: 2;
+  top: 10px;
+  left: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  background: #fff;
+  padding: 0 8px;
+  color: #999;
+  transition: all .3s ease
+}
+.form-item input:focus + label,
+.form-item input:valid + label{
+  font-size: 11px;
+  top: -8px
+  
+}
+.form-item input:focus + label{
+  border-radius: 20px;
+  color: #5a67d8;
+}
+
+@media (max-width:480px){
+  .form-item label{
+    left: 80px !important;
+  }
+  .remember-me{
+    margin-left: 80px !important;
+  }
+  .board-save-btn{
+    margin-top: 0px !important;
+    margin-bottom: 10px !important;
+  }
+}
+/* Input Label Animation  CSS End*/
+
+/* InnerScroll For AdminDashboardTabs CSS Start */
+/* The list card itself shouldn't scroll; only its inner area should */
+.batch-list-card {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+
+/* Inner scrolling region for the table.
+   Tweak the calc(...) if your header/footer sizes differ. */
+.batch-table-scroll {
+  overflow: auto;
+  max-height: calc(100vh - 320px); /* adjust this value to fit your layout */
+  -webkit-overflow-scrolling: touch;
+  border-radius: 10px;
+}
+
+/* Sticky header while the inner area scrolls */
+.batch-table-scroll thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #f8f9fa; /* matches .bg-light */
+}
+
+/* (Optional) slightly smaller on tiny screens */
+@media (max-width: 576px) {
+  .batch-table-scroll {
+    max-height: calc(100vh - 260px);
+  }
+}
+
+
+
+
+/* InnerScroll For AdminDashboardTabs CSS Start */
+
+
+
+
+/* === AdminStudentOverview Styles === */
+.page {
+  /* padding: 1rem; */
+  background-color: #f9f9fb;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.card-header {
+  font-weight: 600;
+  font-size: 16px;
+  /* padding: 0.75rem 1rem; */
+}
+
+.card-body {
+  padding: 0.5rem;
+}
+
+.list-group-item {
+  transition: background-color 0.3s ease;
+}
+.list-group-item:hover {
+  background-color: #f0f8ff;
+}
+.list-group-item.active {
+  background-color: #5a67d8;
+  color: #fff;
+  font-weight: 600;
+}
+
+button.btn-sm {
+  margin-right: 5px;
+  margin-bottom: 10px;
+  margin-left: 8px;
+  font-size: 0.8rem;
+  padding: 0.25rem 0.75rem;
+}
+
+.table th,
+.table td {
+  vertical-align: middle;
+  font-size: 0.875rem;
+}
+
+
+@media (max-width: 992px) {
+  .section-body .row {
+    flex-direction: column;
+  }
+
+  .col-md-4,
+  .col-md-8 {
+    max-width: 100%;
+    flex: 0 0 100%;
+    margin: auto;
+        align-items: center;
+        text-align: center;
+        justify-content: center;
+  }
+
+  .card-header h6,
+  .card-header button {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .card-header,
+  .card-body {
+    padding: 0.4rem;
+  }
+
+  .table th,
+  .table td {
+    font-size: 0.8rem;
+  }
+
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .list-group-item {
+    font-size: 0.875rem;
+  }
+
+  h6 {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .card-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .card-header button {
+    margin-top: 0.5rem;
+  }
+
+  h6 {
+    font-size: 0.95rem;
+  }
+}
+
+.pdf-certificate-template {
+  padding: 20px;
+  background-color: #ffffff;
+  color: #000;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  max-width: 595px;
+  margin: auto;
+  font-size: 13px;
+  border: 1px solid #ccc;
+}
+
+.cert-header {
+  background-color: #5a67d8;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 6px 6px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+}
+
+.cert-header h2{
+  font-size: 26px;
+}
+
+.student-info {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+}
+
+.student-avatar {
+  width: 100px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.subject-table {
+  width: 90%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.summary-block {
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+}
+
+.signature-block {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.signature-block hr {
+  width: 100px;
+  margin: 0 auto 4px;
+}
+
+.university-logo{
+  width: 100px;
+}
+
+@media (max-width: 768px) {
+  .pdf-certificate-template {
+    font-size: 12px;
+    padding: 16px;
+  }
+
+  .cert-header h2 {
+    font-size: 18px;
+  }
+
+  .student-info {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .summary-block {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .signature-block {
+    flex-direction: column;
+    gap: 20px;
+  }
+}
+
+
+
+/* === AdminStudentOverview Styles === */
+
+/* LeftSidebar.css start */
+
+.sidebar {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  /* background-color: #fff;
+  border-right: 1px solid #ddd; */
+  overflow: hidden;
+}
+
+.sidebar-header {
+  padding: 1rem;
+  /* border-bottom: 1px solid #ddd; */
+  flex-shrink: 0;
+  /* background-color: #f8f9fa; */
+}
+
+.sidebar-welcome {
+  padding: 1rem;
+  /* border-bottom: 1px solid #ddd; */
+  flex-shrink: 0;
+  /* background-color: #f8f9fa; */
+}
+
+.sidebar-scroll {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1rem 1rem;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+.theme-blush #left-sidebar .brand-name{
+  margin: auto;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  padding-right: 15px;
+  
+}
+
+/* LeftSidebar.css end */
+
+.page .section-body{
+  padding: 0px;
+  background-color: transparent !important;
+}
+
+/* DepartmentFormModal.css start */
+
+
+.card {
+  border-radius: 12px;
+}
+
+.card-header {
+  border-bottom: none;
+  padding: 0.5rem 1.5rem !important;
+}
+
+.form-control {
+  margin-bottom: 7px;
+  border-radius: 20px;
+  border: 1px solid #5a67d8;
+  color: #5a67d8;
+  
+}
+
+.btn-success {
+  padding: 0.5rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Media Queries for responsiveness */
+@media (max-width: 768px) {
+  .card-header h4 {
+    font-size: 1.25rem;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+
+  .form-group {
+    width: 100% !important;
+  }
+
+  .btn-success {
+    width: 100%;
+    margin-top: 1rem;
+  }
+}
+
+
+
+/* DepartmentFormModal.css end  */
+
+/* Modal Responsive Styles */
+
+
+@media (max-width: 576px) {
+  .modal-dialog {
+    margin: 0.5rem;
+  }
+
+  .modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 12px;
+  }
+
+  
+}
+
+/* AddProfessor.css start */
+
+@media (max-width: 768px) {
+  form .row .form-group {
+    width: 100% !important;
+  }
+
+  form h4 {
+    font-size: 1.2rem;
+  }
+
+}
+
+
+
+/* AddProfessor.css end  */
+
+
+/* AddStudent start */
+
+/* File: AddStudent.css */
+
+.student-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+
+
+/* Button Row */
+.student-form-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 24px;
+  gap: 12px;
+}
+
+/* Media Queries for smaller screens */
+@media (max-width: 576px) {
+  .student-form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+
+/* AddStudent end */
+
+.thbg{
+  background-color: #5a67d8 !important;
+}
+
+/* === InstructorCourses.css start === */
+
+/* InnerScroll Start */
+/* inner scroll area for each semester panel */
+.semester-panel-body {
+  max-height: min(60vh, 520px);   /* tweak to your taste */
+  overflow-y: auto; 
+  overflow-x: hidden;               /* inner vertical scroll only */
+  overscroll-behavior: contain;    /* prevent page scroll chaining */
+  scrollbar-gutter: stable;        /* keeps layout from shifting as scrollbar appears */
+  padding-right: .25rem;           /* tiny breathing room for scrollbar */
+}
+
+/* optional: tighter on small screens */
+@media (max-width: 576px) {
+  .semester-panel-body {
+    max-height: 55vh;
+  }
+}
+/* InnerScroll End */
+
+
+/* Course section toggle button */
+.semester-toggle-btn {
+  background-color: transparent;
+  border: 1px solid #5a67d8;
+  color: #5a67d8;
+  border-radius: 30px;
+  padding: 8px 20px;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  outline-color: #5a67d8;
+}
+
+.semester-toggle-btn:hover {
+  background-color: #e1f0fe;
+  border: 1px solid #5a67d8;
+  transform: translateY(-1px);
+}
+
+/* Card container */
+.course-card {
+  background-color: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-left: 6px solid #5a67d8;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+  transition: box-shadow 0.3s ease;
+}
+
+.course-card:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Course header container */
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* Course title */
+.course-title {
+  color: #5a67d8;
+  font-weight: 700;
+  margin: 0;
+  padding: 0;
+  font-size: 1.2rem;
+  border: none;
+}
+
+/* Info boxes */
+.course-info-box {
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+  background-color: #f9f9f9;
+  transition: transform 0.2s ease;
+  height: 100%;
+}
+
+.course-info-box:hover {
+  transform: scale(1.02);
+}
+
+.course-info-title {
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 1rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.course-info-title i {
+  color: #5a67d8;
+  margin-right: 8px;
+}
+
+/* Button group */
+.course-btn-group {
+  margin-top: 10px;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.course-btn-group button {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.course-btn-group i {
+  font-size: 1rem;
+  margin-right: 6px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .course-card {
+    padding: 16px;
+  }
+
+  .course-title {
+    font-size: 1rem;
+  }
+
+  .course-info-title {
+    font-size: 0.95rem;
+  }
+
+  .course-btn-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* === InstructorCourses.css end === */
+
+/* Course Stats Responsive Styles */
+.course-stats-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 3px;
+}
+
+.course-stat-item {
+  flex: 0 0 19%;
+  max-width: 19%;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 2px;
+  margin: 4px 0;
+  text-align: center;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: default;
+  height: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.course-stat-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.12);
+}
+
+.course-stat-count {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 2px;
+}
+
+.course-stat-label {
+  font-size: 10px;
+  font-weight: 650;
+  color: #5c5c5e;
+  white-space: normal;
+  word-break: break-word;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  text-align: center;
+}
+
+/* Tablet Responsive */
+
+@media (max-width: 992px) {
+  .course-stat-item {
+    flex: 0 0 24%;
+    max-width: 24%;
+    height: 55px;
+  }
+
+  .course-stat-count {
+    font-size: 13px;
+  }
+
+  .course-stat-label {
+    font-size: 9px;
+    height: 26px;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .course-stats-container {
+    gap: 3px;
+  }
+
+  .course-stat-item {
+    flex: 0 0 32%;
+    max-width: 32%;
+    height: 60px;
+    padding: 4px 2px;
+  }
+
+  .course-stat-count {
+    font-size: 12px;
+    margin-bottom: 3px;
+  }
+
+  .course-stat-label {
+    font-size: 8px;
+    height: 28px;
+    line-height: 1.1;
+  }
+}
+
+/* Small Mobile Responsive */
+@media (max-width: 576px) {
+  .course-stats-container {
+    gap: 2px;
+  }
+
+  .course-stat-item {
+    flex: 0 0 49%;
+    max-width: 49%;
+    height: 65px;
+    padding: 6px 2px;
+  }
+
+  .course-stat-count {
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .course-stat-label {
+    font-size: 9px;
+    height: 30px;
+    line-height: 1.2;
+    font-weight: 600;
+  }
+}
+
+/* Extra Small Mobile Responsive */
+@media (max-width: 480px) {
+  .course-stat-item {
+    height: 70px;
+    padding: 8px 4px;
+  }
+
+  .course-stat-count {
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  .course-stat-label {
+    font-size: 10px;
+    height: 32px;
+    padding: 0 4px;
+  }
+}
+
+/* InstructorCourseViewPage.css */
+
+.instructor-course-page {
+  font-family: "Segoe UI", sans-serif;
+}
+
+
+.course-title {
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.course-subtitle {
+  font-size: 1.2rem;
+  margin-right: 40px;
+}
+
+.resource-card {
+  border-radius: 0.5rem;
+  border: 1px solid #ddd;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.resource-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.1);
+}
+
+.section-card {
+  border-radius: 0.75rem;
+}
+
+.video-responsive {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+}
+
+.video-responsive video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Responsive Styling */
+@media (max-width: 768px) {
+  .course-title {
+    font-size: 1.5rem;
+  }
+
+  .course-subtitle {
+    font-size: 1rem;
+  }
+
+  .resource-card h6 {
+    font-size: 1rem;
+  }
+
+  .card-body p {
+    font-size: 0.9rem;
+  }
+}
+/* InstructorCourseViewPage.css end */
+
+/* File: components/library/AddLibraryForm.css */
+.library-form {
+  max-width: 800px;
+  margin: 0 auto;
+  /* background: #f9f9f9; */
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #333;
+}
+
+.form-group input[type="text"],
+.form-group input[type="file"] {
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 15px;
+  border: 1px solid #ccc;
+  background: transparent;
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.form-actions button {
+  background-color: #5a67d8;
+  color: white;
+  padding: 10px 24px;
+  border: none;
+  font-weight: 600;
+  font-size: 15px;
+  border-radius: 15px;
+  cursor: pointer;
+}
+
+.form-actions button:hover {
+  background-color: #5a67d8;
+}
+
+/* Media Queries */
+@media (max-width: 600px) {
+  .library-form {
+    padding: 16px;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+}
+/* File: components/library/AddLibraryForm.css end */
+
+
+@keyframes jiggle {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+
+.jiggle-effect {
+  animation: jiggle 0.5s infinite;
+}
+
+.nav-tabs{
+  margin-left: 16px;
+}
+
+.nav-tabs .nav-link.active{
+    color: #2185d0 !important;
+    background: transparent !important;
+    border: none !important;
+}
+
+.nav-tabs .nav-link{
+  border: none !important;
+    border-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+}
+
+
+/* StudentLiveClassView start */
+
+.tab-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.tab-btn {
+  background-color: transparent;
+  color: #333;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid transparent;
+  border-radius: 0px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.3s;
+  border-bottom: 1px solid #000;
+}
+
+.tab-btn:hover {
+  background-color: #e2e6ea;
+  color: #000;
+}
+
+.tab-btn.active {
+  background-color: #5a67d8;
+  color: #fff;
+  border-color: #5a67d8;
+}
+
+@media (max-width: 768px) {
+  .tab-btn {
+    padding: 0.5rem 1rem;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .tab-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 13px;
+  }
+}
+
+
+/* StudentLiveClassView end  */
+
+
+/* InstructorTickets start */
+.modal-content{
+  top: 40px;
+  border-radius: 20px !important;
+  background: #fff !important;
+}
+#ticket-main-box{
+  border-radius: 20px !important;
+
+}
+
+#ticket-left-box{
+  background: #5a67d8;
+  border-radius: 0px 0px 20px 20px;
+  color: white;
+}
+
+@media (max-width: 768px) {
+  #ticket-left-box{
+    flex-direction: column;
+  }
+}
+
+
+#ticket-head{
+  background: rgba(255, 255, 255, 0.795);
+  border-radius: 0px 0px 20px 20px;
+  color: #5a67d8;
+}
+.timestamp {
+  font-size: 11px;
+  color: #5a67d8;
+  text-align: right;
+  font-weight: bolder;
+}
+
+.chat-wrapper {
+  background: #5a67d8;
+  border-radius: 25px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  
+}
+
+
+
+.chat-header {
+  background: transparent;
+  padding: 20px;
+  font-size: 16px;
+  font-weight: 600;
+  color: white;
+  border: none;
+}
+
+.chat-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 20px;
+  background: #5a67d8;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  /* background-image: url('../src/pages/supportTicketsPages/images/chat-bg.png');
+background-repeat: no-repeat;
+background-position: center center;
+background-size: cover; */
+
+}
+
+.chat-bubble {
+  max-width: 75%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  font-size: 14px;
+  line-height: 1.4;
+  position: relative;
+  word-break: break-word;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.chat-bubble.sent {
+  background-color: #fff;
+  color: #000;
+  align-self: flex-end;
+  border-bottom-right-radius: 0;
+}
+
+.chat-bubble.received {
+ background-color: #dadfe4;
+  color: #000;
+  align-self: flex-start;
+  border-bottom-left-radius: 0;
+}
+
+.chat-footer {
+  padding: 5px 10px;
+  background: #5a67d8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-top: none;
+}
+
+.chat-footer textarea {
+  flex-grow: 1;
+  border-radius: 20px;
+  padding: 10px 15px;
+  border: none;
+  resize: none;
+}
+
+.chat-footer input[type="file"] {
+  display: none;
+}
+
+.chat-footer .attachment-label {
+  cursor: pointer;
+  color: white;
+  font-size: 18px;
+}
+
+.chat-footer .send-button {
+  background: white;
+  color: #5a67d8;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+
+
+/* InstructorTickets end */
+
+/* CalendarView Responsive Styles */
+.fc {
+  font-size: 14px;
+}
+
+.fc-toolbar {
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.fc-toolbar-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #5a67d8;
+  margin: 0.5rem 0;
+}
+
+.fc-button-group {
+  margin: 0.25rem;
+}
+
+.fc-button {
+  background-color: #5a67d8 !important;
+  border-color: #5a67d8 !important;
+  color: white !important;
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 6px;
+}
+
+.fc-button:hover {
+  background-color: #4c63d2 !important;
+  border-color: #4c63d2 !important;
+}
+
+.fc-button:focus {
+  box-shadow: 0 0 0 0.2rem rgba(90, 103, 216, 0.25) !important;
+}
+
+.fc-button-active {
+  background-color: #4c63d2 !important;
+  border-color: #4c63d2 !important;
+}
+
+.fc-daygrid-event {
+  border-radius: 4px;
+  padding: 2px 4px;
+  margin: 1px 0;
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.fc-event-title {
+  font-weight: 500;
+}
+
+/* Calendar Event Content Styles */
+.calendar-event-content {
+  display: flex;
+  align-items: center;
+  white-space: normal;
+  font-weight: bold;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.calendar-event-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.calendar-event-title {
+  flex: 1;
+  font-size: inherit;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.fc-day-today {
+  background-color: rgba(90, 103, 216, 0.1) !important;
+}
+
+.fc-col-header-cell {
+  background-color: #f8f9fa;
+  font-weight: 600;
+  color: #5a67d8;
+}
+
+/* Tablet Responsive */
+@media (max-width: 992px) {
+  .fc {
+    font-size: 13px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.3rem;
+  }
+
+  .fc-button {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .fc-toolbar {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fc-toolbar-chunk {
+    margin: 0.25rem 0;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.7rem;
+    padding: 1px 3px;
+  }
+
+  .calendar-event-dot {
+    width: 8px;
+    height: 8px;
+    margin-right: 4px;
+  }
+
+  .calendar-event-title {
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .fc {
+    font-size: 12px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1.1rem;
+    text-align: center;
+  }
+
+  .fc-button {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    margin: 0.1rem;
+  }
+
+  .fc-toolbar {
+    margin-bottom: 0.75rem;
+  }
+
+  .fc-toolbar-chunk {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.65rem;
+    padding: 1px 2px;
+    margin: 0.5px 0;
+    border-radius: 3px;
+  }
+
+  .calendar-event-dot {
+    width: 7px;
+    height: 7px;
+    margin-right: 3px;
+  }
+
+  .calendar-event-title {
+    font-size: 0.65rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.8rem;
+  }
+
+  .fc-col-header-cell {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.25rem;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 80px;
+  }
+}
+
+/* Small Mobile Responsive */
+@media (max-width: 576px) {
+  .fc {
+    font-size: 11px;
+  }
+
+  .fc-toolbar-title {
+    font-size: 1rem;
+  }
+
+  .fc-button {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+    margin: 0.05rem;
+  }
+
+  .fc-button-group {
+    margin: 0.1rem;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.6rem;
+    padding: 0.5px 1px;
+    line-height: 1.1;
+  }
+
+  .calendar-event-dot {
+    width: 6px;
+    height: 6px;
+    margin-right: 2px;
+  }
+
+  .calendar-event-title {
+    font-size: 0.6rem;
+    font-weight: 500;
+    line-height: 1.1;
+  }
+
+  .fc-daygrid-day-number {
+    font-size: 0.75rem;
+    padding: 0.25rem;
+  }
+
+  .fc-col-header-cell {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.1rem;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 70px;
+  }
+
+  .fc-more-link {
+    font-size: 0.6rem;
+  }
+
+  /* Hide some toolbar buttons on very small screens */
+  .fc-dayGridWeek-button,
+  .fc-dayGridDay-button {
+    display: none;
+  }
+}
+
+/* Extra Small Mobile Responsive */
+@media (max-width: 480px) {
+  .fc-toolbar-title {
+    font-size: 0.9rem;
+  }
+
+  .fc-button {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.3rem;
+  }
+
+  .fc-daygrid-day-frame {
+    min-height: 60px;
+  }
+
+  .fc-daygrid-event {
+    font-size: 0.55rem;
+  }
+
+  .calendar-event-dot {
+    width: 5px;
+    height: 5px;
+    margin-right: 2px;
+  }
+
+  .calendar-event-title {
+    font-size: 0.55rem;
+    font-weight: 500;
+  }
+
+  .fc-col-header-cell {
+    font-size: 0.65rem;
+  }
+
+  /* Show only essential buttons */
+  .fc-toolbar-chunk:last-child .fc-button-group {
+    display: none;
+  }
+}
+
+/* Calendar Modal Responsive */
+@media (max-width: 768px) {
+  .modal-body p {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+  }
+
+  .modal-footer .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .modal-body p {
+    font-size: 0.85rem;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .modal-footer .btn {
+    width: 100%;
+    font-size: 0.8rem;
+  }
+}
+
+/* Mobile Responsive Styles for Select Options */
+@media (max-width: 768px) {
+  select.form-control option {
+    font-size: 14px;
+    padding: 8px 12px;
+    line-height: 1.4;
+    background-color: #fff;
+    color: #333;
+  }
+
+  select.form-control {
+    font-size: 14px;
+    padding: 8px 12px;
+    line-height: 1.5;
+  }
+}
+
+@media (max-width: 576px) {
+  select.form-control option {
+    font-size: 13px;
+    padding: 6px 10px;
+    line-height: 1.3;
+    background-color: #fff;
+    color: #333;
+    max-width: 100%;
+  }
+
+  select.form-control {
+    /* font-size: 12px; */
+    /* padding: 5px 8px; */
+    line-height: 1.2;
+    background-color: #fff;
+    color: #333;
+    width: 90%;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  select.form-control option {
+    /* font-size: 12px; */
+    /* padding: 5px 8px; */
+    line-height: 1.2;
+    background-color: #fff;
+    color: #333;
+    width: 90%;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  
+}
+
+@media (max-width: 480px){
+  input.form-control{
+    width: 90%;
+    margin-left: 70px;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+
+
+.tracking-wide {
+  letter-spacing: 2px;
+}
+
+
+/* Taskboard Styles start */
+
+/* ==== Jumbotron-style dashboard hero (matches your example) ==== */
+
+
+.dashboard-hero-title {
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+.dashboard-hero-sub {
+  margin-top: 6px;
+  font-size: 0.95rem;
+}
+
+/* ==== Generic radii / chips ==== */
+.task-card {
+  transition: all 0.2s ease-in-out;
+  border-radius: 12px !important;
+}
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+.badge-pill-20 { border-radius: 20px !important; }
+.card, .modal-content { border-radius: 12px !important; }
+.modal-rounded { border-radius: 15px !important; }
+
+/* ==== Clamp text ==== */
+.clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==== Tiny icon sizes ==== */
+.icon-10 { font-size: 10px; }
+.icon-12 { font-size: 12px; }
+.icon-08 { font-size: 0.8rem; }
+
+/* ==== Status indicator line on cards ==== */
+.status-indicator { height: 4px; }
+
+/* ==== Scrollable list within column ==== */
+.task-list {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.task-list::-webkit-scrollbar { width: 6px; }
+.task-list::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+.task-list::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 10px; }
+.task-list::-webkit-scrollbar-thumb:hover { background: #a8a8a8; }
+
+/* ==== Inputs & buttons polish ==== */
+.form-control:focus,
+.form-select:focus {
+  border-color: #667eea;
+  box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+.btn-primary {
+  /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+  border: none;
+  border-radius: 20px;
+}
+.btn-primary:hover {
+  
+  background-color: #5a67d8;
+  color: #fff;
+  transform: translateY(-1px);
+}
+.btn { border-radius: 18px !important; }
+.input-group-text { border-radius: 18px 0 0 18px !important; }
+.form-control.rounded-right-8 { border-radius: 0 18px 18px 0 !important; }
+.rounded-left-8 { border-radius: 18px 0 0 18px !important; }
+.form-select { border-radius: 18px !important; }
+.badge { border-radius: 20px !important; }
+
+/* ==== Labels ==== */
+.form-label {
+  color: #495057 !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px !important;
+}
+
+/* ==== Column body bg/min-height ==== */
+.column-body { min-height: 400px; background-color: #fafbfc; }
+
+/* ==== Count badge in column header ==== */
+.count-pill { color: #000 !important; }
+
+/* ==== Filter select (enhanced) ==== */
+.custom-filter-select {
+  appearance: none;
+  background-image: none;
+  cursor: pointer;
+  position: relative;
+  border-radius: 12px;
+  border: 2px solid #e9ecef;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+}
+.custom-filter-select:focus {
+  border-color: #667eea !important;
+  box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.15) !important;
+  transform: translateY(-1px);
+}
+.custom-filter-select:hover {
+  border-color: #b8c5ea;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.custom-filter-select option {
+  padding: 12px 16px;
+  font-weight: 600;
+  color: #495057;
+  background: #ffffff;
+  border: none;
+}
+.custom-filter-select.value-all {
+  background: linear-gradient(135deg, #667eea 5%, #ffffff 5%);
+  border-left: 4px solid #667eea;
+}
+.custom-filter-select.value-todo {
+  background: linear-gradient(135deg, #0dcaf0 5%, #ffffff 5%);
+  border-left: 4px solid #0dcaf0;
+}
+.custom-filter-select.value-inprogress {
+  background: linear-gradient(135deg, #ffc1077d 5%, #ffffff 5%);
+  border-left: 4px solid #ffc1077d;
+}
+.custom-filter-select.value-done {
+  background: linear-gradient(135deg, #198754 5%, #ffffff 5%);
+  border-left: 4px solid #198754;
+}
+
+/* ==== Stats cards ==== */
+.stat-box { border-radius: 8px; font-weight: bold; }
+.stat-total { background: #f8f9fa; }
+.stat-todo { background: #5a67d8; color: #fff; }
+.stat-progress { background: #ffc1077d; color: #000; }
+.stat-done { background: #28a746bc; color: #fff; }
+
+/* ==== Progress height helper ==== */
+.progress-8 { height: 8px; }
+
+/* ==== Modal overlay tint ==== */
+.modal-overlay { background-color: rgba(0, 0, 0, 0.6); }
+
+/* ==== Skeleton opacity ==== */
+.skeleton-card { opacity: 0.6; }
+
+/* ==== Empty state icon circle ==== */
+.empty-state-icon { width: 80px; height: 80px; font-size: 32px; }
+
+/* ==== Responsive tweaks ==== */
+@media (max-width: 768px) {
+  .custom-filter-select { padding: 10px 14px; font-size: 13px; }
+}
+
+/* subtle polish */
+.task-card { border-radius: 12px; }
+.line-clamp-3 {
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+/* skeleton look using Bootstrap placeholders */
+.skeleton-glow .placeholder { display: inline-block; }
+
+
+/* Taskboard Styles end */

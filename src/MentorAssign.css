@@ -1,0 +1,88 @@
+/* .custom-card {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  height: 100%;
+}
+
+.custom-table thead th {
+  background-color: #f5f7fa;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.custom-table th, .custom-table td {
+  vertical-align: middle;
+  text-align: center;
+  font-size: 14px;
+}
+
+.custom-table tbody tr:hover {
+  background-color: #f0f8ff;
+}
+
+input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
+} */
+
+
+/* Card container */
+.custom-card {
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+/* Table base styles */
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  color: #333;
+}
+
+/* Table header */
+.custom-table thead th {
+  background-color: #5a67d8;     /* Blue header */
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  padding: 12px;
+  text-align: center;
+  border-bottom: 2px solid #dee2e6;
+}
+
+/* Table cells */
+.custom-table td {
+  padding: 10px;
+  text-align: center;
+  vertical-align: middle;
+  border-bottom: 1px solid #e6e6e6;
+}
+
+/* Table row hover */
+.custom-table tbody tr:hover {
+  background-color: #f1f9ff;
+  cursor: pointer;
+}
+
+/* Selected row */
+.custom-table tbody tr.selected {
+  background-color: #d0ebff;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* Responsive scroll on small screens */
+.table-responsive {
+  overflow-x: auto;
+}

@@ -1,0 +1,138 @@
+.course-row-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+.course-row-item {
+  font-size: 1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+@media (max-width: 900px) {
+  .course-row-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
+  }
+  .course-row-item {
+    font-size: 0.95rem;
+    white-space: normal;
+  }
+}
+@media (max-width: 600px) {
+  .course-row-grid {
+    display: block;
+  }
+  .course-row-item {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+  }
+}
+.no-bg-shadow {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.App {
+  text-align: center;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .App-logo {
+    height: 30vmin;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  .App-logo {
+    height: 25vmin;
+  }
+}
+ .sidebar-nav .metismenu > li {
+  margin-bottom: -5px !important;
+}  
+  /* Default: sidebar is visible on desktop */
+#left-sidebar {
+  width: 280px;
+  transition: all 0.3s ease;
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  background-color: #ffffff;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+/* Hide the sidebar unless sidebar-open is active */
+body:not(.sidebar-open) #left-sidebar {
+  transform: translateX(-100%);
+}
+
+/* Show the sidebar when sidebar-open is set */
+body.sidebar-open #left-sidebar {
+  transform: translateX(0);
+}
+
+/* Remove any default margin/width adjustments from main content */
+.page {
+  transition: all 0.3s ease;
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+a {
+  text-decoration: none;
+}
+
+.App-link {
+  color: #61dafb;
+}
+.sidebar a {
+  text-decoration: none;
+}
+
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+.card.h-100 {
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.card .file-name {
+  word-wrap: break-word;
+}
+

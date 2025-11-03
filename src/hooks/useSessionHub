@@ -1,0 +1,47 @@
+import { useEffect, useRef } from "react";
+import * as signalR from "@microsoft/signalr";
+
+export default function useSessionHub() {
+  const connectionRef = useRef(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    if (!token) return;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl("https://localhost:7123/sessionhub", {
+        accessTokenFactory: () => localStorage.getItem("jwt"), // 🔥 always fresh
+      })
+      .withAutomaticReconnect()
+      .configureLogging(signalR.LogLevel.Information)
+      .build();
+
+    connectionRef.current = connection;
+
+    // Register before start
+    const registerHandlers = () => {
+      connection.on("forceLogout", () => {
+        console.log("✅ Received forceLogout event");
+        localStorage.removeItem("jwt");
+        window.location.href = "/";
+      });
+    };
+
+    registerHandlers();
+
+    // Handle reconnect
+    connection.onreconnected(() => {
+      console.log("🔄 Reconnected to hub");
+      registerHandlers(); // rebind handlers after reconnect
+    });
+
+    connection
+      .start()
+      .then(() => console.log("⚡ SignalR connected"))
+      .catch((err) => console.error("SignalR start error:", err));
+
+    return () => {
+      connection.stop();
+    };
+  }, []);
+}

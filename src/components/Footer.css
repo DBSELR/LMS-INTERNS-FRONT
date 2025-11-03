@@ -1,0 +1,23 @@
+.fixed-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  padding: 10px 0;
+}
+
+.footer {
+  margin: 0;
+  border-top: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+  .fixed-footer {
+    font-size: 14px;
+    padding: 8px 0;
+  }
+}
