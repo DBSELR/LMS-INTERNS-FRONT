@@ -32,13 +32,13 @@ const CourseGroupAssignmentTab = () => {
     try {
       const token = localStorage.getItem("jwt");
       const res = await fetch(
-        "https://localhost:7099/api/Programme/GetUniqueBatches",
+        "https://localhost:7163/api/Programme/GetUniqueBatches",
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       console.log("📤 GetUniqueBatches REQUEST");
-      console.log("URL: https://localhost:7099/api/Programme/GetUniqueBatches");
+      console.log("URL: https://localhost:7163/api/Programme/GetUniqueBatches");
       console.log("Method: GET");
       console.log("Headers:", { Authorization: `Bearer ${token}` });
 
@@ -64,7 +64,7 @@ const CourseGroupAssignmentTab = () => {
 
       // Fetch programmes for the selected batch using batch
       fetch(
-        `https://localhost:7099/api/Programme/GetProgrammesByBatchName?batch=${selectedBatch}`,
+        `https://localhost:7163/api/Programme/GetProgrammesByBatchName?batch=${selectedBatch}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -113,7 +113,7 @@ const CourseGroupAssignmentTab = () => {
 
       if (programmeId) {
         // Fetch groups for the selected programme using programme ID
-        fetch(`https://localhost:7099/api/Group/ByProgramme/${programmeId}`, {
+        fetch(`https://localhost:7163/api/Group/ByProgramme/${programmeId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => res.json())
