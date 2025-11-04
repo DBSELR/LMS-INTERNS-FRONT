@@ -286,9 +286,9 @@ const CoursesTab = ({ isActive }) => {
                   courses.map((course) => (
                     <tr key={course.programmeId}>
                       <td style={{ ...cellPad, whiteSpace: "nowrap" }}>
-                        {course.programmeCode}-{course.programmeName}
+                        {course.programmeCode}
                       </td>
-                      <td style={{ ...cellPad, whiteSpace: "nowrap" }}></td>
+                      <td style={{ ...cellPad, whiteSpace: "nowrap" }}>{course.programmeName}</td>
                       <td style={{ ...cellPad, whiteSpace: "nowrap" }}>₹{course.fee}</td>
                       <td style={cellPad} className="text-end">
                         <div className="d-flex gap-2 justify-content-end">
