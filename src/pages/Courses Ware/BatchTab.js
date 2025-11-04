@@ -416,10 +416,10 @@ const BatchTab = () => {
         <h5 className="mb-3 text-primary">Add / Edit Batch</h5>
         <Form onSubmit={(e) => e.preventDefault()}>
           <div className="row g-3">
-            {/* Select Board */}
+            {/* Select Course */}
             <div className="col-12 col-md-6 col-lg-4">
               <Form.Group>
-                <Form.Label>Select Board</Form.Label>
+                <Form.Label>Select Course</Form.Label>
                 <Form.Control
                   as="select"
                   name="programmeId"
@@ -427,7 +427,7 @@ const BatchTab = () => {
                   onChange={handleBoardChange}
                   required
                 >
-                  <option value="">Select Board</option>
+                  <option value="">Select Course</option>
                   {boards.map((board) => (
                     <option key={board.programmeId} value={board.programmeId}>
                       {board.programmeCode} - {board.programmeName}
@@ -437,26 +437,7 @@ const BatchTab = () => {
               </Form.Group>
             </div>
 
-            {/* Class */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <Form.Group>
-                <Form.Label>Class</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="classId"
-                  value={form.classId}
-                  onChange={(e) => setForm((prev) => ({ ...prev, classId: e.target.value }))}
-                  disabled={!form.programmeId}
-                >
-                  <option value="">Select Class</option>
-                  {(Array.isArray(classes) ? classes : []).map((cls) => (
-                    <option key={cls.groupId} value={cls.groupId}>
-                      {cls.groupName}
-                    </option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </div>
+           
 
             {/* Batch */}
             <div className="col-12 col-md-6 col-lg-4">

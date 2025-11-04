@@ -330,7 +330,7 @@ const CourseGroupAssignmentTab = () => {
     <div className="container py-0 pt-0 welcome-card animate-welcome">
       <div className="mb-0 p-0 rounded">
         <h5 className="mb-0 mt-0 text-primary">
-          Assign Subjects to Board + Class
+          Assign Subjects to Course + Class
         </h5>
         <Form>
           <div className="row mb-3">
@@ -351,13 +351,13 @@ const CourseGroupAssignmentTab = () => {
             </div>
 
             <div className="col-md-4">
-              <Form.Label>Board</Form.Label>
+              <Form.Label>Course</Form.Label>
               <Form.Control
                 as="select"
                 value={selectedCourse}
                 onChange={(e) => setSelectedCourse(e.target.value)}
               >
-                <option value="">Select Board</option>
+                <option value="">Select Course</option>
                 {courseList.map((c, i) => (
                   <option key={i} value={c.programmeName}>
                     {c.programmeCode}-{c.programmeName}
@@ -366,21 +366,7 @@ const CourseGroupAssignmentTab = () => {
               </Form.Control>
             </div>
 
-            <div className="col-md-4">
-              <Form.Label>Class</Form.Label>
-              <Form.Control
-                as="select"
-                value={selectedGroup}
-                onChange={(e) => setSelectedGroup(e.target.value)}
-              >
-                <option value="">Select Class</option>
-                {groupList.map((g) => (
-                  <option key={g.groupId} value={g.groupId}>
-                    Class-{g.groupName}
-                  </option>
-                ))}
-              </Form.Control>
-            </div>
+           
           </div>
         </Form>
       </div>

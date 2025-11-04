@@ -200,49 +200,38 @@ const CoursesTab = ({ isActive }) => {
   return (
     <div className="container py-0 pt-0 welcome-card animate-welcome" style={{ width: "100%" }}>
       <div className="mb-0 bg-glass p-0">
-        <h5 className="mb-0 mt-0 text-primary">Add / Edit Boards</h5>
+        <h5 className="mb-0 mt-0 text-primary">Add / Edit Courses</h5>
         <Form>
           <div className="row gy-3">
-            {/* Board dropdown (combined value like AP-Andhra Pradesh) */}
-            <div className="col-md-4">
+             <div className="col-md-4">
               <Form.Group>
-                <Form.Label>Board</Form.Label>
+                <Form.Label>Course Code</Form.Label>
                 <Form.Control
-                  as="select"
+                  type="text"
                   name="courseCode"
-                  value={form.courseCode || ""}
+                  value={form.courseCode}
                   onChange={handleChange}
                   required
-                  disabled={form.courseId !== null} // Disable when editing
-                >
-                  <option value="">Select Board</option>
-                  {[
-                    "AP-Andhra Pradesh",
-                    "TG-Telangana",
-                    "CB-Central Board",
-                    "IC-International",
-                  ].map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                  {/* If form has a courseCode that doesn't match predefined options, add it */}
-                  {form.courseCode &&
-                    ![
-                      "AP-Andhra Pradesh",
-                      "TG-Telangana",
-                      "CB-Central Board",
-                      "IC-International",
-                    ].includes(form.courseCode) && (
-                      <option key={form.courseCode} value={form.courseCode}>
-                        {form.courseCode}
-                      </option>
-                    )}
-                </Form.Control>
+                />
               </Form.Group>
             </div>
 
-            {/* Board Name intentionally kept removed; auto-derived */}
+            <div className="col-md-4">
+              <Form.Group>
+                <Form.Label>Course Name</Form.Label>
+                <Form.Control
+                  type="text"
+                  name="courseName"
+                  value={form.courseName}
+                  onChange={handleChange}
+                  required
+                />
+              </Form.Group>
+            </div>
+
+            
+
+            {/* Course Name intentionally kept removed; auto-derived */}
 
             <div className="col-md-4">
               <Form.Group>
@@ -270,7 +259,7 @@ const CoursesTab = ({ isActive }) => {
         </Form>
       </div>
 
-      <h5 className="mb-3">Boards</h5>
+      <h5 className="mb-3">Courses</h5>
 
       <div className="semester-panel-body">
         {loading ? (
@@ -280,7 +269,8 @@ const CoursesTab = ({ isActive }) => {
             <table className="table table-sm table-hover table-bordered align-middle mb-0">
               <thead className="table-light">
                 <tr>
-                  <th style={{ ...cellPad, whiteSpace: "nowrap" }}>Board</th>
+                  <th style={{ ...cellPad, whiteSpace: "nowrap" }}>Course Code</th>
+                  <th style={{ ...cellPad, whiteSpace: "nowrap" }}>Course Name</th>
                   <th style={{ ...cellPad, whiteSpace: "nowrap" }}>Fee (₹)</th>
                   <th style={{ ...cellPad, width: 140, whiteSpace: "nowrap" }}>Actions</th>
                 </tr>
@@ -298,6 +288,7 @@ const CoursesTab = ({ isActive }) => {
                       <td style={{ ...cellPad, whiteSpace: "nowrap" }}>
                         {course.programmeCode}-{course.programmeName}
                       </td>
+                      <td style={{ ...cellPad, whiteSpace: "nowrap" }}></td>
                       <td style={{ ...cellPad, whiteSpace: "nowrap" }}>₹{course.fee}</td>
                       <td style={cellPad} className="text-end">
                         <div className="d-flex gap-2 justify-content-end">

@@ -102,7 +102,7 @@ function HeaderTop({ notificationCount = 0 }) {
             style={{ textDecoration: "none" }}
           >
             <img
-              src="/assets/images.jpg"
+              src="/assets/dbs-logo.png"
               alt="DBS Logo"
               style={{
                 background: "#f5f5f5",
