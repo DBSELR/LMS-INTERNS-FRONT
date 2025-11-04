@@ -3,16 +3,20 @@
   left: 0;
   bottom: 0;
   width: 100%;
-  background: #fff;
-  text-align: center;
+  /* background: #fff; */
+  text-align: right;
   z-index: 1000;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  /* box-shadow: 0 -2px 8px rgba(0,0,0,0.05); */
   padding: 10px 0;
+  color: #5a67d8;
+  font-weight: 500;
+  font-size: 12px;
+  /* text-shadow: 0 1px 2px rgba(255, 132, 0, 0.53); */
 }
 
 .footer {
   margin: 0;
-  border-top: 1px solid #eee;
+  /* border-top: 1px solid #eee; */
 }
 
 @media (max-width: 768px) {
