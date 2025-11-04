@@ -120,7 +120,7 @@ function normalizeBatchDto(dto) {
   const programmeId =
     get(["ProgrammeId", "programmeid", "ProgrammeID", "Pid", "pid"]) ?? "";
   const classId =
-    get(["GroupId", "groupid", "GroupID", "Gid", "gid"]) ?? "";
+    get(["GroupId", "groupid", "GroupID" ]) ?? "";
 
   const programmeName =
     get(["programmeName", "ProgrammeName", "programName", "ProgramName"]) ?? "";
@@ -213,7 +213,7 @@ const BatchTab = () => {
 
   const [batches, setBatches] = useState([]);
   const [boards, setBoards] = useState([]);
-  const [classes, setClasses] = useState([]);
+  // const [classes, setClasses] = useState([]); // Not needed anymore since classes removed from API
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState("");
 
@@ -247,37 +247,8 @@ const BatchTab = () => {
     }
   };
 
-  const fetchClasses = async (programmeId) => {
-    try {
-      const token = localStorage.getItem("jwt");
-      const res = await fetch(
-        `${API_BASE_URL}/Programme/GetGroupByProgrammes?pid=${encodeURIComponent(programmeId)}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error(`Error fetching classes for programmeId ${programmeId}:`, errorText);
-        toast.error(`❌ Failed to load classes: ${res.statusText}`);
-        setClasses([]);
-        return;
-      }
-
-      const data = await res.json();
-      const normalized = Array.isArray(data)
-        ? data.map((g) => ({
-            groupId: g.groupId != null ? String(g.groupId) : "",
-            groupName: g.groupName,
-          }))
-        : [];
-
-      setClasses(normalized);
-    } catch (error) {
-      console.error("Error fetching classes:", error);
-      toast.error("❌ Failed to load classes");
-      setClasses([]);
-    }
-  };
+  // fetchClasses function removed since classes are no longer used in the updated API
+  // const fetchClasses = async (programmeId) => { ... }
 
   async function refreshList() {
     setLoadingList(true);
@@ -316,38 +287,28 @@ const BatchTab = () => {
       setForm((prev) => ({ 
         ...prev, 
         programmeId, 
-        classId: "",
         fee: boardFee
       }));
-      fetchClasses(programmeId);
     } else {
       setForm((prev) => ({ 
         ...prev, 
         programmeId: "", 
-        classId: "",
         fee: ""
       }));
-      setClasses([]);
     }
   };
 
   const handleEdit = (row) => {
     const programmeId = row.programmeId ? String(row.programmeId) : "";
-    const classId = row.classId ? String(row.classId) : "";
     setForm({
       batchName: row.batchName || "",
       startDate: toInputDate(row.startDate),
       endDate: toInputDate(row.endDate),
       bid: Number(row.bid) || 0,
       programmeId,
-      classId,
+      classId: "", // Keep for backward compatibility but not used
       fee: row.fee || "",
     });
-    if (programmeId) {
-      fetchClasses(programmeId).then(() => {
-        setForm((prev) => ({ ...prev, classId }));
-      });
-    }
     toast.info("✏️ Edit mode");
   };
 
@@ -375,8 +336,8 @@ const BatchTab = () => {
 
     if (DEBUG) console.log("🧾 handleSave form:", form);
 
-    if (!batchName || !startDate || !endDate || !programmeId || !classId) {
-      toast.error("Please fill all required fields, including Programme and Class.");
+    if (!batchName || !startDate || !endDate || !programmeId) {
+      toast.error("Please fill all required fields: Batch Name, Start Date, End Date, and Programme.");
       return;
     }
     if (new Date(startDate) > new Date(endDate)) {
@@ -390,7 +351,7 @@ const BatchTab = () => {
       StartDate: toIsoMidnight(startDate),
       EndDate: toIsoMidnight(endDate),
       Pid: Number(programmeId),
-      Gid: Number(classId),
+    
       Fee: fee ? Number(fee) : 0,
     };
 
@@ -561,9 +522,8 @@ const BatchTab = () => {
               <Table bordered hover responsive size="sm" className="mb-0">
                 <thead>
                   <tr className="bg-light">
-                    <th style={{ width: 180 }}>Board</th>
-                    <th style={{ width: 80 }}>Class</th>
-                    <th style={{ width: 120 }}>Batch</th>
+                    <th style={{ width: 200 }}>Programme</th>
+                    <th style={{ width: 150 }}>Batch</th>
                     <th style={{ width: 120 }}>Start Date</th>
                     <th style={{ width: 120 }}>End Date</th>
                     <th style={{ width: 100 }}>Fee</th>
@@ -576,11 +536,8 @@ const BatchTab = () => {
                     const end = toInputDate(b.endDate);
                     return (
                       <tr key={b.bid || idx}>
-                        <td data-label="Board" className="text-start">
-                          {b.programmeName || <em>(no board)</em>}
-                        </td>
-                        <td data-label="Class" className="text-center">
-                          {b.groupName || <em>(no class)</em>}
+                        <td data-label="Programme" className="text-start">
+                          {b.programmeName || <em>(no programme)</em>}
                         </td>
                         <td data-label="Batch" className="text-start">
                           {b.batchName || <em>(no name)</em>}
