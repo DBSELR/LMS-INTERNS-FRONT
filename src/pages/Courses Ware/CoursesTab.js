@@ -16,6 +16,8 @@ const CoursesTab = ({ isActive }) => {
     courseId: null,
   });
 
+  const [isEditing, setIsEditing] = useState(false);
+
   // fetch courses when tab becomes active
   useEffect(() => {
     if (isActive) {
@@ -74,7 +76,7 @@ const CoursesTab = ({ isActive }) => {
     if (course.programmeCode.includes("-")) {
       courseCodeForForm = course.programmeCode;
     } else {
-      courseCodeForForm = `${course.programmeCode}-${course.programmeName}`;
+      courseCodeForForm = `${course.programmeCode}`;
     }
 
     console.log("🔄 Editing course:", {
@@ -90,6 +92,8 @@ const CoursesTab = ({ isActive }) => {
       fee: course.fee ?? "",
       courseId: course.programmeId ?? null,
     });
+    
+    setIsEditing(true);
   };
 
   const handleDelete = async (courseId) => {
@@ -187,6 +191,8 @@ const CoursesTab = ({ isActive }) => {
         fee: "",
         courseId: null,
       });
+      
+      setIsEditing(false);
 
       fetchCourses();
     } catch (err) {
@@ -211,6 +217,7 @@ const CoursesTab = ({ isActive }) => {
                   name="courseCode"
                   value={form.courseCode}
                   onChange={handleChange}
+                  disabled={isEditing}
                   required
                 />
               </Form.Group>
@@ -254,6 +261,22 @@ const CoursesTab = ({ isActive }) => {
               >
                 {form.courseId ? "Update" : "Save"}
               </Button>
+              {isEditing && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setForm({
+                      courseCode: "",
+                      courseName: "",
+                      fee: "",
+                      courseId: null,
+                    });
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </Button>
+              )}
             </div>
           </div>
         </Form>
