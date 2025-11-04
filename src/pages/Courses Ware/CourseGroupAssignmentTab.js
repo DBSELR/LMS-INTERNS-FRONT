@@ -143,51 +143,59 @@ const CourseGroupAssignmentTab = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
-    if (selectedBatch && selectedCourse && selectedGroup && selectedSemester) {
+    
+    // Load existing assigned subjects when batch, course and groups are available
+    if (selectedBatch && selectedCourse && groupList.length > 0 && selectedSemester) {
       const course = courseList.find((c) => c.programmeName === selectedCourse);
       const programmeId = course?.programmeid;
       const batch = batchList.find((b) => b.batch == selectedBatch);
       const batchName = batch?.batch;
+      const defaultGroupId = groupList[0]?.groupId; // Use first available group
 
-      if (!programmeId || !batchName) return;
-
-      // 🔒 selectedSemester is always "1"
-      fetch(
-        `${API_BASE_URL}/Examination/GetAssignSubjects?Batch=${batchName}&ProgrammeId=${programmeId}&GroupId=${selectedGroup}&Semester=1`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          const formatted = data.map((item) => ({
-            ...item,
-            examinationId: item.examinationid,
-          }));
-          setSelectedSubjects(
-            formatted.sort((a, b) => a.displayOrder - b.displayOrder)
-          );
-        });
-
-      // Get board and class information for the API call
-      const selectedCourseInfo = courseList.find((c) => c.programmeName === selectedCourse);
-      const selectedGroupInfo = groupList.find((g) => g.groupId == selectedGroup);
-      const boardCode = selectedCourseInfo?.programmeCode; // e.g., "AP"
-      const classCode = selectedGroupInfo?.groupCode; // e.g., "10"
-
-      if (boardCode && classCode) {
+      if (programmeId && batchName && defaultGroupId) {
+        // 🔒 selectedSemester is always "1"
         fetch(
-          `${API_BASE_URL}/Course/ByProgrammeAndSemester?Board=${boardCode}&group=${classCode}`,
+          `${API_BASE_URL}/Examination/GetAssignSubjects?Batch=${batchName}&ProgrammeId=${programmeId}&GroupId=${defaultGroupId}&Semester=1`,
           { headers: { Authorization: `Bearer ${token}` } }
         )
           .then((res) => res.json())
           .then((data) => {
-            console.log("📚 Subject Bank API Response:", data);
-            setSubjectBank(data);
+            const formatted = data.map((item) => ({
+              ...item,
+              examinationId: item.examinationid,
+            }));
+            setSelectedSubjects(
+              formatted.sort((a, b) => a.displayOrder - b.displayOrder)
+            );
           })
           .catch((error) => {
-            console.error("❌ Error fetching subject bank:", error);
-            toast.error("Failed to load subject bank");
+            console.log("No existing assignments found or error:", error);
+            // This is expected if no assignments exist yet
           });
       }
+    }
+
+    // Load subject bank when course is selected (Group not required)
+    if (selectedBatch && selectedCourse) {
+      fetch(
+        `${API_BASE_URL}/Course/ByProgrammeAndSemester`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      )
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error(`HTTP error! status: ${res.status}`);
+          }
+          return res.json();
+        })
+        .then((data) => {
+          console.log("📚 Subject Bank API Response:", data);
+          setSubjectBank(data || []);
+        })
+        .catch((error) => {
+          console.error("❌ Error fetching subject bank:", error);
+          toast.error("Failed to load subject bank");
+          setSubjectBank([]);
+        });
     }
   }, [
     selectedBatch,
@@ -196,6 +204,7 @@ const CourseGroupAssignmentTab = () => {
     selectedSemester,
     courseList,
     batchList,
+    groupList,
   ]);
 
   const handleSubjectSelect = (subject) => {
@@ -255,6 +264,12 @@ const CourseGroupAssignmentTab = () => {
       pauseOnHover: true,
     };
 
+    // Validate required fields
+    if (!selectedBatch || !selectedCourse) {
+      toast.error("Please select Batch and Course", toastOptions);
+      return;
+    }
+
     const course = courseList.find((c) => c.programmeName === selectedCourse);
     if (!course) {
       toast.error("Invalid course selection", toastOptions);
@@ -266,37 +281,43 @@ const CourseGroupAssignmentTab = () => {
       displayOrder: index + 1,
     }));
 
-    if (mergedSubjects.length > 0) {
-      const batch = batchList.find((b) => b.batch == selectedBatch);
-      const batchName = batch?.batch;
+    if (mergedSubjects.length === 0) {
+      toast.error("Please select at least one subject", toastOptions);
+      return;
+    }
 
-      const payload = {
-        programmeId: course.programmeid,
-        batchName: batchName,
-        groupId: parseInt(selectedGroup),
-        semester: 1, // 🔒 always 1
-        subjectIds: mergedSubjects.map((s) => s.examinationId),
-      };
+    const batch = batchList.find((b) => b.batch == selectedBatch);
+    const batchName = batch?.batch;
 
-      try {
-        const token = localStorage.getItem("jwt");
-        const res = await fetch(`${API_BASE_URL}/Course/AssignSubjectsById`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        if (!res.ok) throw new Error(await res.text());
-        toast.success(
-          "✅ Subjects assigned/Ordered successfully",
-          toastOptions
-        );
-        resetAssignmentForm();
-      } catch (err) {
-        toast.error(`❌ Save failed: ${err.message}`, toastOptions);
-      }
+    // Since Group is hidden, we'll use a default group (first available group or 1)
+    const defaultGroupId = groupList.length > 0 ? groupList[0].groupId : 1;
+
+    const payload = {
+      programmeId: course.programmeid,
+      batchName: batchName,
+      groupId: parseInt(defaultGroupId),
+      semester: 1, // 🔒 always 1
+      subjectIds: mergedSubjects.map((s) => s.examinationId),
+    };
+
+    try {
+      const token = localStorage.getItem("jwt");
+      const res = await fetch(`${API_BASE_URL}/Course/AssignSubjectsById`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success(
+        "✅ Subjects assigned/Ordered successfully",
+        toastOptions
+      );
+      resetAssignmentForm();
+    } catch (err) {
+      toast.error(`❌ Save failed: ${err.message}`, toastOptions);
     }
 
     const existingSubjects = mergedSubjects.filter(
@@ -365,8 +386,6 @@ const CourseGroupAssignmentTab = () => {
                 ))}
               </Form.Control>
             </div>
-
-           
           </div>
         </Form>
       </div>
@@ -534,9 +553,16 @@ const CourseGroupAssignmentTab = () => {
             border: "none",
           }}
           onClick={handleSave}
+          disabled={!selectedBatch || !selectedCourse || selectedSubjects.length === 0}
         >
           💾 Save Assignments
         </Button>
+        
+        {selectedSubjects.length === 0 && selectedBatch && selectedCourse && (
+          <div className="text-muted mt-2 small">
+            <i className="fas fa-info-circle"></i> Please select subjects from the Subject Bank to save
+          </div>
+        )}
       </div>
 
       <ConfirmationPopup
