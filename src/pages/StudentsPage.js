@@ -105,6 +105,7 @@ function StudentsPage() {
   const handleAdd = async (student) => {
     try {
       const token = localStorage.getItem("jwt");
+      console.log("📤 Sending student data:", student);
       const res = await fetch(`${API_BASE_URL}/student/register`, {
         method: "POST",
         headers: {
@@ -113,6 +114,7 @@ function StudentsPage() {
         },
         body: JSON.stringify(student),
       });
+      
       if (res.ok) {
         // Success: close modal, refresh list, show toast
         toast.success("Student added successfully!");
@@ -120,11 +122,20 @@ function StudentsPage() {
         closeModal();
         return res;
       } else {
+        // Log the error response for debugging
+        const errorData = await res.json().catch(() => ({ error: 'Unknown error' }));
+        console.error("❌ Backend error response:", errorData);
+        console.error("❌ Response status:", res.status);
+        
         // Pass the error response to AddStudent for modal display
-        return res;
+        const errorResponse = new Error(`HTTP ${res.status}: ${JSON.stringify(errorData)}`);
+        errorResponse.status = res.status;
+        errorResponse.data = errorData;
+        throw errorResponse;
       }
     } catch (err) {
-      return err;
+      console.error("❌ Network or other error:", err);
+      throw err;
     }
   };
 

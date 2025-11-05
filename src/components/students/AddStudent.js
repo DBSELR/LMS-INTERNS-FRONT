@@ -28,15 +28,31 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
 
   /* ========= Options / Lists ========= */
   const [programmeOptions, setProgrammeOptions] = useState([]);
-  const [groupOptions, setGroupOptions] = useState([]);
   const [batchList, setBatchList] = useState([]);
   const [filteredProgrammes, setFilteredProgrammes] = useState([]);
-  const [filteredGroups, setFilteredGroups] = useState([]);
   const [semesterOptions, setSemesterOptions] = useState([]);
+  
+  // Degree options as provided
+  const degreeOptions = [
+    "B A Honours",
+    "B AOL Honours", 
+    "BBA Honours",
+    "BCA Honours",
+    "B Com Honours (General)",
+    "B Com Honours (Computer Applications)",
+    "B Com Honours (Digital Marketing)",
+    "B Com Honours (Financial Markets)",
+    "BHM Honours",
+    "B Sc Honours",
+    "B Voc Honours",
+    "B Com Honours (Logistics Management)",
+    "B Com Honours (BFSI)"
+  ];
 
   /* ========= Form ========= */
   const [formData, setFormData] = useState({
-    // hidden (UI) but kept if needed
+    // Now shown in UI
+    username: "",
     password: "",
     // shown
     email: "",
@@ -53,8 +69,8 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     profilePhotoUrl: "",
     batch: "",
     programmeId: "",
-    groupId: "",
     semester: "1",
+    degree: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -74,23 +90,13 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
         setBatchList([...new Set((data || []).map((p) => p.batchName))]);
       })
       .catch((e) => console.error("Programme fetch error:", e));
-
-    fetch(`${API_BASE_URL}/Group/GroupBatch`, {
-      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-    })
-      .then((r) => r.json())
-      .then((data) => setGroupOptions(data || []))
-      .catch((e) => console.error("Group fetch error:", e));
   }, []);
 
   /* ========= Populate for edit ========= */
   useEffect(() => {
-    if (student && programmeOptions.length && groupOptions.length) {
+    if (student && programmeOptions.length) {
       const matchedProgramme = programmeOptions.find(
         (p) => p.programmeName === student.programme || p.programmeId === student.programmeId
-      );
-      const matchedGroup = groupOptions.find(
-        (g) => g.groupName === student.group || g.groupId === student.groupId
       );
       const dob = student.dateOfBirth?.split("T")[0] || "";
 
@@ -98,19 +104,19 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
         ...prev,
         ...student,
         programmeId: matchedProgramme?.programmeId?.toString() || "",
-        groupId: matchedGroup?.groupId?.toString() || "",
         batch: matchedProgramme?.batchName || student.batch || "",
         dateOfBirth: dob,
-        password: "",
+        username: student.username || "",
+        password: student.username || "", // Set password to username
+        degree: student.degree || "",
       }));
     }
-  }, [student, programmeOptions, groupOptions]);
+  }, [student, programmeOptions]);
 
   /* ========= Dependent lists ========= */
   useEffect(() => {
     if (!formData.batch) {
       setFilteredProgrammes([]);
-      setFilteredGroups([]);
       setSemesterOptions([]);
       return;
     }
@@ -118,17 +124,12 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     const progs = programmeOptions.filter((p) => p.batchName === formData.batch);
     setFilteredProgrammes(progs);
 
-    const grps = groupOptions.filter(
-      (g) => g.batchName === formData.batch && g.programmeId === parseInt(formData.programmeId || "0")
-    );
-    setFilteredGroups(grps);
-
     const selectedProgramme = programmeOptions.find(
       (p) => p.programmeId === parseInt(formData.programmeId || "0")
     );
     const semCount = selectedProgramme?.numberOfSemesters || 0;
     setSemesterOptions(Array.from({ length: semCount }, (_, i) => i + 1));
-  }, [formData.batch, formData.programmeId, programmeOptions, groupOptions]);
+  }, [formData.batch, formData.programmeId, programmeOptions]);
 
   /* ========= Validation ========= */
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -137,6 +138,9 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
 
   const validate = (fd) => {
     const err = {};
+
+    if (!fd.username?.trim()) err.username = "Username is required";
+    else if (fd.username.trim().length < 3) err.username = "Username must be at least 3 characters";
 
     if (!fd.email?.trim()) err.email = "Email is required";
     else if (!emailRegex.test(fd.email.trim())) err.email = "Enter a valid email";
@@ -153,8 +157,8 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
       const today = new Date();
       const dob = new Date(fd.dateOfBirth);
       if (dob > today) err.dateOfBirth = "DOB cannot be in the future";
-      const min = new Date(today.getFullYear() - 3, today.getMonth(), today.getDate());
-      if (!err.dateOfBirth && dob > min) err.dateOfBirth = "Student must be at least 3 years old";
+      const min = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+      if (!err.dateOfBirth && dob > min) err.dateOfBirth = "Student must be at least 16 years old";
     }
 
     if (!fd.gender?.trim()) err.gender = "Gender is required";
@@ -168,7 +172,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
 
     if (!fd.batch) err.batch = "Batch is required";
     if (!fd.programmeId) err.programmeId = "Board is required";
-    if (!fd.groupId) err.groupId = "Class is required";
+    if (!fd.degree?.trim()) err.degree = "Degree is required";
 
     // profilePhotoUrl left optional
     return err;
@@ -222,6 +226,33 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
         raw: data,
       };
     }
+    
+    // Handle 400 Bad Request with more specific error messages
+    if (Number(status) === 400) {
+      let message = "Invalid data provided.";
+      
+      if (data?.errors) {
+        // Handle ASP.NET Core ModelState validation errors
+        const errorMessages = Object.entries(data.errors)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('\n');
+        message = `Validation errors:\n${errorMessages}`;
+      } else if (data?.error) {
+        message = data.error;
+      } else if (data?.message) {
+        message = data.message;
+      } else if (typeof data === "string") {
+        message = data;
+      }
+      
+      return {
+        title: "Validation Error",
+        message: message,
+        conflicts: [],
+        raw: data,
+      };
+    }
+    
     return {
       title: "Save failed",
       message:
@@ -289,9 +320,14 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
     if (name === "phoneNumber") v = v.replace(/\D/g, "").slice(0, 10);
     if (name === "zipCode") v = v.replace(/\D/g, "").slice(0, 6);
+    if (name === "username") v = v.toLowerCase().replace(/[^a-z0-9._-]/g, ""); // Only allow alphanumeric, dots, underscores, hyphens
 
     setFormData((prev) => {
       const next = { ...prev, [name]: v };
+      // If username changes, automatically update password to match
+      if (name === "username" && !editMode) {
+        next.password = v;
+      }
       if (submitted) setErrors(validate(next)); // live-validate after first submit
       return next;
     });
@@ -315,6 +351,8 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
     const trimmed = {
       ...formData,
+      username: formData.username.trim(),
+      password: formData.password.trim(),
       email: formData.email.trim(),
       firstName: formData.firstName.trim(),
       lastName: formData.lastName.trim(),
@@ -324,6 +362,7 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
       state: formData.state.trim(),
       country: formData.country.trim(),
       zipCode: formData.zipCode.trim(),
+      degree: formData.degree.trim(),
     };
 
     const validationErrors = validate(trimmed);
@@ -331,22 +370,35 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
     if (Object.keys(validationErrors).length) {
       scrollToFirstError(validationErrors);
+      setIsSubmitting(false);
       return;
     }
 
     // build payload
-    const { password, username, courseId, ...validFormData } = trimmed;
-    const programmeName =
-      programmeOptions.find((p) => p.programmeId === parseInt(trimmed.programmeId || "0"))?.programmeName || "";
+    const selectedProgramme = programmeOptions.find((p) => p.programmeId === parseInt(trimmed.programmeId || "0"));
+    const programmeName = selectedProgramme?.programmeName || "";
 
     const payload = {
-      ...validFormData,
-      semester: parseInt(trimmed.semester || "1"),
+      Username: trimmed.username,
+      Email: trimmed.email,
+      FirstName: trimmed.firstName,
+      LastName: trimmed.lastName,
+      PhoneNumber: trimmed.phoneNumber,
+      DateOfBirth: trimmed.dateOfBirth ? new Date(trimmed.dateOfBirth).toISOString() : null,
+      Gender: trimmed.gender,
+      Address: trimmed.address,
+      City: trimmed.city,
+      State: trimmed.state,
+      Country: trimmed.country,
+      ZipCode: trimmed.zipCode,
+      ProfilePhotoUrl: trimmed.profilePhotoUrl,
+      Batch: trimmed.batch,
+      Programme: programmeName, // Backend expects "Programme" field with name
       programmeId: parseInt(trimmed.programmeId || "0"),
-      groupId: parseInt(trimmed.groupId || "0"),
-      programme: programmeName,
-      dateOfBirth: trimmed.dateOfBirth ? new Date(trimmed.dateOfBirth).toISOString() : null,
+      semester: parseInt(trimmed.semester || "1"),
+      degree: trimmed.degree,
       RefCode: userId,
+      ...(editMode ? {} : { Password: trimmed.password }), // Password automatically synced with username
     };
     console.log("RefCode for AddStudent:", userId);
     console.log("Payload for AddStudent:", payload);
@@ -391,7 +443,7 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
         className={`form-control ${showError(name) ? "is-invalid" : ""}`}
         value={formData[name] ?? ""}
         onChange={handleInputChange}
-        disabled={readOnly || (name === "password" && editMode)}
+        disabled={readOnly || (name === "password" && editMode) || (name === "password" && !editMode)}
         placeholder={placeholder}
       />
       {showError(name) && <div className="invalid-feedback">{errors[name]}</div>}
@@ -434,7 +486,23 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
     <>
       <form onSubmit={handleSubmit} noValidate>
         <div className="student-form-grid">
-          {/* Username & Password hidden in UI as requested */}
+          <style>{`
+            .student-form-grid {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+              gap: 15px;
+              margin-bottom: 20px;
+            }
+            .student-form-actions {
+              display: flex;
+              gap: 10px;
+              justify-content: flex-start;
+              flex-wrap: wrap;
+            }
+          `}</style>
+          {/* Username & Password shown in UI - Password automatically syncs with username */}
+          {renderInput("Username", "username", "text", { placeholder: "Enter username" })}
+          {!editMode && renderInput("Password", "password", "password", { placeholder: "Auto-synced with username" })}
           {renderInput("Email", "email", "email", { placeholder: "name@example.com" })}
           {renderInput("First Name", "firstName")}
           {renderInput("Last Name", "lastName")}
@@ -458,12 +526,12 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
             { placeholder: "-- Select Board --" }
           )}
           {renderSelect(
-            "Class",
-            "groupId",
-            filteredGroups,
-            (g) => g.groupId,
-            (g) => `Class ${g.groupName ?? ""}`,
-            { placeholder: "-- Select Class --" }
+            "Degree",
+            "degree",
+            degreeOptions,
+            (d) => d,
+            (d) => d,
+            { placeholder: "-- Select Degree --" }
           )}
         </div>
 
