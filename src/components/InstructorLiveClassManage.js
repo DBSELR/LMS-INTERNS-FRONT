@@ -101,7 +101,7 @@ function InstructorLiveClassManage() {
       );
       let key = cls.className; // fallback
       if (courseInfo) {
-        key = `Subject: ${courseInfo.paperCode} - ${courseInfo.paperName} (${courseInfo.semester} batch / ${
+        key = `Subject: ${courseInfo.paperCode} - ${courseInfo.paperName} ( Batch - ${
           courseInfo.batchName || "N/A"
         })`;
       }

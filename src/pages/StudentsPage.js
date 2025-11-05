@@ -182,8 +182,20 @@ function StudentsPage() {
   const handleUpdate = async (updatedStudent) => {
     try {
       const token = localStorage.getItem("jwt");
-      await fetch(
-        `${API_BASE_URL}/student/update/${updatedStudent.userId}`,
+      
+      // Use the userId from selectedStudent if not present in updatedStudent
+      const userId = updatedStudent.userId || selectedStudent?.userId;
+      
+      if (!userId) {
+        toast.error("Unable to identify student for update.");
+        return;
+      }
+      
+      console.log("✅ Updating student with ID:", userId);
+      console.log("✅ Update payload:", updatedStudent);
+      
+      const response = await fetch(
+        `${API_BASE_URL}/student/update/${userId}`,
         {
           method: "PUT",
           headers: {
@@ -193,10 +205,18 @@ function StudentsPage() {
           body: JSON.stringify(updatedStudent),
         }
       );
-      toast.success("Student updated!");
-      refreshStudents();
-      closeModal();
+      
+      if (response.ok) {
+        toast.success("Student updated!");
+        refreshStudents();
+        closeModal();
+      } else {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error("❌ Update failed:", errorData);
+        toast.error(`Update failed: ${errorData.message || 'Unknown error'}`);
+      }
     } catch (err) {
+      console.error("❌ Update error:", err);
       toast.error("Update failed.");
     }
   };
@@ -525,7 +545,7 @@ function StudentsPage() {
                                       style={{ cursor: "pointer" }}
                                     >
                                       <div>
-                                        <strong>Board:</strong>{" "}
+                                        <strong>Course:</strong>{" "}
                                         {programmeName}
                                       </div>
                                       <i
@@ -586,15 +606,11 @@ function StudentsPage() {
                                                           "N/A"}
                                                       </p>
                                                       <p className="text-muted small mb-1">
-                                                        <strong>Board:</strong>{" "}
+                                                        <strong>Course:</strong>{" "}
                                                         {student.programme ||
                                                           "N/A"}
                                                       </p>
-                                                      <p className="text-muted small mb-1">
-                                                        <strong>Class:</strong>{" "}
-                                                        {student.group ||
-                                                          "N/A"}
-                                                      </p>
+                                                      
                                                       {/* <p className="text-muted small mb-1">
                                                 <strong>Semester:</strong> {student.semester || "N/A"}
                                               </p> */}
@@ -675,52 +691,12 @@ function StudentsPage() {
                                                 [groupName, studentsList],
                                                 gIndex
                                               ) => {
-                                                const groupKey = `${bsIndex}-${pIndex}-${gIndex}`;
                                                 return (
                                                   <div
                                                     key={groupName}
                                                     className="mb-2 border p-2"
                                                   >
-                                                    <div
-                                                      className={`d-flex justify-content-between align-items-center text-white semester-toggle-btn ${
-                                                        openGroup[groupKey]
-                                                          ? "bg-dark"
-                                                          : "bg-secondary"
-                                                      }`}
-                                                      onClick={() =>
-                                                        setOpenGroup(
-                                                          (prev) => ({
-                                                            ...prev,
-                                                            [groupKey]:
-                                                              !prev[groupKey],
-                                                          })
-                                                        )
-                                                      }
-                                                      style={{
-                                                        cursor: "pointer",
-                                                      }}
-                                                    >
-                                                      <div>
-                                                        <strong>
-                                                          Class:
-                                                        </strong>{" "}
-                                                        {groupName}
-                                                      </div>
-                                                      <i
-                                                        className={`fa ml-2 ${
-                                                          openGroup[groupKey]
-                                                            ? "fa-chevron-up"
-                                                            : "fa-chevron-down"
-                                                        }`}
-                                                      ></i>
-                                                    </div>
-
-                                                    <Collapse
-                                                      in={
-                                                        !!openGroup[groupKey]
-                                                      }
-                                                    >
-                                                      <div className="mt-2 row">
+                                                    <div className="mt-2 row">
                                                         {Array.isArray(
                                                           studentsList
                                                         ) &&
@@ -777,18 +753,12 @@ function StudentsPage() {
                                                                     </p>
                                                                     <p className="text-muted small mb-1">
                                                                       <strong>
-                                                                        Board:
+                                                                        Course:
                                                                       </strong>{" "}
                                                                       {student.programme ||
                                                                         "N/A"}
                                                                     </p>
-                                                                    <p className="text-muted small mb-1">
-                                                                      <strong>
-                                                                        Class:
-                                                                      </strong>{" "}
-                                                                      {student.group ||
-                                                                        "N/A"}
-                                                                    </p>
+                                                                    
                                                                     {/* <p className="text-muted small mb-1">
                                                           <strong>Semester:</strong> {student.semester || "N/A"}
                                                         </p> */}
@@ -874,7 +844,6 @@ function StudentsPage() {
                                                           </p>
                                                         )}
                                                       </div>
-                                                    </Collapse>
                                                   </div>
                                                 );
                                               }

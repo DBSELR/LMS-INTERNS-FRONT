@@ -227,7 +227,7 @@ function MentorAssign() {
                         <tr>
                           <th>Select</th>
                           <th>Stream Details</th>
-                          <th>Semester</th>
+                          
                           <th>Count</th>
                         </tr>
                       </thead>
@@ -242,7 +242,7 @@ function MentorAssign() {
                               />
                             </td>
                             <td>{s.course}</td>
-                            <td>{s.ssem}</td>
+                           
                             <td>{s.count}</td>
                           </tr>
                         ))}
@@ -309,7 +309,7 @@ function MentorAssign() {
                     <thead>
                       <tr>
                         <th>Stream</th>
-                        <th>Semester</th>
+                       
                         <th>Student Count</th>
                         <th>Assigned SRO</th>
                         <th>Action</th>
@@ -319,7 +319,6 @@ function MentorAssign() {
                       {studentMentorData.map((item, index) => (
                         <tr key={index}>
                           <td>{item.course}</td>
-                          <td>{item.ssem}</td>
                           <td>{item.count}</td>
                           <td>{item.mentor}</td>
                           <td>

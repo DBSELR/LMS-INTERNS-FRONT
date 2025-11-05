@@ -128,17 +128,12 @@ function AdminDashboard() {
                   link: "/students",
                 },
                 {
-                  label: "Board",
+                  label: "Courses",
                   value: summary.programmes,
                   icon: "fa-list-alt",
                   link: "/AdminDashboardTabs",
                 },
-                {
-                  label: "Discussions",
-                  value: summary.programmes,
-                  icon: "fa-list",
-                  link: "/adddiscussions",
-                },
+                
                 {
                   label: "Library Books",
                   value: summary.books,
