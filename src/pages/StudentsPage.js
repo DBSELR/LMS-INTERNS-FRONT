@@ -403,7 +403,7 @@ function StudentsPage() {
       <div className="section-wrapper">
         <div className="page admin-dashboard pt-0">
           <div className="section-body mt-3 pt-0">
-            {role === "Admin" && (
+            {role === "Admin"  && (
               <div className="container-fluid">
                 <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
                   <h2 className="page-title text-primary pt-0 dashboard-hero-title">
@@ -469,7 +469,7 @@ function StudentsPage() {
                     <div className="d-flex align-items-center mt-2 mt-md-0">
                       
 
-                      {["Admin", "Faculty"].includes(role) && (
+                      {["Admin", "Faculty", "College"].includes(role) && (
                         <button
                           className="btn btn-primary ml-2"
                           onClick={handleAddNew}
@@ -653,7 +653,7 @@ function StudentsPage() {
                                                           <i className="fa fa-eye mr-1"></i>{" "}
                                                           View
                                                         </button>
-                                                        {role === "Admin" && (
+                                                        {role === "Admin" || role === "College" && (
                                                           <>
                                                             <button
                                                               className="btn btn-sm btn-outline-info mr-2 rounded-pill"
@@ -805,7 +805,7 @@ function StudentsPage() {
                                                                         View
                                                                       </button>
                                                                       {role ===
-                                                                        "Admin" && (
+                                                                        "Admin" || role === "College" && (
                                                                         <>
                                                                           <button
                                                                             className="btn btn-sm btn-outline-info mr-2 rounded-pill"

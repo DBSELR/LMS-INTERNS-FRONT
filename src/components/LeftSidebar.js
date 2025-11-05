@@ -243,7 +243,7 @@ function LeftSidebar({ role: propRole }) {
     <div id="left-sidebar" ref={sidebarRef} className="sidebar" style={{ paddingTop: "10px" }}>
       <div className="sidebar-header" style={{ padding: 0, paddingLeft: "20px" }}>
         <h5 className="brand-name d-flex align-items-center">
-          <img src="/assets/dbase-m.png" alt="logo" height="50" />
+          <img src="/assets/EdVedha-Logo.png" alt="logo" height="50" />
         </h5>
       </div>
 

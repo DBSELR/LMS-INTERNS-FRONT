@@ -119,6 +119,9 @@ function Login() {
         case "Accountant":
           navigate("/accountant-dashboard");
           break;
+          case "College":
+          navigate("/instructor-dashboard");
+          break;
         case "Director":
           navigate("/director-dashboard");
           break;
@@ -145,7 +148,7 @@ function Login() {
       >
         <div className="card-body p-4">
           <div className="text-center mb-4">
-            <img src="/assets/dbase-m.png" alt="dbase" />
+            <img src="/assets/EdVedha-Logo.png" alt="dbase" />
           </div>
 
           <form onSubmit={handleSubmit} noValidate>

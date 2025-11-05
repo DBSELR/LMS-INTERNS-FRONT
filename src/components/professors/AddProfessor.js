@@ -42,7 +42,7 @@ const AddProfessor = ({
     officeLocation: "",
     officeHours: "",
     employeeStatus: "Active",
-    role: "Instructor",
+    role: "Faculty",
     socialMediaLinks: [], // comma-separated in UI
     educationalBackground: "",
     researchInterests: "",
@@ -632,7 +632,7 @@ const AddProfessor = ({
             "role",
             formData.role,
             (e) => handleInputChange(e),
-            [{ v: "Instructor", l: "Instructor" }],
+            [{ v: "Faculty", l: "Faculty" }],
             (o) => o.v,
             (o) => o.l
           )}

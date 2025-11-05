@@ -13,6 +13,13 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
     conflicts: [],
     raw: null,
   });
+  
+  // Dropdown data state
+  const [universities, setUniversities] = useState([]);
+  const [colleges, setColleges] = useState([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
+  const [loadingColleges, setLoadingColleges] = useState(false);
+  
   const [formData, setFormData] = useState({
     // kept in state but NOT shown in UI
     username: "",
@@ -26,10 +33,44 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
     dateOfBirth: "",
     gender: "Male",
     address: "",
+    university: "",
+    college: "",
   });
 
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
+
+  // Fetch universities when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchUniversities();
+    }
+  }, [isOpen]);
+
+  // Fetch colleges when university changes
+  useEffect(() => {
+    if (formData.university && formData.university !== "") {
+      fetchColleges(formData.university);
+    } else {
+      setColleges([]);
+      setFormData(prev => ({ ...prev, college: "" }));
+    }
+  }, [formData.university]);
+
+  // Auto-populate firstName and lastName when role is "College" and college is selected
+  useEffect(() => {
+    if (formData.role === "College" && formData.college) {
+      // Find the selected college object to get both colcode and college name
+      const selectedCollege = colleges.find(c => c.college === formData.college);
+      if (selectedCollege) {
+        setFormData(prev => ({
+          ...prev,
+          firstName: `${formData.university}-${selectedCollege.colcode}`,
+          lastName: selectedCollege.college
+        }));
+      }
+    }
+  }, [formData.role, formData.college, formData.university, colleges]);
 
   useEffect(() => {
     if (user) {
@@ -45,6 +86,8 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
         dateOfBirth: (user.dateOfBirth || "").split("T")[0],
         gender: user.gender || "Male",
         address: user.address || "",
+        university: user.university || "",
+        college: user.college || "",
       });
     } else {
       setFormData({
@@ -58,11 +101,78 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
         dateOfBirth: "",
         gender: "Male",
         address: "",
+        university: "",
+        college: "",
       });
     }
     setErrors({});
     setSubmitted(false);
   }, [user, isOpen]);
+
+  /* ---------------- API Functions ---------------- */
+  const fetchUniversities = async () => {
+    setLoadingUniversities(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const url = `${API_BASE_URL}/User/GetUniversity`;
+      console.log("🔍 Fetching universities from:", url);
+      
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log("📡 Universities API response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Universities data received:", data);
+        setUniversities(data || []);
+      } else {
+        const errorText = await response.text();
+        console.error("❌ Failed to fetch universities:", response.status, errorText);
+        toast.error(`Failed to load universities: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching universities:", error);
+      toast.error("Error loading universities");
+    } finally {
+      setLoadingUniversities(false);
+    }
+  };
+
+  const fetchColleges = async (universityName) => {
+    setLoadingColleges(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const url = `${API_BASE_URL}/User/GetCollegebyUniversity?uname=${encodeURIComponent(universityName)}`;
+      console.log("🔍 Fetching colleges from:", url);
+      
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      
+      console.log("📡 Colleges API response status:", response.status);
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Colleges data received:", data);
+        setColleges(data || []);
+      } else {
+        const errorText = await response.text();
+        console.error("❌ Failed to fetch colleges:", response.status, errorText);
+        toast.error(`Failed to load colleges: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching colleges:", error);
+      toast.error("Error loading colleges");
+    } finally {
+      setLoadingColleges(false);
+    }
+  };
 
   /* ---------------- Validation ---------------- */
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
@@ -72,16 +182,27 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
     const err = {};
 
     if (!fd.role?.trim()) err.role = "Role is required";
+    
+    // University and College are required only if role is "College"
+    if (fd.role === "College") {
+      if (!fd.university?.trim()) err.university = "University is required";
+      if (!fd.college?.trim()) err.college = "College is required";
+    }
 
     if (!fd.email?.trim()) err.email = "Email is required";
-    else if (!emailRegex.test(fd.email.trim())) err.email = "Enter a valid email address";
+    else if (!emailRegex.test(fd.email.trim()))
+      err.email = "Enter a valid email address";
 
-    if (!fd.firstName?.trim()) err.firstName = "First Name is required";
-    if (!fd.lastName?.trim()) err.lastName = "Last Name is required";
+    // First Name and Last Name are required only if role is NOT "College"
+    if (fd.role !== "College") {
+      if (!fd.firstName?.trim()) err.firstName = "First Name is required";
+      if (!fd.lastName?.trim()) err.lastName = "Last Name is required";
+    }
 
     const ph = phoneDigits(fd.phoneNumber);
     if (!ph) err.phoneNumber = "Phone Number is required";
-    else if (ph.length !== 10) err.phoneNumber = "Enter a valid 10-digit phone number";
+    else if (ph.length !== 10)
+      err.phoneNumber = "Enter a valid 10-digit phone number";
 
     if (!fd.dateOfBirth) err.dateOfBirth = "Date of Birth is required";
     else {
@@ -109,6 +230,38 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
         if (submitted) setErrors(validate(next));
         return next;
       });
+      return;
+    }
+
+    if (name === "role") {
+      // Reset university, college, firstName, lastName when role changes
+      setFormData((prev) => {
+        const next = { 
+          ...prev, 
+          [name]: value,
+          university: "",
+          college: "",
+          firstName: value === "College" ? "" : prev.firstName,
+          lastName: value === "College" ? "" : prev.lastName
+        };
+        if (submitted) setErrors(validate(next));
+        return next;
+      });
+      return;
+    }
+
+    if (name === "university") {
+      // Reset college when university changes
+      setFormData((prev) => {
+        const next = { ...prev, [name]: value, college: "", firstName: "", lastName: "" };
+        if (submitted) setErrors(validate(next));
+        return next;
+      });
+      return;
+    }
+
+    // Don't allow manual changes to firstName/lastName when role is "College"
+    if ((name === "firstName" || name === "lastName") && formData.role === "College") {
       return;
     }
 
@@ -151,11 +304,17 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
     const isCreate = !user;
     const base = String(API_BASE_URL || "").replace(/\/+$/, "");
     const endpoint = isCreate
-      ? (/\/api$/i.test(base) ? `${base}/User` : `${base}/api/User`)
-      : (/\/api$/i.test(base) ? `${base}/User/${user.userId}` : `${base}/api/User/${user.userId}`);
+      ? /\/api$/i.test(base)
+        ? `${base}/User`
+        : `${base}/api/User`
+      : /\/api$/i.test(base)
+      ? `${base}/User/${user.userId}`
+      : `${base}/api/User/${user.userId}`;
     const method = isCreate ? "POST" : "PUT";
     const payloadBase = {
       role: trimmed.role,
+      university: trimmed.university,
+      college: trimmed.college,
       email: trimmed.email,
       firstName: trimmed.firstName,
       lastName: trimmed.lastName,
@@ -189,7 +348,8 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
         if (response.status === 409) {
           setErrInfo({
             title: "Duplicate entries detected",
-            message: "Duplicate entries detected. Please provide a unique email address and phone number.",
+            message:
+              "Duplicate entries detected. Please provide a unique email address and phone number.",
             conflicts: [],
             raw: text,
           });
@@ -295,12 +455,92 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
                     <option>Admin</option>
                     <option>SRO</option>
                     <option>Business_Executive</option>
+                    <option>College</option>
                   </Form.Control>
                   <Form.Control.Feedback type="invalid">
                     {errors.role}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+
+              {/* University and College fields - only show when role is "College" */}
+              {formData.role === "College" && (
+                <>
+                  <Col md={6}>
+                    <Form.Group controlId="university" className="mb-3">
+                      <Form.Label>
+                        UNIVERSITY <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="university"
+                        value={formData.university}
+                        onChange={handleChange}
+                        isInvalid={showError("university")}
+                        disabled={loadingUniversities}
+                      >
+                        <option value="">
+                          {loadingUniversities ? "Loading universities..." : "Select University"}
+                        </option>
+                        {universities.map((university, index) => {
+                          // Handle different possible data structures - your API returns 'uname'
+                          const value = university?.uname || university?.universityName || university?.name || university?.UniversityName || university;
+                          const display = university?.uname || university?.universityName || university?.name || university?.UniversityName || university;
+                          
+                          return (
+                            <option key={index} value={value}>
+                              {display}
+                            </option>
+                          );
+                        })}
+                      </Form.Control>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.university}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+
+                  <Col md={6}>
+                    <Form.Group controlId="college" className="mb-3">
+                      <Form.Label>
+                        College <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="college"
+                        value={formData.college || ""}
+                        onChange={handleChange}
+                        isInvalid={showError("college")}
+                        disabled={loadingColleges || !formData.university}
+                      >
+                        <option value="">
+                          {!formData.university 
+                            ? "Select University first" 
+                            : loadingColleges 
+                            ? "Loading colleges..." 
+                            : "Select College"
+                          }
+                        </option>
+                        {colleges.map((college, index) => {
+                          // Handle different possible data structures - your API returns 'college' and 'colcode'
+                          const value = college?.college || college?.cname || college?.collegeName || college?.name || college?.CollegeName || college;
+                          const display = college?.college || college?.cname || college?.collegeName || college?.name || college?.CollegeName || college;
+                          
+                          return (
+                            <option key={index} value={value}>
+                              {display}
+                            </option>
+                          );
+                        })}
+                      </Form.Control>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.college}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </>
+              )}
+
               <Col md={6}>
                 <Form.Group controlId="email" className="mb-3">
                   <Form.Label>
@@ -322,13 +562,15 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
               <Col md={6}>
                 <Form.Group controlId="firstName" className="mb-3">
                   <Form.Label>
-                    First Name <span className="text-danger">*</span>
+                    First Name {formData.role !== "College" && <span className="text-danger">*</span>}
                   </Form.Label>
                   <Form.Control
                     name="firstName"
                     value={formData.firstName}
                     onChange={handleChange}
                     isInvalid={showError("firstName")}
+                    disabled={formData.role === "College"}
+                    placeholder={formData.role === "College" ? "Auto-populated from college selection" : "Enter first name"}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.firstName}
@@ -338,13 +580,15 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
               <Col md={6}>
                 <Form.Group controlId="lastName" className="mb-3">
                   <Form.Label>
-                    Last Name <span className="text-danger">*</span>
+                    Last Name {formData.role !== "College" && <span className="text-danger">*</span>}
                   </Form.Label>
                   <Form.Control
                     name="lastName"
                     value={formData.lastName}
                     onChange={handleChange}
                     isInvalid={showError("lastName")}
+                    disabled={formData.role === "College"}
+                    placeholder={formData.role === "College" ? "Auto-populated from college selection" : "Enter last name"}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.lastName}
