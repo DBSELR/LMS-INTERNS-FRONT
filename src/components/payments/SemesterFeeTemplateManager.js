@@ -33,7 +33,7 @@ function SemesterFeeTemplateManager() {
   const fetchInitialData = async () => {
     try {
       const token = localStorage.getItem("jwt");
-      const res = await fetch(`${API_BASE_URL}/Programme/All`, {
+      const res = await fetch(`${API_BASE_URL}/Programme/ProgrammeBatch`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -264,7 +264,7 @@ const isFeeHeadSelected = !!selectedFeeHead;
   </div>
 
   <div className="col-12 col-md-2 mb-2">
-    <Form.Label>Programme</Form.Label>
+    <Form.Label>Course</Form.Label>
     <Form.Control
       as="select"
       value={selectedCourse}
@@ -274,7 +274,7 @@ const isFeeHeadSelected = !!selectedFeeHead;
         setSubjectFees([]);
       }}
     >
-      <option value="">Select Programme</option>
+      <option value="">Select Course</option>
       {courseList
         .filter((c) => c.batchName === selectedBatch)
         .map((c) => (
