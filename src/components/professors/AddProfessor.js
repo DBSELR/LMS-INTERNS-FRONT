@@ -546,14 +546,14 @@ const AddProfessor = ({
           {renderInput("Email", "email", "email", {
             placeholder: "name@example.com",
           })}
-          {renderInput("Phone Number", "phoneNumber", "tel", {
+          {renderInput("Mobile Number", "mobileNumber", "tel", {
             placeholder: "10-digit mobile",
           })}
 
           {/* Board / Programme */}
           <div className="form-group col-md-6">
             <label htmlFor="programme" className="form-label">
-              Board <span className="text-danger">*</span>
+              Course <span className="text-danger">*</span>
             </label>
             <select
               id="programme"
