@@ -403,7 +403,7 @@ function StudentsPage() {
       <div className="section-wrapper">
         <div className="page admin-dashboard pt-0">
           <div className="section-body mt-3 pt-0">
-            {role === "Admin"  && (
+            {(role === "Admin" || role === "College") && (
               <div className="container-fluid">
                 <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
                   <h2 className="page-title text-primary pt-0 dashboard-hero-title">
@@ -804,8 +804,7 @@ function StudentsPage() {
                                                                         <i className="fa fa-eye mr-1"></i>{" "}
                                                                         View
                                                                       </button>
-                                                                      {role ===
-                                                                        "Admin" || role === "College" && (
+                                                                      {role === "Admin"  && (
                                                                         <>
                                                                           <button
                                                                             className="btn btn-sm btn-outline-info mr-2 rounded-pill"

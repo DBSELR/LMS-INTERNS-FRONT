@@ -204,14 +204,18 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
     else if (ph.length !== 10)
       err.phoneNumber = "Enter a valid 10-digit phone number";
 
-    if (!fd.dateOfBirth) err.dateOfBirth = "Date of Birth is required";
-    else {
-      const today = new Date();
-      const dob = new Date(fd.dateOfBirth);
-      if (dob > today) err.dateOfBirth = "DOB cannot be in the future";
+    // Date of Birth and Gender are required only if role is NOT "College"
+    if (fd.role !== "College") {
+      if (!fd.dateOfBirth) err.dateOfBirth = "Date of Birth is required";
+      else {
+        const today = new Date();
+        const dob = new Date(fd.dateOfBirth);
+        if (dob > today) err.dateOfBirth = "DOB cannot be in the future";
+      }
+
+      if (!fd.gender?.trim()) err.gender = "Gender is required";
     }
 
-    if (!fd.gender?.trim()) err.gender = "Gender is required";
     if (!fd.address?.trim()) err.address = "Address is required";
 
     return err;
@@ -241,8 +245,9 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
           [name]: value,
           university: "",
           college: "",
-          firstName: value === "College" ? "" : prev.firstName,
-          lastName: value === "College" ? "" : prev.lastName
+          // Clear firstName and lastName when switching roles
+          firstName: "",
+          lastName: ""
         };
         if (submitted) setErrors(validate(next));
         return next;
@@ -319,8 +324,8 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
       firstName: trimmed.firstName,
       lastName: trimmed.lastName,
       phoneNumber: trimmed.phoneNumber,
-      dateOfBirth: trimmed.dateOfBirth,
-      gender: trimmed.gender,
+      dateOfBirth: trimmed.role === "College" ? "2000-01-01" : trimmed.dateOfBirth,
+      gender: trimmed.role === "College" ? "Other" : trimmed.gender,
       address: trimmed.address,
     };
     const payload = isCreate
@@ -612,44 +617,49 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-              <Col md={6}>
-                <Form.Group controlId="dateOfBirth" className="mb-3">
-                  <Form.Label>
-                    Date of Birth <span className="text-danger">*</span>
-                  </Form.Label>
-                  <Form.Control
-                    type="date"
-                    name="dateOfBirth"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    isInvalid={showError("dateOfBirth")}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.dateOfBirth}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
-              <Col md={6}>
-                <Form.Group controlId="gender" className="mb-3">
-                  <Form.Label>
-                    Gender <span className="text-danger">*</span>
-                  </Form.Label>
-                  <Form.Control
-                    as="select"
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    isInvalid={showError("gender")}
-                  >
-                    <option>Male</option>
-                    <option>Female</option>
-                    <option>Other</option>
-                  </Form.Control>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.gender}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Col>
+              {/* Date of Birth and Gender - only show when role is NOT "College" */}
+              {formData.role !== "College" && (
+                <>
+                  <Col md={6}>
+                    <Form.Group controlId="dateOfBirth" className="mb-3">
+                      <Form.Label>
+                        Date of Birth <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        type="date"
+                        name="dateOfBirth"
+                        value={formData.dateOfBirth}
+                        onChange={handleChange}
+                        isInvalid={showError("dateOfBirth")}
+                      />
+                      <Form.Control.Feedback type="invalid">
+                        {errors.dateOfBirth}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                  <Col md={6}>
+                    <Form.Group controlId="gender" className="mb-3">
+                      <Form.Label>
+                        Gender <span className="text-danger">*</span>
+                      </Form.Label>
+                      <Form.Control
+                        as="select"
+                        name="gender"
+                        value={formData.gender}
+                        onChange={handleChange}
+                        isInvalid={showError("gender")}
+                      >
+                        <option>Male</option>
+                        <option>Female</option>
+                        <option>Other</option>
+                      </Form.Control>
+                      <Form.Control.Feedback type="invalid">
+                        {errors.gender}
+                      </Form.Control.Feedback>
+                    </Form.Group>
+                  </Col>
+                </>
+              )}
               <Col md={12}>
                 <Form.Group controlId="address" className="mb-3">
                   <Form.Label>
