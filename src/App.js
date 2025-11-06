@@ -519,6 +519,8 @@ function App() {
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
  <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+       
+
       </Routes>
 
       {/* ✅ Global footer */}
