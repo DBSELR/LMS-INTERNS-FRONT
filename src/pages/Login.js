@@ -120,11 +120,12 @@ function Login() {
           navigate("/accountant-dashboard");
           break;
           case "College":
-          navigate("/instructor-dashboard");
+          navigate("/college-dashboard");
           break;
         case "Director":
           navigate("/director-dashboard");
           break;
+          
         default:
           alert("Unknown role in token. Please contact admin.");
           break;

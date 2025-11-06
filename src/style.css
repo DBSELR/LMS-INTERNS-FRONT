@@ -3141,3 +3141,11 @@ background-size: cover; */
     margin-top: 15px;
   }
 }
+
+  .admin-users-others td , .admin-users-others th {
+ vertical-align: 0;
+}
+.others-user-actions{
+  display: flex;
+ 
+}

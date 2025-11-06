@@ -8,7 +8,7 @@ function Footer() {
         <div className="row justify-content-end">
           <div className="col-auto text-center">
             Developed by
-            <span className="d-none d-md-inline"> - D Base Solutions Private Limited (DBS)</span>
+            <span className="d-none d-md-inline"> - D Base Solutions Private Limited (DBS) &copy; 2025</span>
           </div>
         </div>
       </div>

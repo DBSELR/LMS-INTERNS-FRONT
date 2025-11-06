@@ -193,7 +193,7 @@ function AdminUsers() {
               <div className="card-body p-0">
                 {currentUsers.length > 0 ? (
                   <div className="table-responsive">
-                    <table className="table table-hover table-striped align-middle mb-0 welcome-card animate-welcome">
+                    <table className="table table-hover table-striped align-middle mb-0 welcome-card dashboard-hero admin-users-others">
                       <thead className="thead-light">
                         <tr>
                           {/* <th>Profile</th> */}
@@ -247,7 +247,7 @@ function AdminUsers() {
                                 {user.status}
                               </span>
                             </td>
-                            <td className="text-center">
+                            <td className=" others-user-actions">
                               <button
                                 className="btn btn-sm btn-info mr-1"
                                 onClick={() => handleEdit(user)}

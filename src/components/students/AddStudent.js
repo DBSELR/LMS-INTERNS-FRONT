@@ -137,6 +137,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   const zipRegexIndia = /^[1-9][0-9]{5}$/;
 
   const validate = (fd) => {
+    // Adjusted validation to match the visible form fields.
     const err = {};
 
     if (!fd.username?.trim()) err.username = "Username is required";
@@ -146,7 +147,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     else if (!emailRegex.test(fd.email.trim())) err.email = "Enter a valid email";
 
     if (!fd.firstName?.trim()) err.firstName = "First Name is required";
-    if (!fd.lastName?.trim()) err.lastName = "Last Name is required";
+    // lastName is not shown in the form currently, so make it optional
 
     const ph = phoneDigits(fd.phoneNumber);
     if (!ph) err.phoneNumber = "Phone Number is required";
@@ -162,13 +163,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     }
 
     if (!fd.gender?.trim()) err.gender = "Gender is required";
-    if (!fd.address?.trim()) err.address = "Address is required";
-    if (!fd.city?.trim()) err.city = "City is required";
-    if (!fd.state?.trim()) err.state = "State is required";
-    if (!fd.country?.trim()) err.country = "Country is required";
-
-    if (!fd.zipCode?.trim()) err.zipCode = "PIN code is required";
-    else if (!zipRegexIndia.test(fd.zipCode.trim())) err.zipCode = "Enter a valid 6-digit PIN";
+    // Address, city, state, country and zip are not part of the visible form, so they are optional here.
 
     if (!fd.batch) err.batch = "Batch is required";
     if (!fd.programmeId) err.programmeId = "Board is required";
@@ -382,23 +377,25 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
       Username: trimmed.username,
       Email: trimmed.email,
       FirstName: trimmed.firstName,
-      LastName: trimmed.lastName,
+      // Use provided lastName if available, otherwise fall back to firstName to avoid empty last name
+      LastName: trimmed.lastName  || "",
       PhoneNumber: trimmed.phoneNumber,
       DateOfBirth: trimmed.dateOfBirth ? new Date(trimmed.dateOfBirth).toISOString() : null,
       Gender: trimmed.gender,
-      Address: trimmed.address,
-      City: trimmed.city,
-      State: trimmed.state,
-      Country: trimmed.country,
-      ZipCode: trimmed.zipCode,
-      ProfilePhotoUrl: trimmed.profilePhotoUrl,
+      // Use provided address fields if present, otherwise keep simple placeholders
+      Address: trimmed.address || "",
+      City: trimmed.city || "",
+      State: trimmed.state || "",
+      Country: trimmed.country || "",
+      ZipCode: trimmed.zipCode || "",
+      ProfilePhotoUrl: trimmed.profilePhotoUrl || "",
       Batch: trimmed.batch,
       Programme: programmeName, // Backend expects "Programme" field with name
       programmeId: parseInt(trimmed.programmeId || "0"),
       semester: parseInt(trimmed.semester || "1"),
       degree: trimmed.degree,
       RefCode: userId,
-      ...(editMode ? {} : { Password: trimmed.password }), // Password automatically synced with username
+      ...(editMode ? {} : { Password: trimmed.password || "" }), // Password automatically synced with username
     };
     console.log("RefCode for AddStudent:", userId);
     console.log("Payload for AddStudent:", payload);
@@ -443,7 +440,7 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
         className={`form-control ${showError(name) ? "is-invalid" : ""}`}
         value={formData[name] ?? ""}
         onChange={handleInputChange}
-        disabled={readOnly || (name === "password" && editMode) || (name === "password" && !editMode)}
+        disabled={readOnly || (name === "password" && editMode)}
         placeholder={placeholder}
       />
       {showError(name) && <div className="invalid-feedback">{errors[name]}</div>}
@@ -501,32 +498,32 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
             }
           `}</style>
           {/* Username & Password shown in UI - Password automatically syncs with username */}
-          {renderInput("Username", "username", "text", { placeholder: "Enter username" })}
-          {!editMode && renderInput("Password", "password", "password", { placeholder: "Auto-synced with username" })}
+          {renderInput("Registration Number", "username", "text", { placeholder: "Enter registration number" })}
+          {/* {!editMode && renderInput("Password", "password", "password", { placeholder: "Auto-synced with username" })} */}
           {renderInput("Email", "email", "email", { placeholder: "name@example.com" })}
-          {renderInput("First Name", "firstName")}
-          {renderInput("Last Name", "lastName")}
-          {renderInput("Phone Number", "phoneNumber", "tel", { placeholder: "10-digit mobile number" })}
+          {renderInput("Name (As per SSC)", "firstName")}
+          {/* {renderInput("Last Name", "lastName")} */}
+          {renderInput("Mobile Number", "phoneNumber", "tel", { placeholder: "10-digit mobile number" })}
           {renderInput("Date of Birth", "dateOfBirth", "date")}
-          {renderInput("Gender", "gender", { placeholder: "Male / Female / Other" })}
-          {renderInput("Address", "address")}
-          {renderInput("City", "city")}
+          {renderInput("Gender", "gender", "text", { placeholder: "Male / Female / Other" })}
+          {/* {renderInput("Address", "address")} */}
+          {/* {renderInput("City", "city")}
           {renderInput("State", "state")}
           {renderInput("Country", "country")}
-          {renderInput("Zip / PIN Code", "zipCode", "text", { placeholder: "6-digit PIN" })}
-          {renderInput("Profile Photo URL (optional)", "profilePhotoUrl", "url", { required: false, placeholder: "https://..." })}
+          {renderInput("Zip / PIN Code", "zipCode", "text", { placeholder: "6-digit PIN" })} */}
+          {/* {renderInput("Profile Photo URL (optional)", "profilePhotoUrl", "url", { required: false, placeholder: "https://..." })} */}
 
           {renderSelect("Batch", "batch", batchList, (b) => b, (b) => b, { placeholder: "-- Select Batch --" })}
           {renderSelect(
-            "Board",
+            "Class",
             "programmeId",
             filteredProgrammes,
             (p) => p.programmeId,
             (p) => `${p.programmeName} (${p.programmeCode})`,
-            { placeholder: "-- Select Board --" }
+            { placeholder: "-- Select Class --" }
           )}
           {renderSelect(
-            "Degree",
+            "Pursuing Degree",
             "degree",
             degreeOptions,
             (d) => d,
