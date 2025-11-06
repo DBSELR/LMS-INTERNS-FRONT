@@ -494,14 +494,14 @@ const BatchTab = () => {
       <div className="p-4 mt-3 rounded bg-white border shadow-sm">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5 className="mb-0">📋 Batches</h5>
-          <Button
+          {/* <Button
             variant="outline-primary"
             size="sm"
             onClick={refreshList}
             disabled={loadingList}
           >
             {loadingList ? "Refreshing..." : "Refresh"}
-          </Button>
+          </Button> */}
         </div>
 
         {listError && (

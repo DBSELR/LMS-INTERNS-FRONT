@@ -7,7 +7,7 @@ function Footer() {
       <div className="container-fluid">
         <div className="row justify-content-end">
           <div className="col-auto text-center">
-            Powered by
+            Developed by
             <span className="d-none d-md-inline"> - D Base Solutions Private Limited (DBS)</span>
           </div>
         </div>
