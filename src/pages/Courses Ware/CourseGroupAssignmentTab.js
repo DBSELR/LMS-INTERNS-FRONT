@@ -354,7 +354,7 @@ const CourseGroupAssignmentTab = () => {
           Assign Subjects to Course + Class
         </h5>
         <Form>
-          <div className="row mb-3">
+          <div className="row mb-3 subject-assignment-buttons">
             <div className="col-md-4">
               <Form.Label>Batch</Form.Label>
               <Form.Control

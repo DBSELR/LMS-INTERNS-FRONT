@@ -196,7 +196,7 @@ function AdminUsers() {
                     <table className="table table-hover table-striped align-middle mb-0 welcome-card animate-welcome">
                       <thead className="thead-light">
                         <tr>
-                          <th>Profile</th>
+                          {/* <th>Profile</th> */}
                           <th onClick={() => handleSort("username")} style={{ cursor: "pointer" }}>
                             Username {sortField === "username" && (sortOrder === "asc" ? "▲" : "▼")}
                           </th>
@@ -213,7 +213,7 @@ function AdminUsers() {
                         
                         {currentUsers.map((user) => (
                           <tr key={user.userId}>
-                            <td>
+                            {/* <td>
                               <div
                                 className="avatar d-inline-block bg-primary text-white rounded-circle"
                                 style={{
@@ -226,7 +226,7 @@ function AdminUsers() {
                               >
                                 {user.username?.charAt(0)?.toUpperCase()}
                               </div>
-                            </td>
+                            </td> */}
                             <td>{user.username} - {user.firstName} {user.lastName}</td>
                             <td>{user.email || "-"}</td>
                             <td>

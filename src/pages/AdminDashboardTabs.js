@@ -37,10 +37,10 @@ function AdminDashboardTabs() {
           <div className="container-fluid ">
             <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
               <h2 className="page-title text-primary pt-0 dashboard-hero-title">
-                <i class="fa-solid fa-book"></i> Subject Master
+                <i class="fa-solid fa-book"></i> Course Master
               </h2>
               <p className="text-muted mb-0 dashboard-hero-sub">
-                Manage Boards, Classes and Subjects with streamlined workflow.
+                Manage Boards, Classes and Courses with streamlined workflow.
               </p>
             </div>
           </div>
@@ -52,7 +52,7 @@ function AdminDashboardTabs() {
               <div className="card welcome-card animate-welcome">
                 <div className="card-header bg-primary text-white d-flex align-items-center ">
                   <FaChalkboardTeacher className="mr-2" />
-                  <h6 className="mb-0">LMS Subject Master</h6>
+                  <h6 className="mb-0">LMS Course Master</h6>
                 </div>
 
                 <div className="container-fluid no-bg-shadow" style={{background:'transparent !important' , boxShadow:"none !important", margin:'auto', alignItems:'center',textAlign:'center', justifyContent:'center'}}>

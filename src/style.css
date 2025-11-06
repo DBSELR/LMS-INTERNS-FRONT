@@ -3121,3 +3121,23 @@ background-size: cover; */
 
 
 /* Taskboard Styles end */
+
+.course-tab-btns{
+  margin-left: 22rem;
+}
+.subject-assignment-buttons{
+  justify-content: center;
+}
+@media (max-width: 992px) {
+  .course-tab-btns{
+    margin-left: 0rem;
+    gap: 5px;
+    
+  }
+  
+}
+@media(max-width:480px){
+ .cancel{
+    margin-top: 15px;
+  }
+}
