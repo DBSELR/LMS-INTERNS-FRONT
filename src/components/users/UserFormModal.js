@@ -65,7 +65,7 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
       if (selectedCollege) {
         setFormData(prev => ({
           ...prev,
-          firstName: `${formData.university}-${selectedCollege.colcode}`,
+          firstName: `${formData.university}${selectedCollege.colcode}`,
           lastName: selectedCollege.college
         }));
       }

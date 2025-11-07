@@ -78,19 +78,36 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   const firstErrorRef = useRef(null);
 
   /* ========= Load options ========= */
-  useEffect(() => {
-    const token = localStorage.getItem("jwt");
+  // useEffect(() => {
+  //   const token = localStorage.getItem("jwt");
 
-    fetch(`${API_BASE_URL}/Programme/ProgrammeBatch`, {
-      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  //   fetch(`${API_BASE_URL}/Programme/ProgrammeBatch`, {
+  //     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  //   })
+  //     .then((r) => r.json())
+  //     .then((data) => {
+  //       setProgrammeOptions(data || []);
+  //       setBatchList([...new Set((data || []).map((p) => p.batchName))]);
+  //     })
+  //     .catch((e) => console.error("Programme fetch error:", e));
+  // }, []);
+
+  /* ========= Load options ========= */
+useEffect(() => {
+  const token = localStorage.getItem("jwt");
+  if (!userId) return; // ensure we have decoded UserId first
+
+  fetch(`${API_BASE_URL}/Programme/GetBatchByUsername?UserId=${userId}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  })
+    .then((r) => r.json())
+    .then((data) => {
+      setProgrammeOptions(data || []);
+      setBatchList([...new Set((data || []).map((p) => p.batchName))]);
     })
-      .then((r) => r.json())
-      .then((data) => {
-        setProgrammeOptions(data || []);
-        setBatchList([...new Set((data || []).map((p) => p.batchName))]);
-      })
-      .catch((e) => console.error("Programme fetch error:", e));
-  }, []);
+    .catch((e) => console.error("GetBatchByUsername fetch error:", e));
+}, [userId]);
+
 
   /* ========= Populate for edit ========= */
   useEffect(() => {
