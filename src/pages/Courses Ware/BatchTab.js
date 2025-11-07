@@ -128,6 +128,8 @@ function normalizeBatchDto(dto) {
     get(["groupName", "GroupName", "ClassName", "className"]) ?? "";
   const fee =
     get(["fee", "Fee", "totalFee", "TotalFee"]) ?? "";
+  const university =
+    get(["university", "University", "uname", "Uname"]) ?? "";
 
   return {
     bid: Number(bid) || 0,
@@ -139,6 +141,7 @@ function normalizeBatchDto(dto) {
     programmeName: String(programmeName || ""),
     groupName: String(groupName || ""),
     fee: String(fee || ""),
+    university: String(university || ""),
   };
 }
 
@@ -198,22 +201,60 @@ async function deleteBatchById(bid, token) {
   return out.json ?? out.text;
 }
 
+/* ===================== NEW: Universities API helper ===================== */
+async function getUniversities(token) {
+  const base = String(API_BASE_URL || "").replace(/\/+$/, "");
+  const url = `${base}/User/GetUniversity`;
+  const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  logRequest("GetUniversity", { url, method: "GET", headers });
+  const res = await fetch(url, { headers });
+  const { text, json } = await logResponse("GetUniversity", res);
+  if (!res.ok) throw new Error(text || (json && (json.title || json.message)) || `HTTP ${res.status}`);
+  const arr = json ?? (text ? JSON.parse(text) : []);
+  return Array.isArray(arr) ? arr : [];
+}
+
+/* ===================== Helpers for Batch split/join ===================== */
+// Join WITHOUT any separator (no hyphen, no space)
+function joinBatchName(university, suffix) {
+  const u = String(university || "").trim();
+  const s = String(suffix || "").trim();
+  return `${u}${s}`; // <-- just concat
+}
+
+// Split by removing the leading university from the saved batch name
+function splitBatchName(batchName, university) {
+  const u = String(university || "").trim();
+  const b = String(batchName || "");
+  if (!u) return { prefix: "", suffix: b };
+  if (b.startsWith(u)) {
+    // take the rest as the suffix (keep as-is; no trimming to preserve digits/format)
+    return { prefix: u, suffix: b.slice(u.length) };
+  }
+  // fallback: if saved name doesn't start with given university, don't force split
+  return { prefix: u, suffix: b };
+}
+
+
 /* ===================== Component ===================== */
 const BatchTab = () => {
   const [form, setForm] = useState({
-    batchName: "",
+    batchName: "",          // kept for preview only (not directly edited)
+    batchNameSuffix: "",    // <-- NEW: user-editable second half
     startDate: "",
     endDate: "",
     bid: 0,
     programmeId: "",
     classId: "",
     fee: "",
+    university: "",
   });
   const [saving, setSaving] = useState(false);
 
   const [batches, setBatches] = useState([]);
   const [boards, setBoards] = useState([]);
-  // const [classes, setClasses] = useState([]); // Not needed anymore since classes removed from API
+  const [universities, setUniversities] = useState([]);
+  const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState("");
 
@@ -222,6 +263,7 @@ const BatchTab = () => {
   useEffect(() => {
     refreshList();
     fetchBoards();
+    fetchUniversities();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -247,8 +289,24 @@ const BatchTab = () => {
     }
   };
 
-  // fetchClasses function removed since classes are no longer used in the updated API
-  // const fetchClasses = async (programmeId) => { ... }
+  const fetchUniversities = async () => {
+    setLoadingUniversities(true);
+    try {
+      const token = localStorage.getItem("jwt");
+      const list = await getUniversities(token);
+      const normalized = list.map((u) => {
+        const val = u?.uname || u?.universityName || u?.name || u?.UniversityName || u;
+        return String(val || "").trim();
+      }).filter(Boolean);
+      if (DEBUG) console.log("🎓 Universities:", normalized);
+      setUniversities(normalized);
+    } catch (err) {
+      console.error("❌ Error fetching universities:", err);
+      toast.error("Failed to load universities");
+    } finally {
+      setLoadingUniversities(false);
+    }
+  };
 
   async function refreshList() {
     setLoadingList(true);
@@ -275,7 +333,18 @@ const BatchTab = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (DEBUG) console.log(`✏️ handleChange ${name}=`, value);
-    setForm((p) => ({ ...p, [name]: value }));
+    setForm((p) => {
+      // When university changes, keep suffix, recompute preview batchName
+      if (name === "university") {
+        const batchName = joinBatchName(value, p.batchNameSuffix);
+        return { ...p, university: value, batchName };
+      }
+      if (name === "batchNameSuffix") {
+        const batchName = joinBatchName(p.university, value);
+        return { ...p, batchNameSuffix: value, batchName };
+      }
+      return { ...p, [name]: value };
+    });
   };
 
   const handleBoardChange = (e) => {
@@ -300,20 +369,34 @@ const BatchTab = () => {
 
   const handleEdit = (row) => {
     const programmeId = row.programmeId ? String(row.programmeId) : "";
+    // split existing batchName using row.university
+    const { suffix } = splitBatchName(row.batchName || "", row.university || "");
     setForm({
       batchName: row.batchName || "",
+      batchNameSuffix: suffix || "",
       startDate: toInputDate(row.startDate),
       endDate: toInputDate(row.endDate),
       bid: Number(row.bid) || 0,
       programmeId,
-      classId: "", // Keep for backward compatibility but not used
+      classId: "",
       fee: row.fee || "",
+      university: row.university || "",
     });
     toast.info("✏️ Edit mode");
   };
 
   const handleCancelEdit = () => {
-    setForm({ batchName: "", startDate: "", endDate: "", bid: 0, programmeId: "", classId: "", fee: "" });
+    setForm({
+      batchName: "",
+      batchNameSuffix: "",
+      startDate: "",
+      endDate: "",
+      bid: 0,
+      programmeId: "",
+      classId: "",
+      fee: "",
+      university: "",
+    });
     toast.dismiss();
   };
 
@@ -332,12 +415,16 @@ const BatchTab = () => {
   };
 
   const handleSave = async () => {
-    const { batchName, startDate, endDate, bid, programmeId, classId, fee } = form;
+    const {
+      batchNameSuffix, startDate, endDate, bid, programmeId, fee, university
+    } = form;
 
     if (DEBUG) console.log("🧾 handleSave form:", form);
 
-    if (!batchName || !startDate || !endDate || !programmeId) {
-      toast.error("Please fill all required fields: Batch Name, Start Date, End Date, and Programme.");
+    const composedBatchName = joinBatchName(university, batchNameSuffix);
+
+    if (!university || !batchNameSuffix || !startDate || !endDate || !programmeId) {
+      toast.error("Please fill all required fields: University, Batch (suffix), Start Date, End Date, and Programme.");
       return;
     }
     if (new Date(startDate) > new Date(endDate)) {
@@ -347,12 +434,12 @@ const BatchTab = () => {
 
     const dto = {
       Bid: Number(bid) || 0,
-      BatchName: batchName,
+      BatchName: composedBatchName,               // <-- save the joined name
       StartDate: toIsoMidnight(startDate),
       EndDate: toIsoMidnight(endDate),
       Pid: Number(programmeId),
-    
       Fee: fee ? Number(fee) : 0,
+      university: university,                     // <-- server expects this
     };
 
     try {
@@ -361,7 +448,17 @@ const BatchTab = () => {
       await postBatchArray([dto], token);
       toast.success(isEditMode ? "✅ Batch updated successfully" : "✅ Batch created successfully");
       await refreshList();
-      setForm({ batchName: "", startDate: "", endDate: "", bid: 0, programmeId: "", classId: "", fee: "" });
+      setForm({
+        batchName: "",
+        batchNameSuffix: "",
+        startDate: "",
+        endDate: "",
+        bid: 0,
+        programmeId: "",
+        classId: "",
+        fee: "",
+        university: "",
+      });
     } catch (err) {
       console.error("❌ Save failed:", err);
       toast.error(`❌ Save failed: ${err.message}`);
@@ -377,6 +474,28 @@ const BatchTab = () => {
         <h5 className="mb-3 text-primary">Add / Edit Batch</h5>
         <Form onSubmit={(e) => e.preventDefault()}>
           <div className="row g-3">
+            {/* Select University */}
+            <div className="col-12 col-md-6 col-lg-4">
+              <Form.Group>
+                <Form.Label>Select University</Form.Label>
+                <Form.Control
+                  as="select"
+                  name="university"
+                  value={form.university}
+                  onChange={handleChange}
+                  disabled={loadingUniversities}
+                  required
+                >
+                  <option value="">
+                    {loadingUniversities ? "Loading universities..." : "Select University"}
+                  </option>
+                  {universities.map((u, idx) => (
+                    <option key={`${u}-${idx}`} value={u}>{u}</option>
+                  ))}
+                </Form.Control>
+              </Form.Group>
+            </div>
+
             {/* Select Course */}
             <div className="col-12 col-md-6 col-lg-4">
               <Form.Group>
@@ -398,18 +517,28 @@ const BatchTab = () => {
               </Form.Group>
             </div>
 
-           
-
-            {/* Batch */}
+            {/* Batch (two-part input) */}
             <div className="col-12 col-md-6 col-lg-4">
               <Form.Group>
                 <Form.Label>Batch</Form.Label>
-                <Form.Control
-                  name="batchName"
-                  placeholder="e.g., AUG-25(1)"
-                  value={form.batchName}
-                  onChange={handleChange}
-                />
+                <div className="d-flex align-items-stretch">
+                  <Form.Control
+                    readOnly
+                    value={form.university || ""}
+                    placeholder="University"
+                    className="me-2"
+                  />
+                  <Form.Control
+                    name="batchNameSuffix"
+                    value={form.batchNameSuffix}
+                    onChange={handleChange}
+                    placeholder="e.g., 2024(1)"
+                  />
+                </div>
+                {/* Optional live preview (hidden text, enable if you want) */}
+                {/* <Form.Text muted>
+                  Preview: <strong>{joinBatchName(form.university, form.batchNameSuffix) || "-"}</strong>
+                </Form.Text> */}
               </Form.Group>
             </div>
 
@@ -494,14 +623,6 @@ const BatchTab = () => {
       <div className="p-4 mt-3 rounded bg-white border shadow-sm">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h5 className="mb-0">📋 Batches</h5>
-          {/* <Button
-            variant="outline-primary"
-            size="sm"
-            onClick={refreshList}
-            disabled={loadingList}
-          >
-            {loadingList ? "Refreshing..." : "Refresh"}
-          </Button> */}
         </div>
 
         {listError && (
