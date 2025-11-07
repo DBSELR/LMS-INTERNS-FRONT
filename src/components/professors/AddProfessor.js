@@ -14,6 +14,7 @@ const AddProfessor = ({
 
   /* ========= Error Modal ========= */
   const [showErrModal, setShowErrModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errInfo, setErrInfo] = useState({
     title: "",
     message: "",
@@ -259,6 +260,7 @@ const AddProfessor = ({
   const phoneDigits = (v) => (v || "").replace(/\D/g, "");
 
   const validate = (fd) => {
+    console.log("🔍 Validating form data:", fd);
     const err = {};
 
     // Required, with rules
@@ -391,7 +393,14 @@ const AddProfessor = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isSubmitting) {
+      console.log("Form already submitting, preventing double submission");
+      return;
+    }
+    
+    console.log("Starting form submission...");
     setSubmitted(true);
+    setIsSubmitting(true);
 
     // trim simple strings
     const trimmed = {
@@ -405,15 +414,21 @@ const AddProfessor = ({
       officeHours: formData.officeHours.trim(),
       educationalBackground: formData.educationalBackground.trim(),
       researchInterests: formData.researchInterests.trim(),
+      role: "Faculty", // Ensure role is set
     };
 
+    console.log("Trimmed form data:", trimmed);
     const validationErrors = validate(trimmed);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length) {
+      console.log("Validation errors found:", validationErrors);
       scrollToFirstError(validationErrors);
+      setIsSubmitting(false);
+      toast.error("Please fill in all required fields correctly");
       return;
     }
 
+    console.log("Form validation passed, preparing payload...");
     // Build payload (coerce types + required placeholders)
     const {
       programmeCode,
@@ -431,31 +446,49 @@ const AddProfessor = ({
           ? null
           : Number(teachingRating),
       userId: professor?.userId, // undefined is fine on create
+      Role: rest.role || "Faculty", // Ensure Role is included with correct casing
     };
 
+    console.log("Submitting faculty with payload:", finalPayload);
     try {
-      await onSubmit?.(finalPayload);
+      toast.info("Adding faculty member...", { 
+        toastId: "faculty-adding",
+        autoClose: false,
+        isLoading: true
+      });
+      console.log("Calling onSubmit with payload...");
+      const response = await onSubmit?.(finalPayload);
+      console.log("Faculty submission successful:", response);
+      
+      toast.dismiss("faculty-adding");
       toast.success(
         `✅ Faculty ${editMode ? "updated" : "added"} successfully`,
         { autoClose: 3000, toastId: "professor-submit-toast" }
       );
     } catch (err) {
+      console.error("Faculty submission failed:", err);
       const info = buildErrInfo(err);
       setErrInfo(info);
       setShowErrModal(true);
 
+      toast.dismiss("faculty-adding");
       if (info.title === "Duplicate entries detected") {
+        console.log("Duplicate entry detected:", info);
         toast.warning(
           "Duplicate entries detected. Please provide a unique email address and phone number.",
           { autoClose: 3500, toastId: "professor-submit-error" }
         );
       } else {
+        console.error("Submission error details:", info);
         toast.error(`❌ ${info.title}`, {
           autoClose: 3500,
           toastId: "professor-submit-error",
         });
       }
       console.error("🚨 Submit error:", info.raw || err);
+    } finally {
+      setIsSubmitting(false);
+      console.log("Form submission completed");
     }
   };
 
@@ -546,7 +579,7 @@ const AddProfessor = ({
           {renderInput("Email", "email", "email", {
             placeholder: "name@example.com",
           })}
-          {renderInput("Mobile Number", "mobileNumber", "tel", {
+          {renderInput("Mobile Number", "phoneNumber", "tel", {
             placeholder: "10-digit mobile",
           })}
 
@@ -626,24 +659,37 @@ const AddProfessor = ({
             (o) => o.l
           )}
 
-          {/* Role */}
-          {renderSelect(
-            "Role",
-            "role",
-            formData.role,
-            (e) => handleInputChange(e),
-            [{ v: "Faculty", l: "Faculty" }],
-            (o) => o.v,
-            (o) => o.l
-          )}
+          {/* Role - Fixed as Faculty */}
+          <div className="form-group col-md-6">
+            <label htmlFor="role" className="form-label">
+              Role <span className="text-danger">*</span>
+            </label>
+            <input
+              type="text"
+              id="role"
+              name="role"
+              className="form-control"
+              value="Faculty"
+              disabled
+              readOnly
+            />
+            <input type="hidden" name="role" value="Faculty" />
+          </div>
 
          
         </div>
 
         <div className="d-flex gap-2 mt-3">
           {!readOnly && (
-            <button type="submit" className="btn btn-primary">
-              {mode === "edit" ? "Update" : "Add"} Faculty
+            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  {mode === "edit" ? "Updating..." : "Adding..."} Faculty
+                </>
+              ) : (
+                <>{mode === "edit" ? "Update" : "Add"} Faculty</>
+              )}
             </button>
           )}
           <button type="button" className="btn btn-secondary" onClick={onCancel}>

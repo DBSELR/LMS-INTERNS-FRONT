@@ -16,6 +16,7 @@ function UsersDashboard() {
   }); 
   const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
+  const [userRole, setUserRole] = useState("");
   const navigate = useNavigate();
 
   
@@ -32,6 +33,7 @@ function UsersDashboard() {
       const role = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
       const name = decoded["Username"] || decoded.name || "Admin";
       setAdminName(name);
+      setUserRole(role); // Store the role
 
       const allowed = new Set(["admin", "faculty"]);
       if (!allowed.has(role.toLowerCase())) {
@@ -109,14 +111,12 @@ function UsersDashboard() {
             {/* Dashboard Cards */}
             <div className="row d-flex justify-content-center">
               {[
-
-                 { label: "Students", value: summary.students, icon: "fa-user", link: "/students" },
-
+                { label: "Students", value: summary.students, icon: "fa-user", link: "/students" },
                 { label: "Faculty", value: summary.professors, icon: "fa-user-tie", link: "/professors" },
-                
-                 { label: "Others", value: summary.users, icon: "fa-users", link: "/admin-users" },
-                
-                
+                // Only show Others card if role is not College
+                ...(userRole.toLowerCase() !== "college" ? [
+                  { label: "Others", value: summary.users, icon: "fa-users", link: "/admin-users" }
+                ] : [])
               ].map((item, idx) => (
                 <div className="col-12 col-sm-6 col-lg-3 mb-4" key={idx}>
                   {/* <div className="card h-100 border-0 shadow-sm rounded"> */}

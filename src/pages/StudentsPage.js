@@ -469,7 +469,7 @@ function StudentsPage() {
                     <div className="d-flex align-items-center mt-2 mt-md-0">
                       
 
-                      {["Admin", "Faculty", "College"].includes(role) && (
+                      {["Faculty", "College"].includes(role) && (
                         <button
                           className="btn btn-primary ml-2"
                           onClick={handleAddNew}
