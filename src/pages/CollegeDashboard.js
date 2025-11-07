@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../config";
 
 function CollegeDashboard() {
+  console.log("=== CollegeDashboard: Component initialized ===");
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
@@ -30,12 +31,27 @@ function CollegeDashboard() {
   const ac = new AbortController();
 
   (async () => {
+    console.log("=== CollegeDashboard: Starting data fetch ===");
+    
     const token = localStorage.getItem("jwt");
-    if (!token) { if (isMounted) setLoading(false); return; }
+    console.log("Token retrieved from localStorage:", token ? "Token exists" : "No token found");
+    
+    if (!token) { 
+      console.log("No JWT token found, stopping execution");
+      if (isMounted) setLoading(false); 
+      return; 
+    }
 
     // decode safely
     let decoded;
-    try { decoded = jwtDecode(token); } catch { if (isMounted) setLoading(false); return; }
+    try { 
+      decoded = jwtDecode(token); 
+      console.log("JWT decoded successfully:", decoded);
+    } catch (error) { 
+      console.error("JWT decode failed:", error);
+      if (isMounted) setLoading(false); 
+      return; 
+    }
 
     const role =
       decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
@@ -43,55 +59,104 @@ function CollegeDashboard() {
     const name = decoded["Username"] || decoded.name || "College";
     const instructorId = decoded?.UserId ?? decoded?.id ?? 0;
 
+    console.log("Extracted from JWT:", { role, name, instructorId });
+
     if (isMounted) setInstructorName(name);
-    if (role !== "College" || !instructorId) { if (isMounted) setLoading(false); return; }
+    
+    if (role !== "College") {
+      console.log(`Role check failed. Expected: 'College', Found: '${role}'`);
+      if (isMounted) setLoading(false); 
+      return; 
+    }
+    
+    if (!instructorId) {
+      console.log("No instructorId found in JWT");
+      if (isMounted) setLoading(false); 
+      return; 
+    }
 
     const headers = { Authorization: `Bearer ${token}` };
+    console.log("Request headers prepared:", headers);
 
     try {
+      const apiUrl = `${API_BASE_URL}/InstructorSummary/collegedashboard/${instructorId}`;
+      console.log("Making API request to:", apiUrl);
+      
       const res = await fetch(
-        `${API_BASE_URL}/InstructorSummary/collegedashboard/${instructorId}`,
+        apiUrl,
         { method: "GET", headers, signal: ac.signal }
       );
 
-      if (!isMounted || ac.signal.aborted) return;
+      console.log("API response received:", {
+        status: res.status,
+        statusText: res.statusText,
+        ok: res.ok,
+        headers: Object.fromEntries(res.headers.entries())
+      });
+
+      if (!isMounted || ac.signal.aborted) {
+        console.log("Component unmounted or request aborted before processing response");
+        return;
+      }
 
       if (res.ok) {
         const data = await res.json();
-        if (!isMounted || ac.signal.aborted) return;
+        console.log("Raw API response data:", data);
+        
+        if (!isMounted || ac.signal.aborted) {
+          console.log("Component unmounted or request aborted after parsing JSON");
+          return;
+        }
 
-        setSummary({
-          studentCount: Number(data.StudentCount) || 0,
-          professorCount: Number(data.ProfessorCount) || 0,
-          courseCount: Number(data.CourseCount) || 0,
-          bookCount: Number(data.BookCount) || 0,
-          liveClassCount: Number(data.LiveClassCount) || 0,
-          taskCount: Number(data.TaskCount) || 0,
-          examCount: Number(data.ExamCount) || 0,
-        });
+        const summaryData = {
+          studentCount: Number(data.studentCount || data.StudentCount) || 0,
+          professorCount: Number(data.professorCount || data.ProfessorCount) || 0,
+          courseCount: Number(data.courseCount || data.CourseCount) || 0,
+          bookCount: Number(data.bookCount || data.BookCount) || 0,
+          liveClassCount: Number(data.liveClassCount || data.LiveClassCount) || 0,
+          taskCount: Number(data.taskCount || data.TaskCount) || 0,
+          examCount: Number(data.examCount || data.ExamCount) || 0,
+        };
+        
+        console.log("Processed summary data:", summaryData);
+        setSummary(summaryData);
       } else {
-        // optional: log or toast; keep UI graceful
-        // const text = await res.text();
-        // console.warn("Dashboard fetch failed:", res.status, text);
+        const errorText = await res.text();
+        console.error("API request failed:", {
+          status: res.status,
+          statusText: res.statusText,
+          responseText: errorText
+        });
       }
     } catch (err) {
       // Ignore fetch aborts; rethrow/log others
       if (err && (err.name === "AbortError" || err.code === 20)) {
-        // silently ignore
+        console.log("Request was aborted (this is normal during component unmount)");
       } else {
-        console.error("Dashboard fetch error:", err);
+        console.error("Dashboard fetch error:", {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        });
       }
     } finally {
+      console.log("Setting loading to false");
       if (isMounted) setLoading(false);
     }
   })();
 
   return () => {
+    console.log("=== CollegeDashboard: Cleanup function called ===");
     isMounted = false;
     ac.abort();
   };
 }, []);
 
+
+  console.log("=== CollegeDashboard: Component render ===");
+  console.log("Current summary state:", summary);
+  console.log("Loading state:", loading);
+  console.log("Instructor name:", instructorName);
 
   // Cards wired to proc fields
   const cards = [
@@ -103,6 +168,8 @@ function CollegeDashboard() {
     { label: "Exams (MT/DT)", value: summary.examCount, icon: "fa-file-alt", link: "/exams" },
     { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/library" },
   ];
+
+  console.log("Dashboard cards:", cards);
 
   return (
     <div id="main_content" className="font-muli theme-blush">
