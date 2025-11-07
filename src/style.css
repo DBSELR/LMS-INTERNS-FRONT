@@ -1729,10 +1729,10 @@ button.btn-sm {
 }
 
 .theme-blush #left-sidebar .brand-name{
-  margin: auto;
-  align-items: center;
-  text-align: center;
-  justify-content: center;
+ background: linear-gradient(145deg, #2185d0, #5a67d8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
  
   
 }
