@@ -69,6 +69,93 @@ function TransactionsTable() {
     }
   };
 
+  // NEW state to track selected rows (keyed by student+head+installment)
+const [selectedKeys, setSelectedKeys] = useState(new Set());
+
+// make a stable key per row (student + head + installment)
+const rowKey = (t) => `${t.studentId || t.studentID}-${t.hid}-${t.installment}`;
+
+// toggle selection
+const toggleRow = (t, checked) => {
+  setSelectedKeys(prev => {
+    const next = new Set(prev);
+    const k = rowKey(t);
+    checked ? next.add(k) : next.delete(k);
+    return next;
+  });
+};
+
+// select all / clear all
+const allKeys = transactions.map(rowKey);
+const allSelected = selectedKeys.size > 0 && selectedKeys.size === allKeys.length;
+const someSelected = selectedKeys.size > 0 && selectedKeys.size < allKeys.length;
+
+const toggleAll = (checked) => {
+  setSelectedKeys(checked ? new Set(allKeys) : new Set());
+};
+
+const handleBulkPay = async () => {
+  if (selectedKeys.size === 0) {
+    setError("Please select at least one student to pay.");
+    return;
+  }
+
+  const token = localStorage.getItem("jwt");
+
+  // Build payload: pay the *remaining balance* by default
+  const items = transactions
+    .filter(t => selectedKeys.has(rowKey(t)))
+    .map(t => {
+      const amountDue = Number(t.amountDue || 0);
+      const paid      = Number(t.paid || 0);
+      const balance   = Math.max(0, amountDue - paid);
+
+      return {
+        StudentID: String(t.studentId ?? t.studentID ?? ""), // backend expects string
+        Amount: balance,                      // pay remaining; change if you want custom input
+        Installment: Number(t.installment || 0),
+        PaymentMethod: "Cash",                // or drive from a dropdown
+        TransactionId: (crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`),
+        payHeadID: Number(t.hid)              // maps to HeadID in SP
+      };
+    })
+    .filter(x => x.StudentID && x.Amount > 0);
+
+  if (items.length === 0) {
+    setError("Selected rows have no payable balance.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setError("");
+
+    const res = await fetch(`${API_BASE_URL}/Fee/BulkPay`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(items)
+    });
+
+    if (!res.ok) {
+      const txt = await res.text();
+      throw new Error(`${res.status} ${txt}`);
+    }
+
+    // success: refresh table
+    await fetchTransactions(userId);
+    setSelectedKeys(new Set());
+  } catch (err) {
+    console.error("BulkPay failed:", err);
+    setError("Failed to save bulk payments.");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -158,7 +245,16 @@ function TransactionsTable() {
                   <th>Due Date</th>
                   <th>Status</th>
                   <th>Remarks</th>
-                   <th></th>
+                  <th style={{width: 40}}>
+  <input
+    type="checkbox"
+    checked={allSelected}
+    ref={el => { if (el) el.indeterminate = someSelected; }}
+    onChange={(e) => toggleAll(e.target.checked)}
+    aria-label="Select all"
+  />
+</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -208,8 +304,14 @@ function TransactionsTable() {
                         </small>
                       </td>
                       <td>
-                        <input type="checkbox" />
-                      </td>
+  <input
+    type="checkbox"
+    checked={selectedKeys.has(rowKey(transaction))}
+    onChange={(e) => toggleRow(transaction, e.target.checked)}
+    aria-label={`Select ${transaction.studentName || transaction.regno}`}
+  />
+</td>
+
                     </tr>
                   );
                 })}
@@ -241,7 +343,10 @@ function TransactionsTable() {
               </small>
             </div>
             <div className="col-md-3">
-              <Button variant="primary">Pay Now</Button>
+           <Button variant="primary" onClick={handleBulkPay} disabled={selectedKeys.size === 0 || loading}>
+  {loading ? "Processing..." : `Pay Now (${selectedKeys.size})`}
+</Button>
+
             </div>
           </div>
         </div>

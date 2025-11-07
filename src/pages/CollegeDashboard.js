@@ -12,136 +12,97 @@ function CollegeDashboard() {
   const navigate = useNavigate();
 
   const [loading, setLoading] = useState(true);
-  const [summary, setSummary] = useState({
-    subjects: 0,
-    students: 0,
-    submissions: 0,
-    exams: 0,
-    assignments: 0,
-    books: 0,
-    liveClasses: 0,
-    attendanceRecords: 0,
-    meetings: 0,
-    leaves: 0,
-    notifications: 0,
-  });
-  const [gradingStats, setGradingStats] = useState({
-    total: 0,
-    graded: 0,
-    pending: 0,
-    averageScore: 0,
-  });
   const [instructorName, setInstructorName] = useState("College");
 
+  // Summary fields based on sp_CollegeAdminSummary_GetDashboard
+  const [summary, setSummary] = useState({
+    studentCount: 0,
+    professorCount: 0,
+    courseCount: 0,
+    bookCount: 0,
+    liveClassCount: 0,
+    taskCount: 0,
+    examCount: 0,
+  });
+
   useEffect(() => {
-    let isMounted = true;
-    const ac = new AbortController();
+  let isMounted = true;
+  const ac = new AbortController();
 
-    (async () => {
-      try {
-        const token = localStorage.getItem("jwt");
-        if (!token) {
-          // No token -> stop loading and show empty state
-          return;
-        }
+  (async () => {
+    const token = localStorage.getItem("jwt");
+    if (!token) { if (isMounted) setLoading(false); return; }
 
-        // Decode token (safe)
-        let decoded;
-        try {
-          decoded = jwtDecode(token);
-        } catch (e) {
-          // Bad token -> stop loading
-          return;
-        }
+    // decode safely
+    let decoded;
+    try { decoded = jwtDecode(token); } catch { if (isMounted) setLoading(false); return; }
 
-        const role =
-          decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-          decoded.role ||
-          "";
-        const name = decoded["Username"] || decoded.name || "College";
-        const instructorId = decoded?.UserId ?? decoded?.id ?? 0;
+    const role =
+      decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+      decoded.role || "";
+    const name = decoded["Username"] || decoded.name || "College";
+    const instructorId = decoded?.UserId ?? decoded?.id ?? 0;
 
-        if (isMounted) setInstructorName(name);
+    if (isMounted) setInstructorName(name);
+    if (role !== "College" || !instructorId) { if (isMounted) setLoading(false); return; }
 
-        // If not an Instructor (or no id), stop loading and show nothing special
-        if (role !== "College" || !instructorId) {
-          return;
-        }
+    const headers = { Authorization: `Bearer ${token}` };
 
-        const headers = { Authorization: `Bearer ${token}` };
+    try {
+      const res = await fetch(
+        `${API_BASE_URL}/InstructorSummary/collegedashboard/${instructorId}`,
+        { method: "GET", headers, signal: ac.signal }
+      );
 
-        // Summary
-        const summaryPromise = fetch(
-          `${API_BASE_URL}/InstructorSummary/dashboard/${instructorId}`,
-          { method: "GET", headers, signal: ac.signal }
-        )
-          .then((res) => (res.ok ? res.json() : {}))
-          .then((data = {}) => {
-            if (!isMounted) return;
-            setSummary({
-              subjects: Number(data.subjects) || 0,
-              students: Number(data.students) || 0,
-              submissions: Number(data.assignments) || 0,
-              exams: Number(data.exams) || 0,
-              books: Number(data.books) || 0,
-              assignments: Number(data.assignments) || 0,
-              liveClasses: Number(data.liveClasses) || 0,
-              attendanceRecords: 0, // not provided by API
-              meetings: Number(data.tasks) || 0,
-              leaves: Number(data.leaves) || 0,
-              notifications: Number(data.notifications) || 0,
-            });
-          })
-          .catch(() => {
-            // Swallow; we still end loading in finally
-          });
+      if (!isMounted || ac.signal.aborted) return;
 
-        // Grading
-        const gradingPromise = fetch(
-          `${API_BASE_URL}/InstructorExam/GradingSummary`,
-          { method: "GET", headers, signal: ac.signal }
-        )
-          .then((res) => (res.ok ? res.json() : {}))
-          .then((data = {}) => {
-            if (!isMounted) return;
-            setGradingStats({
-              total: Number(data.total) || 0,
-              graded: Number(data.graded) || 0,
-              pending: Number(data.pending) || 0,
-              averageScore: Number(data.averageScore) || 0,
-            });
-          })
-          .catch(() => {
-            // Swallow; we still end loading in finally
-          });
+      if (res.ok) {
+        const data = await res.json();
+        if (!isMounted || ac.signal.aborted) return;
 
-        await Promise.allSettled([summaryPromise, gradingPromise]);
-      } finally {
-        if (isMounted) setLoading(false);
+        setSummary({
+          studentCount: Number(data.StudentCount) || 0,
+          professorCount: Number(data.ProfessorCount) || 0,
+          courseCount: Number(data.CourseCount) || 0,
+          bookCount: Number(data.BookCount) || 0,
+          liveClassCount: Number(data.LiveClassCount) || 0,
+          taskCount: Number(data.TaskCount) || 0,
+          examCount: Number(data.ExamCount) || 0,
+        });
+      } else {
+        // optional: log or toast; keep UI graceful
+        // const text = await res.text();
+        // console.warn("Dashboard fetch failed:", res.status, text);
       }
-    })();
+    } catch (err) {
+      // Ignore fetch aborts; rethrow/log others
+      if (err && (err.name === "AbortError" || err.code === 20)) {
+        // silently ignore
+      } else {
+        console.error("Dashboard fetch error:", err);
+      }
+    } finally {
+      if (isMounted) setLoading(false);
+    }
+  })();
 
-    return () => {
-      isMounted = false;
-      ac.abort();
-    };
-  }, []);
+  return () => {
+    isMounted = false;
+    ac.abort();
+  };
+}, []);
 
-  useEffect(() => {
-    console.log("📦 Summary state updated:", summary);
-  }, [summary]);
 
+  // Cards wired to proc fields
   const cards = [
-    { label: "My Subjects", value: summary.subjects, icon: "fa-book", link: "/my-courseware" },
-    { label: "Live Classes", value: summary.liveClasses, icon: "fa-video-camera", link: "/instructor/live-classes" },
-    // { label: "Examinations", value: summary.exams, icon: "fa-file-text", link: "/instructor/exams" },
-    // { label: "Assignments", value: summary.assignments, icon: "fa-upload", link: "/admin-manage-assignments" },
-    { label: "Tasks", value: summary.meetings, icon: "fa-tasks", link: "/taskboard" },
-    { label: "Library Books", value: summary.books, icon: "fa-book", link: "/library" },
+    { label: "Students", value: summary.studentCount, icon: "fa-users", link: "/manage-students" },
+    { label: "Professors", value: summary.professorCount, icon: "fa-user-tie", link: "/professors" },
+    { label: "Courses", value: summary.courseCount, icon: "fa-book", link: "/my-courseware" },
+    { label: "Live Classes", value: summary.liveClassCount, icon: "fa-video-camera", link: "/instructor/live-classes" },
+    { label: "Tasks", value: summary.taskCount, icon: "fa-tasks", link: "/taskboard" },
+    { label: "Exams (MT/DT)", value: summary.examCount, icon: "fa-file-alt", link: "/exams" },
+    { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/library" },
   ];
-
-  const gradedPct =
-    gradingStats.total > 0 ? Math.min(100, Math.round((gradingStats.graded / gradingStats.total) * 100)) : 0;
 
   return (
     <div id="main_content" className="font-muli theme-blush">
@@ -165,7 +126,7 @@ function CollegeDashboard() {
                   Welcome back, <strong>{instructorName}</strong> 👋
                 </h2>
                 <p className="text-muted mb-0 dashboard-hero-sub">
-                  Here’s a quick snapshot of your teaching dashboard
+                  Here’s a quick snapshot of your college dashboard
                 </p>
               </div>
 
@@ -191,55 +152,13 @@ function CollegeDashboard() {
                 ))}
               </div>
 
-              {/* Grading Summary */}
-              {/* <div className="row mt-4">
-                <div className="col-lg-6 col-md-12 mb-4">
-                  <div className="welcome-card dashboard-card animate-welcome">
-                    <h5 className="fw-bold mb-3">Grading Progress</h5>
-                    <ul className="list-unstyled mb-4">
-                      <li>
-                        <strong>Total Submissions:</strong> {gradingStats.total}
-                      </li>
-                      <li>
-                        <strong>Graded:</strong> {gradingStats.graded}
-                      </li>
-                      <li>
-                        <strong>Pending:</strong> {gradingStats.pending}
-                      </li>
-                    </ul>
-                    <div className="progress" style={{ height: "24px" }}>
-                      <div
-                        className="progress-bar bg-success"
-                        role="progressbar"
-                        style={{ width: `${gradedPct}%` }}
-                        aria-valuenow={gradedPct}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                      >
-                        {gradingStats.graded}/{gradingStats.total} Graded
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="col-lg-6 col-md-12 mb-4">
-                  <div className="welcome-card dashboard-card animate-welcome text-center">
-                    <h5 className="fw-bold mb-3">Average Score</h5>
-                    <p
-                      className="display-3 fw-bold text-primary"
-                      style={{ fontSize: "3rem", lineHeight: "normal" }}
-                    >
-                      {gradingStats.averageScore} / 100
-                    </p>
-                  </div>
-                </div>
-              </div> */}
-              {/* /Grading Summary */}
+              {/* If you want to reintroduce grading later, add it back here */}
             </div>
           </div>
-           
         </div>
       </div>
+
+      <Footer />
     </div>
   );
 }
