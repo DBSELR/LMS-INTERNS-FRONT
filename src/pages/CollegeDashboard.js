@@ -160,7 +160,7 @@ function CollegeDashboard() {
 
   // Cards wired to proc fields
   const cards = [
-    { label: "Students", value: summary.studentCount, icon: "fa-users", link: "/manage-students" },
+    { label: "Students", value: summary.studentCount, icon: "fa-users", link: "/students" },
     { label: "Professors", value: summary.professorCount, icon: "fa-user-tie", link: "/professors" },
     { label: "Courses", value: summary.courseCount, icon: "fa-book", link: "/my-courseware" },
     { label: "Live Classes", value: summary.liveClassCount, icon: "fa-video-camera", link: "/instructor/live-classes" },
