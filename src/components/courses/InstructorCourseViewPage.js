@@ -1072,11 +1072,11 @@ useEffect(() => {
 
           {/* Section Mapping */}
           {[
-            { title: "Videos", key: "videos", data: filteredVideos, ref: sectionRefs.videos, color: "info", icon: "fas fa-video" },
-            { title: "EBOOK Materials", key: "ebooks", data: filteredEbooks, ref: sectionRefs.ebooks, color: "primary", icon: "fas fa-file-pdf" },
+            // { title: "Videos", key: "videos", data: filteredVideos, ref: sectionRefs.videos, color: "info", icon: "fas fa-video" },
+            // { title: "EBOOK Materials", key: "ebooks", data: filteredEbooks, ref: sectionRefs.ebooks, color: "primary", icon: "fas fa-file-pdf" },
             { title: "Web Resources Materials", key: "webresources", data: filteredWebResources, ref: sectionRefs.webresources, color: "primary", icon: "fas fa-file-pdf" },
             { title: "Pre-Learning : FAQ", key: "faq", data: filteredFAQ, ref: sectionRefs.faq, color: "primary", icon: "fas fa-file-pdf" },
-            { title: "Pre-Learning : Misconceptions", key: "misconceptions", data: filteredMisconceptions, ref: sectionRefs.misconceptions, color: "primary", icon: "fas fa-file-pdf" },
+            // { title: "Pre-Learning : Misconceptions", key: "misconceptions", data: filteredMisconceptions, ref: sectionRefs.misconceptions, color: "primary", icon: "fas fa-file-pdf" },
             { title: "Practice Assignment", key: "practiceassignment", data: filteredPracticeAssignment, ref: sectionRefs.practiceassignment, color: "primary", icon: "fas fa-file-pdf" },
             { title: "Study Guide", key: "studyguide", data: filteredStudyGuide, ref: sectionRefs.studyguide, color: "primary", icon: "fas fa-file-pdf" },
           ].map((section, idx) => (

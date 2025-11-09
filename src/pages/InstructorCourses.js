@@ -280,29 +280,66 @@ function CourseCard({ course, navigate, role }) {
 
       <div className="row g-4">
         <div className="col-md-7">
-          <div className="course-info-box welcome-card animate-welcome">
+          {/* <div className="course-info-box welcome-card animate-welcome">
             <h6 className="course-info-title mb-3">
               <i className="fas fa-book-open me-2"></i>Courseware
             </h6>
            <div className="course-stats-container">
-  {renderCourseStat("Video", details.videoCount)}
-  {renderCourseStat("E-Book", details.ebookCount)}
+  
   {renderCourseStat("Web Resource", details.webCount)}
-  {renderCourseStat(
-  "FAQ / Study Guide",
-  `${details.faqCount} / ${details.sgCount}`
-)}
-
-  {renderCourseStat("Misconceptions", details.misconceptionsCount)}
+   {renderCourseStat("FAQ", details.faqCount)}
+   {renderCourseStat("Study Guide", details.sgCount)}
   {renderCourseStat("Practice Test", details.paCount)}
-  {/* {renderCourseStat("Study Guide", details.sgCount)} */}
   {renderCourseStat("Live Class", details.livecount)}
   {renderCourseStat("Assignments", details.assignmentCount)}
   {renderCourseStat("Exams", details.examCount)}
   {renderCourseStat("Discussions", details.discussionCount)}
+  
 </div>
 
-          </div>
+          </div> */}
+
+          <div className="course-info-box welcome-card animate-welcome">
+  <h6 className="course-info-title mb-3">
+    <i className="fas fa-book-open me-2"></i>Courseware
+  </h6>
+
+  <div className="course-stats-container">
+    {/* Row 1 (4 items) */}
+    <div className="row g-3">
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Web Resource", details.webCount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("FAQ", details.faqCount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Study Guide", details.sgCount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Practice Test", details.paCount)}
+      </div>
+    </div>
+
+    {/* Row 2 (4 items) */}
+    <div className="row g-3 mt-2">
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Live Class", details.livecount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Assignments", details.assignmentCount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Exams", details.examCount)}
+      </div>
+      <div className="col-12 col-sm-6 col-lg-3">
+        {renderCourseStat("Discussions", details.discussionCount)}
+      </div>
+    </div>
+  </div>
+</div>
+
+
         </div>
 
         <div className="col-md-5">

@@ -2025,146 +2025,142 @@ button.btn-sm {
 /* === InstructorCourses.css end === */
 
 /* Course Stats Responsive Styles */
+/* === Base (desktop) === */
 .course-stats-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 3px;
+  display: grid;
+  gap: 12px; /* was 16px */
+}
+
+.course-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px; /* was 16px */
 }
 
 .course-stat-item {
-  flex: 0 0 19%;
-  max-width: 19%;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 2px;
-  margin: 4px 0;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.06);
+  border-radius: 10px;
+  padding: 10px 8px;       /* was 14px 10px */
   text-align: center;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  cursor: default;
-  height: 50px;
+  box-shadow: 0 1px 3px rgba(16,24,40,0.05);
+  min-height: 64px;        /* was 74px */
   display: flex;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  overflow: hidden;
+  justify-content: center;
 }
 
+/* ↓ reduce icon size (works for Font Awesome or any <i>/<svg> placed inside the card) */
+.course-stat-item i,
+.course-stat-item svg,
+.course-stat-icon {
+  font-size: 16px;         /* smaller icons */
+  width: 16px;
+  height: 16px;
+  line-height: 1;
+  margin-bottom: 4px;      /* space above the count/label if you show icon */
+}
+
+.course-stat-count {
+  font-size: 1.1rem;       /* was 1.25rem */
+  font-weight: 700;
+  line-height: 1;
+}
+
+.course-stat-label {
+  margin-top: 4px;         /* was 6px */
+  font-size: 0.85rem;      /* was 0.9rem */
+  color: #6c757d;
+}
+.course-stat-label { white-space: nowrap; }
+
+/* hover stays subtle */
 .course-stat-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 3px 6px rgba(0,0,0,0.12);
 }
 
-.course-stat-count {
-  font-size: 14px;
-  font-weight: 700;
-  color: #374151;
-  margin-bottom: 2px;
-}
-
-.course-stat-label {
-  font-size: 10px;
-  font-weight: 650;
-  color: #5c5c5e;
-  white-space: normal;
-  word-break: break-word;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 2px;
-  text-align: center;
-}
-
-/* Tablet Responsive */
-
+/* === Tablet (≤ 992px) === */
 @media (max-width: 992px) {
   .course-stat-item {
-    flex: 0 0 24%;
-    max-width: 24%;
-    height: 55px;
+    height: 52px;          /* was 55px */
+    padding: 8px 6px;      /* tighter */
   }
+  .course-stat-item i,
+  .course-stat-item svg,
+  .course-stat-icon {
+    font-size: 14px;
+    width: 14px;
+    height: 14px;
+    margin-bottom: 2px;
+  }
+  .course-stat-count { font-size: 12px; }
+  .course-stat-label { font-size: 8px; height: 24px; }
+  .course-stat-label { white-space: nowrap; }
 
-  .course-stat-count {
-    font-size: 13px;
-  }
-
-  .course-stat-label {
-    font-size: 9px;
-    height: 26px;
-  }
 }
 
-/* Mobile Responsive */
+/* === Mobile (≤ 768px) === */
 @media (max-width: 768px) {
-  .course-stats-container {
-    gap: 3px;
-  }
-
+  .course-stats-container { gap: 2px; } /* was 3px */
   .course-stat-item {
-    flex: 0 0 32%;
-    max-width: 32%;
-    height: 60px;
+    height: 56px;          /* was 60px */
     padding: 4px 2px;
   }
-
-  .course-stat-count {
-    font-size: 12px;
-    margin-bottom: 3px;
+  .course-stat-item i,
+  .course-stat-item svg,
+  .course-stat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
+    margin-bottom: 2px;
   }
-
-  .course-stat-label {
-    font-size: 8px;
-    height: 28px;
-    line-height: 1.1;
-  }
+  .course-stat-count { font-size: 11px; margin-bottom: 2px; }
+  .course-stat-label { font-size: 7.5px; height: 26px; line-height: 1.1; }
 }
 
-/* Small Mobile Responsive */
+/* === Small Mobile (≤ 576px) === */
 @media (max-width: 576px) {
-  .course-stats-container {
-    gap: 2px;
-  }
-
+  .course-stats-container { gap: 2px; }
   .course-stat-item {
-    flex: 0 0 49%;
-    max-width: 49%;
-    height: 65px;
+    height: 60px;          /* was 65px */
     padding: 6px 2px;
   }
-
-  .course-stat-count {
-    font-size: 14px;
-    margin-bottom: 4px;
+  .course-stat-item i,
+  .course-stat-item svg,
+  .course-stat-icon {
+    font-size: 13px;
+    width: 13px;
+    height: 13px;
   }
-
-  .course-stat-label {
-    font-size: 9px;
-    height: 30px;
-    line-height: 1.2;
-    font-weight: 600;
-  }
+  .course-stat-count { font-size: 13px; }
+  .course-stat-label { font-size: 8.5px; height: 28px; line-height: 1.15; }
 }
 
-/* Extra Small Mobile Responsive */
+/* === Extra Small (≤ 480px) === */
 @media (max-width: 480px) {
   .course-stat-item {
-    height: 70px;
-    padding: 8px 4px;
+    height: 64px;          /* was 70px */
+    padding: 6px 4px;
   }
+  .course-stat-item i,
+  .course-stat-item svg,
+  .course-stat-icon {
+    font-size: 12px;
+    width: 12px;
+    height: 12px;
+  }
+  .course-stat-count { font-size: 14px; }
+  .course-stat-label { font-size: 8px; height: 28px; padding: 0 2px; }
+}
 
-  .course-stat-count {
-    font-size: 16px;
-    margin-bottom: 5px;
-  }
-
-  .course-stat-label {
-    font-size: 10px;
-    height: 32px;
-    padding: 0 4px;
-  }
+/* keep your responsive column counts */
+@media (max-width: 991.98px) {
+  .course-stats-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 575.98px) {
+  .course-stats-row { grid-template-columns: 1fr; }
 }
 
 /* InstructorCourseViewPage.css */
