@@ -2061,7 +2061,6 @@ button.btn-sm {
   line-height: 1;
   margin-bottom: 4px;      /* space above the count/label if you show icon */
 }
-
 .course-stat-count {
   font-size: 1.1rem;       /* was 1.25rem */
   font-weight: 700;
