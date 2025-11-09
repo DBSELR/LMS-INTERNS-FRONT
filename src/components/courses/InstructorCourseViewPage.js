@@ -6,13 +6,18 @@ import LeftSidebar from "../../components/LeftSidebar";
 import Footer from "../../components/Footer";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import { Document, Page, pdfjs } from "react-pdf";
+import { Document, Page } from '@react-pdf/renderer';
+import * as pdfjs from 'pdfjs-dist';
 import API_BASE_URL from "../../config";
+import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
-// If you later want to switch to your watermark component inside the modal, it's ready.
-// import VimeoWithWatermark from "../VimeoWithWatermark";
-
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+try {
+  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+} catch (e) {
+  // defensive: if pdfjs.version is not available, set a safe default
+  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js`;
+}
+pdfjs.GlobalWorkerOptions.disableWorker = true;
 
 /* =========================
    Debug helpers (toggleable)
@@ -220,6 +225,7 @@ function InstructorCourseViewPage() {
 
   const [showFileModal, setShowFileModal] = useState(false);
   const [fileUrl, setFileUrl] = useState("");
+  const [fileIsPdf, setFileIsPdf] = useState(false);
   const [fileProgress, setFileProgress] = useState(0);
   const [pageNumber, setPageNumber] = useState(1);
   const [numPages, setNumPages] = useState(null);
@@ -599,6 +605,14 @@ function InstructorCourseViewPage() {
   const handleViewFile = (urlOrPath) => {
     const fullUrl = toAbsoluteLocal(apiOrigin, urlOrPath);
     group("Open File – Payload", { raw: urlOrPath, fullUrl, apiOrigin, progressKey: `ebook-progress-${fullUrl}` });
+    // Always open the file in the in-app modal. For PDFs we use react-pdf;
+    // for other types we render an iframe so the browser or online viewers
+    // can handle them. This prevents react-pdf from being given non-PDFs
+    // and keeps the UX consistent.
+    const ext = (fullUrl.split("?")[0].split('.').pop() || '').toLowerCase();
+    const isPdf = ext === 'pdf';
+    setFileIsPdf(isPdf);
+
     setFileUrl(fullUrl);
     setShowFileModal(true);
     const progress = parseInt(localStorage.getItem(`ebook-progress-${fullUrl}`)) || 0;
@@ -610,6 +624,7 @@ function InstructorCourseViewPage() {
     log("Closing file modal");
     setShowFileModal(false);
     setFileUrl("");
+    setFileIsPdf(false);
     setFileProgress(0);
     setPageNumber(1);
     setNumPages(null);
@@ -1475,24 +1490,50 @@ useEffect(() => {
           style={{userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none'}}
         >
           <div className="relative-wrap">
-            <Document
-              file={fileUrl}
-              onLoadSuccess={({ numPages }) => {
-                setNumPages(numPages);
-                log("PDF loaded", { numPages, fileUrl });
-              }}
-              onLoadError={(err) => error("PDF load error", err)}
-            >
-              <Page pageNumber={pageNumber} width={600} onContextMenu={(e) => e.preventDefault()} />
-            </Document>
+            {fileIsPdf ? (
+              <>
+                <Document
+                  file={fileUrl}
+                  onLoadSuccess={({ numPages }) => {
+                    setNumPages(numPages);
+                    log("PDF loaded", { numPages, fileUrl });
+                  }}
+                  onLoadError={(err) => error("PDF load error", err)}
+                >
+                  <Page pageNumber={pageNumber} width={600} onContextMenu={(e) => e.preventDefault()} />
+                </Document>
 
-            {/* Watermark overlay */}
-            <div className="wm-overlay" aria-hidden="true" onContextMenu={(e) => e.preventDefault()}>
-              {/* Animated main watermark */}
-              <div ref={wmPdfRef} className="wm-chip" onContextMenu={(e) => e.preventDefault()}>
-                {displayText}
-              </div>
-            </div>
+                {/* Watermark overlay */}
+                <div className="wm-overlay" aria-hidden="true" onContextMenu={(e) => e.preventDefault()}>
+                  {/* Animated main watermark */}
+                  <div ref={wmPdfRef} className="wm-chip" onContextMenu={(e) => e.preventDefault()}>
+                    {displayText}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Non-PDF files: render inside an iframe. Some file types (docx)
+                    may not be previewable by the browser; the iframe will either
+                    show a preview (if server supports content-disposition:inline)
+                    or the browser's download behaviour. */}
+                <div style={{ width: '100%', height: '70vh' }}>
+                  <iframe
+                    src={fileUrl}
+                    title="File preview"
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    sandbox="allow-same-origin allow-scripts allow-forms"
+                  />
+                </div>
+
+                {/* Watermark overlay for non-PDFs as well */}
+                <div className="wm-overlay" aria-hidden="true" onContextMenu={(e) => e.preventDefault()}>
+                  <div ref={wmPdfRef} className="wm-chip" onContextMenu={(e) => e.preventDefault()}>
+                    {displayText}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {numPages && (

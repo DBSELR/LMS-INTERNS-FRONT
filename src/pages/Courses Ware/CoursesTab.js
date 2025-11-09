@@ -140,7 +140,7 @@ const CoursesTab = ({ isActive }) => {
     }
 
     if (!finalProgrammeCode || !finalProgrammeName) {
-      toast.error("❌ Please provide valid Board information", {
+      toast.error("❌ Please provide valid Course information", {
         autoClose: 3000,
       });
       return;
@@ -178,7 +178,7 @@ const CoursesTab = ({ isActive }) => {
       if (!res.ok) throw new Error(errorText || "Save failed");
 
       toast.success(
-        `✅ Board ${courseId ? "updated" : "created"} successfully`,
+        `✅ Course ${courseId ? "updated" : "created"} successfully`,
         {
           autoClose: 3000,
         }
