@@ -96,6 +96,7 @@ function isHttpUrl(u) {
   return /^https?:\/\//i.test(u || "");
 }
 
+
 function toAbsoluteLocal(origin, pathOrUrl) {
   if (!pathOrUrl) return "";
   if (isHttpUrl(pathOrUrl)) return pathOrUrl; // already absolute
@@ -201,6 +202,7 @@ function InstructorCourseViewPage() {
     webresources: useRef(null),
   };
 
+
   const apiOrigin = getApiOrigin();
 
   // === Delete helpers ===
@@ -298,7 +300,9 @@ function InstructorCourseViewPage() {
 
   /* =========================
      Video open - Simplified to open in new window
+     Video open - Simplified to open in new window
      ========================= */
+  const handleWatchVideo = (item) => {
   const handleWatchVideo = (item) => {
     // Prefer local fileUrl if present; else use vurl
     const vurlClean = normalizeUrl(item.vurl || "");
@@ -318,9 +322,13 @@ function InstructorCourseViewPage() {
     // Simply open the video in a new window/tab
     window.open(chosen, '_blank', 'noopener,noreferrer');
     log("Opened video in new window:", chosen);
+    // Simply open the video in a new window/tab
+    window.open(chosen, '_blank', 'noopener,noreferrer');
+    log("Opened video in new window:", chosen);
   };
 
   /* =========================
+     File open/close (PDF etc.) - Simplified to open in new window
      File open/close (PDF etc.) - Simplified to open in new window
      ========================= */
   const handleViewFile = (urlOrPath) => {
@@ -505,6 +513,7 @@ function InstructorCourseViewPage() {
   }, [activeUnit, examId, userId]);
 
   // Fetch admin practice tests with improved error handling
+  // Fetch admin practice tests with improved error handling
   const [adminPracticeTests, setAdminPracticeTests] = useState([]);
   useEffect(() => {
     const fetchAdminPracticeTests = async () => {
@@ -552,6 +561,26 @@ function InstructorCourseViewPage() {
           throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
         }
         
+        
+        if (!res.ok) {
+          const errorText = await res.text().catch(() => "");
+          error("AdminPracticeTests API error", {
+            status: res.status,
+            statusText: res.statusText,
+            url,
+            responseText: errorText
+          });
+          
+          // If it's a 500 error, still set empty array and continue
+          if (res.status === 500) {
+            warn("Server error occurred, continuing with empty practice tests");
+            setAdminPracticeTests([]);
+            return;
+          }
+          
+          throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+        }
+        
         const data = await res.json();
         if (Array.isArray(data)) {
           log("AdminPracticeTests array length", data.length);
@@ -563,6 +592,7 @@ function InstructorCourseViewPage() {
         }
       } catch (err) {
         error("Error fetching Admin Practice Tests:", err);
+        // Set empty array instead of keeping previous state
         // Set empty array instead of keeping previous state
         setAdminPracticeTests([]);
       }
@@ -742,6 +772,7 @@ useEffect(() => {
 
   return (
     <div id="main_content" className="font-muli theme-blush">
+    <div id="main_content" className="font-muli theme-blush">
       
       <HeaderTop />
       <RightSidebar />
@@ -862,6 +893,7 @@ useEffect(() => {
                 ) : (
                   <div className="row">
                     {section.data.map((item, idx2) => {
+                      const idKey = item.id ?? item.contentId ?? item.examid ?? idx2;
                       const idKey = item.id ?? item.contentId ?? item.examid ?? idx2;
                       const thisItemId = (item.id ?? item.contentId ?? item.Id ?? item.ContentId);
 
