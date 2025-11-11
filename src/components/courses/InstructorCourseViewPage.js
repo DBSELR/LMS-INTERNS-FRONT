@@ -7,8 +7,11 @@ import { useParams, useLocation, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 import { Document, Page } from '@react-pdf/renderer';
 import * as pdfjs from 'pdfjs-dist';
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -16,6 +19,7 @@ import * as pdfjs from 'pdfjs-dist';
 import API_BASE_URL from "../../config";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
 try {
@@ -26,6 +30,8 @@ try {
 }
 pdfjs.GlobalWorkerOptions.disableWorker = true;
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -161,6 +167,7 @@ function InstructorCourseViewPage() {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [isVimeoUrl, setIsVimeoUrl] = useState(false);
@@ -175,6 +182,8 @@ function InstructorCourseViewPage() {
   const [numPages, setNumPages] = useState(null);
   const [visitedPages, setVisitedPages] = useState(new Set());
 
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 =======
@@ -318,6 +327,7 @@ function InstructorCourseViewPage() {
     const fullUrl = toAbsoluteLocal(apiOrigin, urlOrPath);
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     group("Open File – Payload", { raw: urlOrPath, fullUrl, apiOrigin, progressKey: `ebook-progress-${fullUrl}` });
     // Always open the file in the in-app modal. For PDFs we use react-pdf;
     // for other types we render an iframe so the browser or online viewers
@@ -375,12 +385,17 @@ function InstructorCourseViewPage() {
 =======
 =======
 >>>>>>> Stashed changes
+=======
+>>>>>>> Stashed changes
     group("Open File – Payload", { raw: urlOrPath, fullUrl, apiOrigin });
     
     // Simply open the file in a new window/tab
     window.open(fullUrl, '_blank', 'noopener,noreferrer');
     log("Opened file in new window:", fullUrl);
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -1082,6 +1097,7 @@ useEffect(() => {
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
       
 
       {/* VIDEO MODAL */}
@@ -1276,6 +1292,9 @@ useEffect(() => {
         </Modal.Body>
       </Modal>
       
+=======
+      <Footer />
+>>>>>>> Stashed changes
 =======
       <Footer />
 >>>>>>> Stashed changes
