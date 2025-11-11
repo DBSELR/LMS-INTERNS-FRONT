@@ -226,13 +226,13 @@ function AdminCourseUploadPage() {
                     value={form.contentType}
                     onChange={(e) => setForm({ ...form, contentType: e.target.value })}
                   >
-                    <option value="EBOOK">EBOOK</option>
+                    {/* <option value="EBOOK">EBOOK</option> */}
                     <option value="WebResources">Web Resources</option>
                     <option value="FAQ">Pre-Learning : FAQ</option>
-                    <option value="Misconceptions">Pre-Learning : Misconceptions</option>
-                    <option value="PracticeAssignment">Practice Assignment</option>
+                    {/* <option value="Misconceptions">Pre-Learning : Misconceptions</option> */}
+                    <option value="PracticeAssignment">Practice Test</option>
                     <option value="StudyGuide">Study Guide</option>
-                    <option value="Video">Video</option>
+                    {/* <option value="Video">Video</option> */}
                   </select>
                 </div>
 

@@ -230,7 +230,11 @@ body:not(.sidebar-open) .page {
   font-weight: 0;
 }
 
-
+.form-check-input {
+    position: relative !important;
+    margin-top: .3rem;
+    margin-left: -1.25rem;
+}
 /* CoursesTab.css start*/
 
 /* ========= Container ========= */

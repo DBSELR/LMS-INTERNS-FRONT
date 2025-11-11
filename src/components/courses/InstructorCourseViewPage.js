@@ -1,16 +1,19 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { Modal } from "react-bootstrap";
 import HeaderTop from "../../components/HeaderTop";
 import RightSidebar from "../../components/RightSidebar";
 import LeftSidebar from "../../components/LeftSidebar";
 import Footer from "../../components/Footer";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
+<<<<<<< Updated upstream
 import { Document, Page } from '@react-pdf/renderer';
 import * as pdfjs from 'pdfjs-dist';
+=======
+>>>>>>> Stashed changes
 import API_BASE_URL from "../../config";
 import pdfWorker from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 
+<<<<<<< Updated upstream
 try {
   pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
 } catch (e) {
@@ -19,6 +22,8 @@ try {
 }
 pdfjs.GlobalWorkerOptions.disableWorker = true;
 
+=======
+>>>>>>> Stashed changes
 /* =========================
    Debug helpers (toggleable)
    ========================= */
@@ -54,70 +59,6 @@ function normalizeUrl(raw) {
   return u;
 }
 
-/* =========================
-   Watermark helpers
-   ========================= */
-   // Live clock (ticks every second)
-function useLiveClock({ timeZone = 'Asia/Kolkata', intervalMs = 1000 } = {}) {
-  const [now, setNow] = React.useState(() => new Date());
-  React.useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), intervalMs);
-    return () => clearInterval(id);
-  }, [intervalMs]);
-  return now.toLocaleString('en-IN', {
-    timeZone,
-    year: 'numeric', month: '2-digit', day: '2-digit',
-    hour: '2-digit', minute: '2-digit', second: '2-digit',
-    hour12: true,
-  });
-}
-
-// Extract only identity once (role + userId)
-function getIdentityFromToken(storageKey = "jwt") {
-  try {
-    const token = localStorage.getItem(storageKey) || (storageKey !== "jwt" ? localStorage.getItem("jwt") : null);
-    if (!token) return { role: "User", userId: "NA" };
-    const claims = jwtDecode(token) || {};
-    const role =
-      claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-      claims.role ||
-      (Array.isArray(claims.roles) && claims.roles[0]) ||
-      "User";
-    const userId =
-      claims.UserId ||
-      claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
-      claims.sub || claims.nameid || "NA";
-    return { role, userId };
-  } catch {
-    return { role: "User", userId: "NA" };
-  }
-}
-
-function getDisplayTextFromToken(storageKey = "jwt") {
-  try {
-    const token = localStorage.getItem(storageKey) || (storageKey !== "jwt" ? localStorage.getItem("jwt") : null);
-    if (!token) return "User-NA";
-    const claims = jwtDecode(token) || {};
-    const role =
-      claims["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-      claims.role ||
-      (Array.isArray(claims.roles) && claims.roles[0]) ||
-      "User";
-    const userId =
-      claims.UserId ||
-      claims["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
-      claims.sub ||
-      claims.nameid ||
-      "NA";
-    const loginDateTime =
-      claims.loginDateTime ||
-      (claims.iat ? new Date(claims.iat * 1000).toLocaleString() : new Date().toLocaleString());
-    return `${role}-${userId} | ${loginDateTime}`;
-  } catch {
-    return "User-NA";
-  }
-}
-
 function getApiOrigin() {
   // Accepts values like "https://host/api" or "https://host" or "https://host:port/api/"
   try {
@@ -142,12 +83,7 @@ function getApiOrigin() {
 function isHttpUrl(u) {
   return /^https?:\/\//i.test(u || "");
 }
-function isVimeo(u) {
-  return /vimeo\.com/i.test(u || "");
-}
-function isYouTube(u) {
-  return /youtu\.be|youtube\.com/i.test(u || "");
-}
+
 function toAbsoluteLocal(origin, pathOrUrl) {
   if (!pathOrUrl) return "";
   if (isHttpUrl(pathOrUrl)) return pathOrUrl; // already absolute
@@ -217,6 +153,7 @@ function InstructorCourseViewPage() {
   const [exams, setExams] = useState([]); // kept in case you map exams later
   const [liveClasses, setLiveClasses] = useState([]);
 
+<<<<<<< Updated upstream
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [videoUrl, setVideoUrl] = useState("");
   const [isVimeoUrl, setIsVimeoUrl] = useState(false);
@@ -231,6 +168,8 @@ function InstructorCourseViewPage() {
   const [numPages, setNumPages] = useState(null);
   const [visitedPages, setVisitedPages] = useState(new Set());
 
+=======
+>>>>>>> Stashed changes
   const [activeUnit, setActiveUnit] = useState("");
   const [allUnits, setAllUnits] = useState([]);
 
@@ -244,35 +183,6 @@ function InstructorCourseViewPage() {
     webresources: useRef(null),
   };
 
-  const lastLoggedVideoPct = useRef(-1);
-  
-  // Watermark refs and displayText
-  // Watermark refs and displayText (live ticking time)
-  const { role: wmRole, userId: wmUserId } = useMemo(() => getIdentityFromToken("jwt"), []);
-  const liveTime = useLiveClock({ timeZone: 'Asia/Kolkata', intervalMs: 1000 });
-  const displayText = `${wmRole}-${wmUserId} | ${liveTime}`;
-
-  const wmVideoRef = useRef(null);
-  const wmPdfRef = useRef(null);
-  // Animation state for watermarks
-  const videoWmStateRef = useRef({
-    x: 20,
-    y: 20,
-    vx: 40 * 0.7, // speed * 0.7
-    vy: 40 * 0.3, // speed * 0.3
-    lastT: 0,
-    nextJitterAt: 0,
-  });
-  
-  const pdfWmStateRef = useRef({
-    x: 50,
-    y: 50,
-    vx: 35 * 0.8,
-    vy: 35 * 0.4,
-    lastT: 0,
-    nextJitterAt: 0,
-  });
-  
   const apiOrigin = getApiOrigin();
 
   // === Delete helpers ===
@@ -349,185 +259,6 @@ function InstructorCourseViewPage() {
     }
   }
 
-  // Enhanced right-click and developer tools blocking
-  useEffect(() => {
-    const root = document.getElementById("main_content");
-    if (!root) return;
-    
-    // Prevent right-click context menu
-    const preventCtx = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    };
-    
-    // Prevent common developer shortcuts
-    const preventDevTools = (e) => {
-      // F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+U, Ctrl+Shift+C
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'U')
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    };
-    
-    // Prevent text selection
-    const preventSelection = (e) => {
-      if (e.ctrlKey && e.key === 'a') {
-        e.preventDefault();
-        return false;
-      }
-    };
-    
-    // Add event listeners
-    root.addEventListener("contextmenu", preventCtx);
-    document.addEventListener("keydown", preventDevTools);
-    document.addEventListener("keydown", preventSelection);
-    
-    // Disable drag and drop
-    root.addEventListener("dragstart", preventCtx);
-    root.addEventListener("drop", preventCtx);
-    
-    return () => {
-      root.removeEventListener("contextmenu", preventCtx);
-      document.removeEventListener("keydown", preventDevTools);
-      document.removeEventListener("keydown", preventSelection);
-      root.removeEventListener("dragstart", preventCtx);
-      root.removeEventListener("drop", preventCtx);
-    };
-  }, []);
-
-  // Watermark animation effect
-  useEffect(() => {
-    let rafId = null;
-    
-    const animateWatermark = (wmRef, stateRef, containerId) => {
-      const wm = wmRef.current;
-      const container = document.querySelector(containerId);
-      if (!wm || !container) return;
-
-      const getBounds = () => {
-        const cw = container.clientWidth;
-        const ch = container.clientHeight;
-        const ww = wm.offsetWidth;
-        const wh = wm.offsetHeight;
-        return { cw, ch, ww, wh };
-      };
-
-      const pickJitter = (speed = 40) => {
-        const now = performance.now();
-        stateRef.current.nextJitterAt = now + 1500 + Math.random() * 2000;
-        const angle = Math.random() * 0.9 - 0.45; // ~±26°
-        const { vx, vy } = stateRef.current;
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        let nvx = vx * cos - vy * sin;
-        let nvy = vx * sin + vy * cos;
-        const mag = Math.hypot(nvx, nvy) || 1;
-        stateRef.current.vx = (nvx / mag) * speed;
-        stateRef.current.vy = (nvy / mag) * speed;
-      };
-
-      const step = (t) => {
-        const s = stateRef.current;
-        if (!s.lastT) s.lastT = t;
-        const dt = Math.min(0.05, (t - s.lastT) / 1000);
-        s.lastT = t;
-
-        if (t >= s.nextJitterAt) pickJitter();
-
-        let { x, y, vx, vy } = s;
-        x += vx * dt;
-        y += vy * dt;
-
-        const { cw, ch, ww, wh } = getBounds();
-
-        if (x <= 0) { x = 0; vx = Math.abs(vx); }
-        else if (x + ww >= cw) { x = cw - ww; vx = -Math.abs(vx); }
-
-        if (y <= 0) { y = 0; vy = Math.abs(vy); }
-        else if (y + wh >= ch) { y = ch - wh; vy = -Math.abs(vy); }
-
-        s.x = x; s.y = y; s.vx = vx; s.vy = vy;
-        if (wm) {
-          wm.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-        }
-
-        rafId = requestAnimationFrame(step);
-      };
-
-      stateRef.current.nextJitterAt = performance.now() + 1500;
-      return step;
-    };
-
-    // Start animation when modals are open
-    if (showVideoModal) {
-      const step = animateWatermark(wmVideoRef, videoWmStateRef, '.video-wrapper');
-      rafId = requestAnimationFrame(step);
-    } else if (showFileModal) {
-      const step = animateWatermark(wmPdfRef, pdfWmStateRef, '.relative-wrap');
-      rafId = requestAnimationFrame(step);
-    }
-
-    return () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
-    };
-  }, [showVideoModal, showFileModal]);
-
-  // Enhanced modal security - Block right-click when modals are open
-  useEffect(() => {
-    if (!showVideoModal && !showFileModal) return;
-
-    const preventAll = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      return false;
-    };
-
-    const preventDevToolsStrict = (e) => {
-      // Block all developer shortcuts when modal is open
-      if (
-        e.key === 'F12' ||
-        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) ||
-        (e.ctrlKey && e.key === 'U') ||
-        (e.ctrlKey && e.key === 'S') || // Block Ctrl+S (Save As)
-        (e.ctrlKey && e.shiftKey && e.key === 'S') || // Block Ctrl+Shift+S
-        (e.ctrlKey && e.key === 'P') // Block Ctrl+P (Print)
-      ) {
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-    };
-
-    // Add strict event listeners when modal is open
-    document.addEventListener("contextmenu", preventAll, true);
-    document.addEventListener("selectstart", preventAll, true);
-    document.addEventListener("dragstart", preventAll, true);
-    document.addEventListener("keydown", preventDevToolsStrict, true);
-    
-    // Disable print screen
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "PrintScreen") {
-        e.preventDefault();
-        return false;
-      }
-    }, true);
-
-    return () => {
-      document.removeEventListener("contextmenu", preventAll, true);
-      document.removeEventListener("selectstart", preventAll, true);
-      document.removeEventListener("dragstart", preventAll, true);
-      document.removeEventListener("keydown", preventDevToolsStrict, true);
-    };
-  }, [showVideoModal, showFileModal]);
-
   useEffect(() => {
     info("Component mounted", {
       courseId,
@@ -548,30 +279,17 @@ function InstructorCourseViewPage() {
   }, []);
 
   /* =========================
-     Video open/close
+     Video open - Simplified to open in new window
      ========================= */
-  function getPlayableVideoUrl(item) {
+  const handleWatchVideo = (item) => {
     // Prefer local fileUrl if present; else use vurl
     const vurlClean = normalizeUrl(item.vurl || "");
     const chosen = item.fileUrl ? toAbsoluteLocal(apiOrigin, item.fileUrl) : vurlClean;
-    return chosen;
-  }
-
-  const handleWatchVideo = (item) => {
-    const chosen = getPlayableVideoUrl(item);
-    const vimeo = isVimeo(chosen);
-    const ytb = isYouTube(chosen);
 
     group("Open Video – Payload", {
       item,
-      normalized: {
-        fileUrl: item.fileUrl,
-        vurl: normalizeUrl(item.vurl || ""),
-      },
       chosenUrl: chosen,
-      classification: { vimeo, youTube: ytb, absolute: isHttpUrl(chosen) },
       apiOrigin,
-      progressKey: `video-progress-${chosen}`,
     });
 
     if (!chosen) {
@@ -579,31 +297,17 @@ function InstructorCourseViewPage() {
       return;
     }
 
-    setIsVimeoUrl(vimeo);
-    setIsYouTubeUrl(ytb);
-    setVideoUrl(chosen);
-    setShowVideoModal(true);
-
-    const progress = parseInt(localStorage.getItem(`video-progress-${chosen}`)) || 0;
-    log("Loaded stored video progress", { progress, key: `video-progress-${chosen}` });
-    setCurrentVideoProgress(progress);
-  };
-
-  const handleCloseVideo = () => {
-    log("Closing video modal");
-    setShowVideoModal(false);
-    setVideoUrl("");
-    setCurrentVideoProgress(0);
-    lastLoggedVideoPct.current = -1;
-    setIsVimeoUrl(false);
-    setIsYouTubeUrl(false);
+    // Simply open the video in a new window/tab
+    window.open(chosen, '_blank', 'noopener,noreferrer');
+    log("Opened video in new window:", chosen);
   };
 
   /* =========================
-     File open/close (PDF etc.)
+     File open/close (PDF etc.) - Simplified to open in new window
      ========================= */
   const handleViewFile = (urlOrPath) => {
     const fullUrl = toAbsoluteLocal(apiOrigin, urlOrPath);
+<<<<<<< Updated upstream
     group("Open File – Payload", { raw: urlOrPath, fullUrl, apiOrigin, progressKey: `ebook-progress-${fullUrl}` });
     // Always open the file in the in-app modal. For PDFs we use react-pdf;
     // for other types we render an iframe so the browser or online viewers
@@ -658,6 +362,13 @@ function InstructorCourseViewPage() {
 
       return updated;
     });
+=======
+    group("Open File – Payload", { raw: urlOrPath, fullUrl, apiOrigin });
+    
+    // Simply open the file in a new window/tab
+    window.open(fullUrl, '_blank', 'noopener,noreferrer');
+    log("Opened file in new window:", fullUrl);
+>>>>>>> Stashed changes
   };
 
   /* =========================
@@ -763,7 +474,7 @@ function InstructorCourseViewPage() {
     fetchPracticeExams();
   }, [activeUnit, examId, userId]);
 
-  // Fetch admin practice tests
+  // Fetch admin practice tests with improved error handling
   const [adminPracticeTests, setAdminPracticeTests] = useState([]);
   useEffect(() => {
     const fetchAdminPracticeTests = async () => {
@@ -791,7 +502,26 @@ function InstructorCourseViewPage() {
         const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
         console.timeEnd(`[${tag}] GET AdminPracticeTests`);
         log("AdminPracticeTests response status", res.status);
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        
+        if (!res.ok) {
+          const errorText = await res.text().catch(() => "");
+          error("AdminPracticeTests API error", {
+            status: res.status,
+            statusText: res.statusText,
+            url,
+            responseText: errorText
+          });
+          
+          // If it's a 500 error, still set empty array and continue
+          if (res.status === 500) {
+            warn("Server error occurred, continuing with empty practice tests");
+            setAdminPracticeTests([]);
+            return;
+          }
+          
+          throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
+        }
+        
         const data = await res.json();
         if (Array.isArray(data)) {
           log("AdminPracticeTests array length", data.length);
@@ -803,6 +533,7 @@ function InstructorCourseViewPage() {
         }
       } catch (err) {
         error("Error fetching Admin Practice Tests:", err);
+        // Set empty array instead of keeping previous state
         setAdminPracticeTests([]);
       }
     };
@@ -980,14 +711,7 @@ useEffect(() => {
   const filteredStudyGuide = filteredByUnit(studyguide);
 
   return (
-    <div 
-      id="main_content" 
-      className="font-muli theme-blush"
-      onContextMenu={(e) => e.preventDefault()}
-      onSelectStart={(e) => e.preventDefault()}
-      onDragStart={(e) => e.preventDefault()}
-      style={{userSelect: 'none', WebkitUserSelect: 'none', MozUserSelect: 'none', msUserSelect: 'none'}}
-    >
+    <div id="main_content" className="font-muli theme-blush">
       
       <HeaderTop />
       <RightSidebar />
@@ -1108,32 +832,7 @@ useEffect(() => {
                 ) : (
                   <div className="row">
                     {section.data.map((item, idx2) => {
-                      // Decide a storage key based on final absolute URL (for consistent progress)
-                      const playableUrl =
-                        section.key === "videos"
-                          ? getPlayableVideoUrl(item)
-                          : toAbsoluteLocal(apiOrigin, item.fileUrl);
-
-                      const idKey =
-                        item.id ?? item.contentId ?? item.examid ?? playableUrl ?? idx2;
-
-                      let progressKey = "";
-                      if (section.key === "videos") progressKey = `video-progress-${playableUrl}`;
-                      else if (section.key === "ebooks") progressKey = `ebook-progress-${playableUrl}`;
-                      else if (section.key === "webresources") progressKey = `webresource-progress-${playableUrl}`;
-                      else if (section.key === "faq") progressKey = `faq-progress-${playableUrl}`;
-                      else if (section.key === "misconceptions") progressKey = `misconception-progress-${playableUrl}`;
-                      else if (section.key === "practiceassignment") progressKey = `practiceassignment-progress-${playableUrl}`;
-                      else if (section.key === "studyguide") progressKey = `studyguide-progress-${playableUrl}`;
-                      else if (section.key === "liveclass") progressKey = `liveclass-progress-${playableUrl}`;
-                      else if (section.key === "assignments") progressKey = `assignment-progress-${playableUrl}`;
-                      else if (section.key === "exams") progressKey = `exam-progress-${playableUrl}`;
-                      else if (section.key === "discussionforum") progressKey = `discussion-progress-${playableUrl}`;
-
-                      const progress = parseInt(localStorage.getItem(progressKey)) || 0;
-                      const progressColor =
-                        progress < 30 ? "#e74c3c" : progress < 70 ? "#f39c12" : "#27ae60";
-
+                      const idKey = item.id ?? item.contentId ?? item.examid ?? idx2;
                       const thisItemId = (item.id ?? item.contentId ?? item.Id ?? item.ContentId);
 
                       return (
@@ -1173,8 +872,6 @@ useEffect(() => {
                                   View File
                                 </button>
                               )}
-
-                              
                             </div>
                           </div>
                         </div>
@@ -1368,6 +1065,7 @@ useEffect(() => {
       </div>
       </div>
 
+<<<<<<< Updated upstream
       
 
       {/* VIDEO MODAL */}
@@ -1562,10 +1260,11 @@ useEffect(() => {
         </Modal.Body>
       </Modal>
       
+=======
+      <Footer />
+>>>>>>> Stashed changes
     </div>
   );
 }
-
-
 
 export default InstructorCourseViewPage;

@@ -19,9 +19,44 @@
   /* border-top: 1px solid #eee; */
 }
 
-@media (max-width: 768px) {
+/* Large devices (desktops, 992px and up) */
+@media (min-width: 992px) {
   .fixed-footer {
-    font-size: 14px;
+    font-size: 13px;
+    padding: 10px 0;
+  }
+}
+
+/* Medium devices (tablets, 768px to 991px) */
+@media (max-width: 991px) {
+  .fixed-footer {
+    font-size: 12px;
+    padding: 9px 0;
+  }
+}
+
+/* Small devices (landscape phones, 576px to 767px) */
+@media (max-width: 767px) {
+  .fixed-footer {
+    font-size: 11px;
     padding: 8px 0;
+    text-align: center;
+  }
+}
+
+/* Extra small devices (portrait phones, less than 576px) */
+@media (max-width: 575px) {
+  .fixed-footer {
+    font-size: 10px;
+    padding: 6px 0;
+    text-align: center;
+  }
+}
+
+/* Very small devices (less than 400px) */
+@media (max-width: 399px) {
+  .fixed-footer {
+    font-size: 9px;
+    padding: 5px 0;
   }
 }
