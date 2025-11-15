@@ -532,12 +532,12 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
           {renderSelect("Batch", "batch", batchList, (b) => b, (b) => b, { placeholder: "-- Select Batch --" })}
           {renderSelect(
-            "Class",
+            "Course",
             "programmeId",
             filteredProgrammes,
             (p) => p.programmeId,
             (p) => `${p.programmeName} (${p.programmeCode})`,
-            { placeholder: "-- Select Class --" }
+            { placeholder: "-- Select Course --" }
           )}
           {renderSelect(
             "Pursuing Degree",
