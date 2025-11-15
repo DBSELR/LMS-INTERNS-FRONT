@@ -249,14 +249,15 @@ function TransactionsTable() {
                 <tr>
                   <th>Reg No</th>
                   <th>Student Name</th>
-                  <th>Fee Head</th>
-                  <th>Installment</th>
+                  <th>Course</th>
+                  {/* <th>Fee Head</th>
+                  <th>Installment</th> */}
                   <th>Amount Due</th>
                   <th>Paid</th>
                   <th>Balance</th>
                   <th>Due Date</th>
                   <th>Status</th>
-                  <th>Remarks</th>
+                  {/* <th>Remarks</th> */}
                   <th style={{ width: 40 }}>
                     <input
                       type="checkbox"
@@ -287,6 +288,11 @@ function TransactionsTable() {
                         <strong>{transaction.studentName || "Unknown"}</strong>
                       </td>
                       <td>
+                        <small className="text-muted">
+                          <strong>{transaction.course || "No course"}</strong>
+                        </small>
+                      </td> 
+                      {/* <td>
                         <span className="text-primary font-weight-bold">
                           {transaction.feeHead || "N/A"}
                         </span>
@@ -295,7 +301,7 @@ function TransactionsTable() {
                         <span className="badge badge-info">
                           {transaction.installment || 0}
                         </span>
-                      </td>
+                      </td> */}
                       <td>
                         <strong className="text-danger">
                           {formatCurrency(transaction.amountDue)}
@@ -322,11 +328,11 @@ function TransactionsTable() {
                           transaction.amountDue
                         )}
                       </td>
-                      <td>
+                      {/* <td>
                         <small className="text-muted">
                           {transaction.remarks || "No remarks"}
                         </small>
-                      </td>
+                      </td> */}
                       <td>
                         <input
                           type="checkbox"

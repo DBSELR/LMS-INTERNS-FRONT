@@ -28,25 +28,53 @@ function SemesterFeeTemplateManager() {
 
   // ----------------- initial data: Programmes & Batches -----------------
   useEffect(() => {
-    fetchInitialData();
+    // Load available universities on mount. Batch data is loaded when
+    // a university is selected (see the effect watching `selectedUniversity`).
     fetchUniversities();
   }, []);
 
-  const fetchInitialData = async () => {
+  // Fetch batches/programmes for a given university using the
+  // GetBatchByuniversity endpoint. This replaces the previous
+  // Programme/ProgrammeBatch call and accepts `universityName`.
+  const fetchInitialData = async (universityName) => {
+    setLoadingColleges(true);
     try {
       const token = localStorage.getItem("jwt");
-      const res = await fetch(`${API_BASE_URL}/Programme/ProgrammeBatch`, {
+      const url = `${API_BASE_URL}/Fee/GetBatchByuniversity?uname=${encodeURIComponent(
+        universityName || ""
+      )}`;
+      console.log("🔍 Fetching batches/programmes from:", url);
+
+      const response = await fetch(url, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
 
-      const data = await res.json();
-      setCourseList(data);
-      setBatchList([...new Set(data.map((p) => p.batchName))]);
-    } catch (err) {
-      console.error("Failed to fetch initial data", err);
-      alert("Failed to fetch initial data");
+      console.log("📡 Batches API response status:", response.status);
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("✅ Batches data received:", data);
+        // Defensive handling: API may return array of objects or empty
+        // Use fields found in the previous ProgrammeBatch response when available
+        setCourseList(data || []);
+        try {
+          const names = Array.isArray(data) ? data.map((p) => p.batchName || p.batch || "") : [];
+          setBatchList([...new Set(names.filter(Boolean))]);
+        } catch (e) {
+          setBatchList([]);
+        }
+      } else {
+        const errorText = await response.text();
+        console.error("❌ Failed to fetch batches/programmes:", response.status, errorText);
+        toast.error(`Failed to load batches: ${response.status}`);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching batches/programmes:", error);
+      toast.error("Error loading batches/programmes");
+    } finally {
+      setLoadingColleges(false);
     }
   };
 
@@ -126,6 +154,20 @@ function SemesterFeeTemplateManager() {
     }
   }, [selectedUniversity]);
 
+  // Fetch batches/programmes when university changes
+  useEffect(() => {
+    if (selectedUniversity && selectedUniversity !== "") {
+      fetchInitialData(selectedUniversity);
+    } else {
+      // clear course/batch data when no university is selected
+      setCourseList([]);
+      setBatchList([]);
+      setSelectedBatch("");
+      setSelectedCourse("");
+      setSelectedGroup("");
+    }
+  }, [selectedUniversity]);
+
   // ----------------- load groups when batch + course selected -----------------
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -189,29 +231,37 @@ function SemesterFeeTemplateManager() {
       return;
     }
 
-    // Get the selected college ID from the colleges array
-    const selectedCollegeObj = colleges.find(c => 
-      (c?.college || c?.cname || c?.collegeName || c?.name || c?.CollegeName || c) === selectedCollege
-    );
-    const colId = selectedCollegeObj ? selectedCollegeObj.id : null;
+    // Resolve the selected college object and id robustly. The API
+    // may return different shapes (strings, objects with id/colId/college, etc.).
+    const selectedCollegeObj = (colleges || []).find((c) => {
+      if (!c) return false;
+      if (typeof c === "string") return String(c) === String(selectedCollege);
+      const candidates = [c.college, c.cname, c.collegeName, c.name, c.CollegeName, c.colcode, c.colId, c.id, c.collegeId];
+      return candidates.some((v) => v !== undefined && String(v) === String(selectedCollege));
+    }) || null;
+
+    // Derive colId from common fields or fall back to numeric parse of selectedCollege
+    const colId = selectedCollegeObj?.id ?? selectedCollegeObj?.colId ?? selectedCollegeObj?.collegeId ?? selectedCollegeObj?.colcode ?? (Number.isFinite(Number(selectedCollege)) ? parseInt(selectedCollege) : null);
 
     if (!colId) {
-      toast.error("Unable to find college ID. Please select a college again.");
+      console.error("Unable to resolve college id", { selectedCollege, selectedCollegeObj, colleges });
+      toast.error("Unable to find college ID. Please re-select the college.");
       return;
     }
 
+    // Ensure we send correctly-typed fields expected by the backend.
+    // Use PascalCase keys to match the server model and coerce numeric values.
     const requestBody = {
-      batch: selectedBatch,
-      programmeId: selectedCourse || null,
-      dueDate: dueDateSelected
-        ? installmentDueDate.toISOString().split("T")[0]
-        : null,
-      fee: parseFloat(feeAmount),
-      colId: colId
+      Batch: selectedBatch || null,
+      ProgrammeId: selectedCourse ? (Number.isFinite(Number(selectedCourse)) ? parseInt(selectedCourse, 10) : null) : null,
+      DueDate: dueDateSelected ? installmentDueDate.toISOString().split("T")[0] : null,
+      Fee: feeAmount ? parseFloat(feeAmount) : null,
+      ColId: Number.isFinite(Number(colId)) ? parseInt(colId, 10) : null,
     };
 
     try {
       const token = localStorage.getItem("jwt");
+      console.log("➡️ Saving installment fee", { url: `${API_BASE_URL}/Fee/SaveInstallmentFee`, requestBody });
       const response = await fetch(`${API_BASE_URL}/Fee/SaveInstallmentFee`, {
         method: "POST",
         headers: {
@@ -221,19 +271,32 @@ function SemesterFeeTemplateManager() {
         body: JSON.stringify(requestBody),
       });
 
+      const contentType = response.headers.get("content-type") || "";
+      let payload = null;
+      try {
+        payload = contentType.includes("application/json") ? await response.json() : await response.text();
+      } catch (parseErr) {
+        payload = await response.text().catch(() => null);
+      }
+
       if (response.ok) {
-        const result = await response.json();
+        console.log("✅ Save successful", payload);
         // reload data after insert/update
         fetchInstallmentWiseFees(selectedBatch, selectedCourse, selectedGroup);
-        toast.success(result.message);
+        const message = (payload && payload.message) || "Saved successfully";
+        toast.success(message);
         // Reset form fields
         setFeeAmount("");
       } else {
-        const error = await response.json();
-        alert("Error: " + (error.error || "Failed to save data"));
+        console.error("❌ Save failed", { status: response.status, payload });
+        const serverMsg = (payload && (payload.error || payload.message)) || String(payload) || "Failed to save data";
+        toast.error(`Save failed: ${serverMsg}`);
+        alert("Error: " + serverMsg);
       }
     } catch (err) {
-      alert("Error: " + err.message);
+      console.error("❌ Error while saving installment fee", err, { requestBody });
+      toast.error("Error saving data: " + (err.message || String(err)));
+      alert("Error: " + (err.message || String(err)));
     }
   };
 
@@ -439,11 +502,18 @@ function SemesterFeeTemplateManager() {
             <option value="">Select Course</option>
             {courseList
               .filter((c) => c.batchName === selectedBatch)
-              .map((c) => (
-                <option key={c.programmeId} value={c.programmeId}>
-                  {c.programmeCode}-{c.programmeName}
-                </option>
-              ))}
+              .map((c, idx) => {
+                // support multiple possible property names returned by the API
+                const pid = c?.programmeId ?? c?.ProgrammeId ?? c?.programmeID ?? c?.programmeid ?? c?.programme_id ?? c?.programme ?? null;
+                const displayCode = c?.programmeCode ?? c?.programme_code ?? c?.code ?? "";
+                const displayName = c?.programmeName ?? c?.programme_name ?? c?.name ?? c?.pname ?? "";
+                const key = pid != null ? String(pid) : `course-${idx}`;
+                return (
+                  <option key={key} value={pid ?? ""}>
+                    {displayCode ? `${displayCode}-${displayName}` : displayName}
+                  </option>
+                );
+              })}
           </Form.Control>
         </div>
 
