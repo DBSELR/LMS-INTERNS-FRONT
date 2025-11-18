@@ -298,6 +298,36 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
       address: formData.address.trim(),
     };
 
+    // 🔍 Resolve colId when role is College
+let colId = null;
+if (trimmed.role === "College") {
+  const selectedCollegeObj = (colleges || []).find((c) => {
+    if (!c) return false;
+    // Try to match on any of the known name fields
+    const display =
+      c.college ||
+      c.cname ||
+      c.collegeName ||
+      c.name ||
+      c.CollegeName ||
+      c;
+
+    return String(display) === String(trimmed.college);
+  });
+
+  colId =
+    selectedCollegeObj?.id ??
+    selectedCollegeObj?.colId ??
+    selectedCollegeObj?.collegeId ??
+    null;
+
+  if (!colId) {
+    toast.error("Unable to resolve college ID. Please re-select the college.");
+    return;
+  }
+}
+
+
     const validationErrors = validate(trimmed);
     setErrors(validationErrors);
     if (Object.keys(validationErrors).length) {
@@ -327,6 +357,7 @@ function UserFormModal({ isOpen, onClose, user, onSave }) {
       dateOfBirth: trimmed.role === "College" ? "2000-01-01" : trimmed.dateOfBirth,
       gender: trimmed.role === "College" ? "Other" : trimmed.gender,
       address: trimmed.address,
+      colId: trimmed.role === "College" ? colId : null,
     };
     const payload = isCreate
       ? {

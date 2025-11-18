@@ -221,10 +221,14 @@ function SemesterFeeTemplateManager() {
       return;
     }
     
-    if (!selectedCourse) {
-      toast.error("Please select a course");
-      return;
-    }
+    // ⚠️ If no course selected, apply to ALL courses in this batch + college
+if (!selectedCourse) {
+  const proceedAll = window.confirm(
+    "No course selected.\nThis will create/update fee template for ALL COURSES in this batch and college.\n\nDo you want to continue?"
+  );
+  if (!proceedAll) return;
+}
+
     
     if (!feeAmount || parseFloat(feeAmount) <= 0) {
       toast.error("Please enter a valid fee amount");
@@ -252,12 +256,16 @@ function SemesterFeeTemplateManager() {
     // Ensure we send correctly-typed fields expected by the backend.
     // Use PascalCase keys to match the server model and coerce numeric values.
     const requestBody = {
-      Batch: selectedBatch || null,
-      ProgrammeId: selectedCourse ? (Number.isFinite(Number(selectedCourse)) ? parseInt(selectedCourse, 10) : null) : null,
-      DueDate: dueDateSelected ? installmentDueDate.toISOString().split("T")[0] : null,
-      Fee: feeAmount ? parseFloat(feeAmount) : null,
-      ColId: Number.isFinite(Number(colId)) ? parseInt(colId, 10) : null,
-    };
+  Batch: selectedBatch || null,
+  // 👉 If no course selected, ProgrammeId will be null (meaning ALL courses)
+  ProgrammeId: selectedCourse
+    ? (Number.isFinite(Number(selectedCourse)) ? parseInt(selectedCourse, 10) : null)
+    : null,
+  DueDate: dueDateSelected ? installmentDueDate.toISOString().split("T")[0] : null,
+  Fee: feeAmount ? parseFloat(feeAmount) : null,
+  ColId: Number.isFinite(Number(colId)) ? parseInt(colId, 10) : null,
+};
+
 
     try {
       const token = localStorage.getItem("jwt");
