@@ -105,7 +105,8 @@ function StudentsPage() {
   const handleAdd = async (student) => {
     try {
       const token = localStorage.getItem("jwt");
-      console.log("📤 Sending student data:", student);
+      // Send the student object as the top-level DTO expected by the controller
+      console.log("📤 Sending student data (top-level):", student);
       const res = await fetch(`${API_BASE_URL}/student/register`, {
         method: "POST",
         headers: {

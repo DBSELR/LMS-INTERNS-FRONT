@@ -6,17 +6,22 @@ import API_BASE_URL from "../../config";
 
 const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   // Get UserId from JWT token once, at the top
   let userId = "";
   const token = localStorage.getItem("jwt");
   if (token) {
     try {
       const decoded = jwtDecode(token);
-      userId = decoded.UserId || decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] || "";
+      userId =
+        decoded.UserId ||
+        decoded["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ||
+        "";
     } catch (e) {
       console.warn("Failed to decode JWT for UserId", e);
     }
   }
+
   /* ========= Error Modal ========= */
   const [showErrModal, setShowErrModal] = useState(false);
   const [errInfo, setErrInfo] = useState({
@@ -31,11 +36,11 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   const [batchList, setBatchList] = useState([]);
   const [filteredProgrammes, setFilteredProgrammes] = useState([]);
   const [semesterOptions, setSemesterOptions] = useState([]);
-  
+
   // Degree options as provided
   const degreeOptions = [
     "B A Honours",
-    "B AOL Honours", 
+    "B AOL Honours",
     "BBA Honours",
     "BCA Honours",
     "B Com Honours (General)",
@@ -46,15 +51,13 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     "B Sc Honours",
     "B Voc Honours",
     "B Com Honours (Logistics Management)",
-    "B Com Honours (BFSI)"
+    "B Com Honours (BFSI)",
   ];
 
   /* ========= Form ========= */
   const [formData, setFormData] = useState({
-    // Now shown in UI
     username: "",
     password: "",
-    // shown
     email: "",
     firstName: "",
     lastName: "",
@@ -68,7 +71,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     zipCode: "",
     profilePhotoUrl: "",
     batch: "",
-    programmeId: "",
+    programmeId: "", // keep as string in state
     semester: "1",
     degree: "",
   });
@@ -78,49 +81,38 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   const firstErrorRef = useRef(null);
 
   /* ========= Load options ========= */
-  // useEffect(() => {
-  //   const token = localStorage.getItem("jwt");
+  useEffect(() => {
+    const token = localStorage.getItem("jwt");
+    if (!userId) return; // ensure we have decoded UserId first
 
-  //   fetch(`${API_BASE_URL}/Programme/ProgrammeBatch`, {
-  //     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-  //   })
-  //     .then((r) => r.json())
-  //     .then((data) => {
-  //       setProgrammeOptions(data || []);
-  //       setBatchList([...new Set((data || []).map((p) => p.batchName))]);
-  //     })
-  //     .catch((e) => console.error("Programme fetch error:", e));
-  // }, []);
-
-  /* ========= Load options ========= */
-useEffect(() => {
-  const token = localStorage.getItem("jwt");
-  if (!userId) return; // ensure we have decoded UserId first
-
-  fetch(`${API_BASE_URL}/Programme/GetBatchByUsername?UserId=${userId}`, {
-    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-  })
-    .then((r) => r.json())
-    .then((data) => {
-      setProgrammeOptions(data || []);
-      setBatchList([...new Set((data || []).map((p) => p.batchName))]);
+    fetch(`${API_BASE_URL}/Programme/GetBatchByUsername?UserId=${userId}`, {
+      headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
     })
-    .catch((e) => console.error("GetBatchByUsername fetch error:", e));
-}, [userId]);
-
+      .then((r) => r.json())
+      .then((data) => {
+        console.log("[AddStudent] /GetBatchByUsername data:", data);
+        setProgrammeOptions(data || []);
+        setBatchList([...new Set((data || []).map((p) => p.batchName))]);
+      })
+      .catch((e) => console.error("GetBatchByUsername fetch error:", e));
+  }, [userId]);
 
   /* ========= Populate for edit ========= */
   useEffect(() => {
     if (student && programmeOptions.length) {
       const matchedProgramme = programmeOptions.find(
-        (p) => p.programmeName === student.programme || p.programmeId === student.programmeId
+        (p) =>
+          p.programmeName === student.programme ||
+          p.programmeId === student.programmeId
       );
       const dob = student.dateOfBirth?.split("T")[0] || "";
 
       setFormData((prev) => ({
         ...prev,
         ...student,
-        programmeId: matchedProgramme?.programmeId?.toString() || "",
+        programmeId: matchedProgramme?.programmeId
+          ? String(matchedProgramme.programmeId)
+          : "",
         batch: matchedProgramme?.batchName || student.batch || "",
         dateOfBirth: dob,
         username: student.username || "",
@@ -142,8 +134,9 @@ useEffect(() => {
     setFilteredProgrammes(progs);
 
     const selectedProgramme = programmeOptions.find(
-      (p) => p.programmeId === parseInt(formData.programmeId || "0")
+      (p) => String(p.programmeId) === String(formData.programmeId || "")
     );
+
     const semCount = selectedProgramme?.numberOfSemesters || 0;
     setSemesterOptions(Array.from({ length: semCount }, (_, i) => i + 1));
   }, [formData.batch, formData.programmeId, programmeOptions]);
@@ -154,39 +147,42 @@ useEffect(() => {
   const zipRegexIndia = /^[1-9][0-9]{5}$/;
 
   const validate = (fd) => {
-    // Adjusted validation to match the visible form fields.
     const err = {};
 
     if (!fd.username?.trim()) err.username = "Username is required";
-    else if (fd.username.trim().length < 3) err.username = "Username must be at least 3 characters";
+    else if (fd.username.trim().length < 3)
+      err.username = "Username must be at least 3 characters";
 
     if (!fd.email?.trim()) err.email = "Email is required";
-    else if (!emailRegex.test(fd.email.trim())) err.email = "Enter a valid email";
+    else if (!emailRegex.test(fd.email.trim()))
+      err.email = "Enter a valid email";
 
     if (!fd.firstName?.trim()) err.firstName = "First Name is required";
-    // lastName is not shown in the form currently, so make it optional
 
     const ph = phoneDigits(fd.phoneNumber);
     if (!ph) err.phoneNumber = "Phone Number is required";
-    else if (ph.length !== 10) err.phoneNumber = "Enter a 10-digit mobile number";
+    else if (ph.length !== 10)
+      err.phoneNumber = "Enter a 10-digit mobile number";
 
     if (!fd.dateOfBirth) err.dateOfBirth = "Date of Birth is required";
     else {
       const today = new Date();
       const dob = new Date(fd.dateOfBirth);
       if (dob > today) err.dateOfBirth = "DOB cannot be in the future";
-      const min = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
-      if (!err.dateOfBirth && dob > min) err.dateOfBirth = "Student must be at least 16 years old";
+      const min = new Date(
+        today.getFullYear() - 16,
+        today.getMonth(),
+        today.getDate()
+      );
+      if (!err.dateOfBirth && dob > min)
+        err.dateOfBirth = "Student must be at least 16 years old";
     }
 
     if (!fd.gender?.trim()) err.gender = "Gender is required";
-    // Address, city, state, country and zip are not part of the visible form, so they are optional here.
-
     if (!fd.batch) err.batch = "Batch is required";
     if (!fd.programmeId) err.programmeId = "Board is required";
     if (!fd.degree?.trim()) err.degree = "Degree is required";
 
-    // profilePhotoUrl left optional
     return err;
   };
 
@@ -197,7 +193,7 @@ useEffect(() => {
       if (typeof x === "number") return x === 409;
       if (x.status === 409) return true;
       if (x.response?.status === 409) return true;
-      if (x.ok === false && x.status === 409) return true; // fetch Response
+      if (x.ok === false && x.status === 409) return true;
       return false;
     } catch {
       return false;
@@ -238,16 +234,18 @@ useEffect(() => {
         raw: data,
       };
     }
-    
-    // Handle 400 Bad Request with more specific error messages
+
     if (Number(status) === 400) {
       let message = "Invalid data provided.";
-      
+
       if (data?.errors) {
-        // Handle ASP.NET Core ModelState validation errors
         const errorMessages = Object.entries(data.errors)
-          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
-          .join('\n');
+          .map(([field, messages]) =>
+            `${field}: ${
+              Array.isArray(messages) ? messages.join(", ") : messages
+            }`
+          )
+          .join("\n");
         message = `Validation errors:\n${errorMessages}`;
       } else if (data?.error) {
         message = data.error;
@@ -256,7 +254,7 @@ useEffect(() => {
       } else if (typeof data === "string") {
         message = data;
       }
-      
+
       return {
         title: "Validation Error",
         message: message,
@@ -264,7 +262,7 @@ useEffect(() => {
         raw: data,
       };
     }
-    
+
     return {
       title: "Save failed",
       message:
@@ -278,52 +276,56 @@ useEffect(() => {
   }
 
   /* ========= Portal Modal ========= */
-const ErrorDetailsModal = ({ open, info, onClose }) => {
-  if (!open) return null;
-  return (
-    <>
-      <div
-        className="modal-backdrop fade show"
-        style={{ display: "block" }}
-        onClick={onClose}
-      />
-      <div
-        className="modal fade show"
-        tabIndex={-1}
-        role="dialog"
-        style={{ display: "block" }}
-        aria-modal="true"
-      >
-        <div className="modal-dialog modal-dialog-centered" role="document">
-          <div className="modal-content shadow">
-            <div className="modal-header bg-warning text-dark">
-              <h5 className="modal-title">
-                <i className="fa fa-exclamation-triangle me-2 text-danger" />
-                {info.title || "Error"}
-              </h5>
-              <button
-                type="button"
-                className="btn-close"
-                aria-label="Close"
-                onClick={onClose}
-              />
-            </div>
-            <div className="modal-body text-center">
-              <div className="alert alert-warning mb-0 p-3">
-                <strong>{info.message}</strong>
+  const ErrorDetailsModal = ({ open, info, onClose }) => {
+    if (!open) return null;
+    return (
+      <>
+        <div
+          className="modal-backdrop fade show"
+          style={{ display: "block" }}
+          onClick={onClose}
+        />
+        <div
+          className="modal fade show"
+          tabIndex={-1}
+          role="dialog"
+          style={{ display: "block" }}
+          aria-modal="true"
+        >
+          <div className="modal-dialog modal-dialog-centered" role="document">
+            <div className="modal-content shadow">
+              <div className="modal-header bg-warning text-dark">
+                <h5 className="modal-title">
+                  <i className="fa fa-exclamation-triangle me-2 text-danger" />
+                  {info.title || "Error"}
+                </h5>
+                <button
+                  type="button"
+                  className="btn-close"
+                  aria-label="Close"
+                  onClick={onClose}
+                />
               </div>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-warning" onClick={onClose}>
-                Close
-              </button>
+              <div className="modal-body text-center">
+                <div className="alert alert-warning mb-0 p-3">
+                  <strong>{info.message}</strong>
+                </div>
+              </div>
+              <div className="modal-footer">
+                <button
+                  type="button"
+                  className="btn btn-warning"
+                  onClick={onClose}
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
-    </>
-  );
-};
+      </>
+    );
+  };
 
   /* ========= Handlers ========= */
   const handleInputChange = (e) => {
@@ -332,15 +334,19 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
     if (name === "phoneNumber") v = v.replace(/\D/g, "").slice(0, 10);
     if (name === "zipCode") v = v.replace(/\D/g, "").slice(0, 6);
-    if (name === "username") v = v.toLowerCase().replace(/[^a-z0-9._-]/g, ""); // Only allow alphanumeric, dots, underscores, hyphens
+    if (name === "username")
+      v = v.toLowerCase().replace(/[^a-z0-9._-]/g, ""); // Only allow alphanumeric, dots, underscores, hyphens
+
+    if (name === "programmeId") {
+      v = value == null ? "" : String(value); // always string in state
+    }
 
     setFormData((prev) => {
       const next = { ...prev, [name]: v };
-      // If username changes, automatically update password to match
       if (name === "username" && !editMode) {
         next.password = v;
       }
-      if (submitted) setErrors(validate(next)); // live-validate after first submit
+      if (submitted) setErrors(validate(next));
       return next;
     });
   };
@@ -357,92 +363,218 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
-  if (isSubmitting) return; // Prevent double submit
+  if (isSubmitting) return;
   setIsSubmitting(true);
   setSubmitted(true);
 
-    const trimmed = {
-      ...formData,
-      username: formData.username.trim(),
-      password: formData.password.trim(),
-      email: formData.email.trim(),
-      firstName: formData.firstName.trim(),
-      lastName: formData.lastName.trim(),
-      gender: formData.gender.trim(),
-      address: formData.address.trim(),
-      city: formData.city.trim(),
-      state: formData.state.trim(),
-      country: formData.country.trim(),
-      zipCode: formData.zipCode.trim(),
-      degree: formData.degree.trim(),
-    };
+  const trimmed = {
+    ...formData,
+    username: formData.username.trim(),
+    password: formData.password.trim(),
+    email: formData.email.trim(),
+    firstName: formData.firstName.trim(),
+    lastName: formData.lastName.trim(),
+    gender: formData.gender.trim(),
+    address: formData.address.trim(),
+    city: formData.city.trim(),
+    state: formData.state.trim(),
+    country: formData.country.trim(),
+    zipCode: formData.zipCode.trim(),
+    degree: formData.degree.trim(),
+  };
 
-    const validationErrors = validate(trimmed);
-    setErrors(validationErrors);
+  const validationErrors = validate(trimmed);
+  setErrors(validationErrors);
 
-    if (Object.keys(validationErrors).length) {
-      scrollToFirstError(validationErrors);
+  if (Object.keys(validationErrors).length) {
+    scrollToFirstError(validationErrors);
+    setIsSubmitting(false);
+    return;
+  }
+
+  // ✅ SAFEST: find the programme from dropdown list using the selected value
+  const selectedProgramme = programmeOptions.find(
+    (p) => String(p.programmeId) === String(formData.programmeId)
+  );
+
+  console.log("[AddStudent] formData.programmeId:", formData.programmeId);
+  console.log("[AddStudent] selectedProgramme:", selectedProgramme);
+
+  if (!selectedProgramme) {
+    // If for some reason we can't find it, stop and show error – never send 0
+    setErrors((prev) => ({
+      ...prev,
+      programmeId: "Please select a valid course",
+    }));
+    scrollToFirstError({ programmeId: true });
+    setIsSubmitting(false);
+    return;
+  }
+
+  const finalProgrammeId = selectedProgramme.programmeId; // <-- REAL INT FROM API
+  console.log("[AddStudent] finalProgrammeId to send:", finalProgrammeId);
+
+  const programmeName = selectedProgramme.programmeName || "";
+
+  const payload = {
+    Username: trimmed.username || "unknown",
+    Email: trimmed.email || `${trimmed.username || "user"}@example.com`,
+    FirstName: trimmed.firstName || "Unknown",
+    LastName: trimmed.lastName || trimmed.firstName || "Unknown",
+    PhoneNumber: trimmed.phoneNumber || "0000000000",
+    DateOfBirth: trimmed.dateOfBirth
+      ? new Date(trimmed.dateOfBirth).toISOString()
+      : new Date(2000, 0, 1).toISOString(),
+    Gender: trimmed.gender || "NotSpecified",
+    Address: trimmed.address || "N/A",
+    City: trimmed.city || "N/A",
+    State: trimmed.state || "N/A",
+    Country: trimmed.country || "N/A",
+    ZipCode: trimmed.zipCode || "000000",
+    ProfilePhotoUrl: trimmed.profilePhotoUrl || "N/A",
+    Batch: trimmed.batch || selectedProgramme.batchName || "Default",
+    Programme: programmeName || "Unknown",
+
+    // 🔥 send programmeId as a clean integer
+    programmeId: finalProgrammeId,
+    ProgrammeId: finalProgrammeId, // also send PascalCase for safety
+
+    sem: Number.parseInt(trimmed.semester || "1", 10) || 1,
+    semester: Number.parseInt(trimmed.semester || "1", 10) || 1,
+    degree: trimmed.degree || "NotSpecified",
+    RefCode: Number.parseInt(userId || "0", 10) || 0,
+    ...(editMode ? {} : { Password: trimmed.password || "" }),
+  };
+
+  console.log("RefCode for AddStudent:", userId);
+  console.log("Payload for AddStudent:", payload);
+
+  try {
+    const res = await onSubmit?.(payload);
+
+    if (res && res.ok === false) {
+      const info = buildErrInfo(res);
+      console.warn("[AddStudent] Non-OK response from parent:", res);
+      setErrInfo(info);
+      setShowErrModal(true);
       setIsSubmitting(false);
       return;
     }
+  } catch (err) {
+    const info = buildErrInfo(err);
+    console.warn("[AddStudent] Caught error from parent:", err);
+    setErrInfo(info);
+    setShowErrModal(true);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
-    // build payload
-    const selectedProgramme = programmeOptions.find((p) => p.programmeId === parseInt(trimmed.programmeId || "0"));
-    const programmeName = selectedProgramme?.programmeName || "";
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (isSubmitting) return;
+  //   setIsSubmitting(true);
+  //   setSubmitted(true);
 
-    const payload = {
-      Username: trimmed.username,
-      Email: trimmed.email,
-      FirstName: trimmed.firstName,
-      // Use provided lastName if available, otherwise fall back to firstName to avoid empty last name
-      LastName: trimmed.lastName  || "",
-      PhoneNumber: trimmed.phoneNumber,
-      DateOfBirth: trimmed.dateOfBirth ? new Date(trimmed.dateOfBirth).toISOString() : null,
-      Gender: trimmed.gender,
-      // Use provided address fields if present, otherwise keep simple placeholders
-      Address: trimmed.address || "",
-      City: trimmed.city || "",
-      State: trimmed.state || "",
-      Country: trimmed.country || "",
-      ZipCode: trimmed.zipCode || "",
-      ProfilePhotoUrl: trimmed.profilePhotoUrl || "",
-      Batch: trimmed.batch,
-      Programme: programmeName, // Backend expects "Programme" field with name
-      programmeId: parseInt(trimmed.programmeId || "0"),
-      semester: parseInt(trimmed.semester || "1"),
-      degree: trimmed.degree,
-      RefCode: userId,
-      ...(editMode ? {} : { Password: trimmed.password || "" }), // Password automatically synced with username
-    };
-    console.log("RefCode for AddStudent:", userId);
-    console.log("Payload for AddStudent:", payload);
+  //   const trimmed = {
+  //     ...formData,
+  //     username: formData.username.trim(),
+  //     password: formData.password.trim(),
+  //     email: formData.email.trim(),
+  //     firstName: formData.firstName.trim(),
+  //     lastName: formData.lastName.trim(),
+  //     gender: formData.gender.trim(),
+  //     address: formData.address.trim(),
+  //     city: formData.city.trim(),
+  //     state: formData.state.trim(),
+  //     country: formData.country.trim(),
+  //     zipCode: formData.zipCode.trim(),
+  //     degree: formData.degree.trim(),
+  //   };
 
-    try {
-      // Parent should either throw on non-2xx OR return the fetch Response
-      const res = await onSubmit?.(payload);
+  //   const validationErrors = validate(trimmed);
+  //   setErrors(validationErrors);
 
-      // If parent *returned* res instead of throwing:
-      if (res && res.ok === false) {
-        const info = buildErrInfo(res);
-        console.warn("[AddStudent] Non-OK response from parent:", res);
-        setErrInfo(info);
-        setShowErrModal(true);
-        setIsSubmitting(false);
-        return;
-      }
+  //   if (Object.keys(validationErrors).length) {
+  //     scrollToFirstError(validationErrors);
+  //     setIsSubmitting(false);
+  //     return;
+  //   }
 
-      // Success handled by parent (toast/close)
-    } catch (err) {
-      const info = buildErrInfo(err);
-      console.warn("[AddStudent] Caught error from parent:", err);
-      setErrInfo(info);
-      setShowErrModal(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  //   // ✅ Correctly find selectedProgramme
+  //   const selectedProgramme = programmeOptions.find(
+  //     (p) => String(p.programmeId) === String(trimmed.programmeId || "")
+  //   );
 
-  /* ========= UI helpers (errors only show after submit) ========= */
+  //   console.log("[AddStudent] trimmed.programmeId:", trimmed.programmeId);
+  //   console.log("[AddStudent] selectedProgramme:", selectedProgramme);
+
+  //   // ✅ Compute programmeId safely
+  //   const progIdInt = parseInt(trimmed.programmeId, 10);
+  //   const finalProgrammeId = !Number.isNaN(progIdInt)
+  //     ? progIdInt
+  //     : selectedProgramme
+  //     ? selectedProgramme.programmeId
+  //     : 0;
+
+  //   console.log("[AddStudent] finalProgrammeId to send:", finalProgrammeId);
+
+  //   const programmeName = selectedProgramme?.programmeName || "";
+
+  //   const payload = {
+  //     Username: trimmed.username || "unknown",
+  //     Email: trimmed.email || `${trimmed.username || "user"}@example.com`,
+  //     FirstName: trimmed.firstName || "Unknown",
+  //     LastName: trimmed.lastName || trimmed.firstName || "Unknown",
+  //     PhoneNumber: trimmed.phoneNumber || "0000000000",
+  //     DateOfBirth: trimmed.dateOfBirth
+  //       ? new Date(trimmed.dateOfBirth).toISOString()
+  //       : new Date(2000, 0, 1).toISOString(),
+  //     Gender: trimmed.gender || "NotSpecified",
+  //     Address: trimmed.address || "N/A",
+  //     City: trimmed.city || "N/A",
+  //     State: trimmed.state || "N/A",
+  //     Country: trimmed.country || "N/A",
+  //     ZipCode: trimmed.zipCode || "000000",
+  //     ProfilePhotoUrl: trimmed.profilePhotoUrl || "N/A",
+  //     Batch: trimmed.batch || selectedProgramme?.batchName || "Default",
+  //     Programme: programmeName || selectedProgramme?.programmeName || "Unknown",
+
+  //     // 🟢 SERVER EXPECTS INT programmeId
+  //     programmeId: finalProgrammeId,
+
+  //     sem: Number.parseInt(trimmed.semester || "1", 10) || 1,
+  //     semester: Number.parseInt(trimmed.semester || "1", 10) || 1,
+  //     degree: trimmed.degree || "NotSpecified",
+  //     RefCode: Number.parseInt(userId || "0", 10) || 0,
+  //     ...(editMode ? {} : { Password: trimmed.password || "" }),
+  //   };
+
+  //   console.log("RefCode for AddStudent:", userId);
+  //   console.log("Payload for AddStudent:", payload);
+
+  //   try {
+  //     const res = await onSubmit?.(payload);
+
+  //     if (res && res.ok === false) {
+  //       const info = buildErrInfo(res);
+  //       console.warn("[AddStudent] Non-OK response from parent:", res);
+  //       setErrInfo(info);
+  //       setShowErrModal(true);
+  //       setIsSubmitting(false);
+  //       return;
+  //     }
+  //   } catch (err) {
+  //     const info = buildErrInfo(err);
+  //     console.warn("[AddStudent] Caught error from parent:", err);
+  //     setErrInfo(info);
+  //     setShowErrModal(true);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
+
+  /* ========= UI helpers ========= */
   const showError = (name) => submitted && !!errors[name];
 
   const renderInput = (label, name, type = "text", { placeholder, required = true } = {}) => (
@@ -460,7 +592,9 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
         disabled={readOnly || (name === "password" && editMode)}
         placeholder={placeholder}
       />
-      {showError(name) && <div className="invalid-feedback">{errors[name]}</div>}
+      {showError(name) && (
+        <div className="invalid-feedback">{errors[name]}</div>
+      )}
     </div>
   );
 
@@ -480,7 +614,7 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
         id={name}
         name={name}
         className={`form-control ${showError(name) ? "is-invalid" : ""}`}
-        value={formData[name]}
+        value={formData[name] ?? ""}
         onChange={handleInputChange}
         disabled={readOnly}
       >
@@ -491,7 +625,9 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
           </option>
         ))}
       </select>
-      {showError(name) && <div className="invalid-feedback">{errors[name]}</div>}
+      {showError(name) && (
+        <div className="invalid-feedback">{errors[name]}</div>
+      )}
     </div>
   );
 
@@ -514,31 +650,40 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
               flex-wrap: wrap;
             }
           `}</style>
-          {/* Username & Password shown in UI - Password automatically syncs with username */}
-          {renderInput("Registration Number", "username", "text", { placeholder: "Enter registration number" })}
-          {/* {!editMode && renderInput("Password", "password", "password", { placeholder: "Auto-synced with username" })} */}
-          {renderInput("Email", "email", "email", { placeholder: "name@example.com" })}
-          {renderInput("Name (As per SSC)", "firstName")}
-          {/* {renderInput("Last Name", "lastName")} */}
-          {renderInput("Mobile Number", "phoneNumber", "tel", { placeholder: "10-digit mobile number" })}
-          {renderInput("Date of Birth", "dateOfBirth", "date")}
-          {renderInput("Gender", "gender", "text", { placeholder: "Male / Female / Other" })}
-          {/* {renderInput("Address", "address")} */}
-          {/* {renderInput("City", "city")}
-          {renderInput("State", "state")}
-          {renderInput("Country", "country")}
-          {renderInput("Zip / PIN Code", "zipCode", "text", { placeholder: "6-digit PIN" })} */}
-          {/* {renderInput("Profile Photo URL (optional)", "profilePhotoUrl", "url", { required: false, placeholder: "https://..." })} */}
 
-          {renderSelect("Batch", "batch", batchList, (b) => b, (b) => b, { placeholder: "-- Select Batch --" })}
+          {renderInput("Registration Number", "username", "text", {
+            placeholder: "Enter registration number",
+          })}
+          {renderInput("Email", "email", "email", {
+            placeholder: "name@example.com",
+          })}
+          {renderInput("Name (As per SSC)", "firstName")}
+          {renderInput("Mobile Number", "phoneNumber", "tel", {
+            placeholder: "10-digit mobile number",
+          })}
+          {renderInput("Date of Birth", "dateOfBirth", "date")}
+          {renderInput("Gender", "gender", "text", {
+            placeholder: "Male / Female / Other",
+          })}
+
+          {renderSelect(
+            "Batch",
+            "batch",
+            batchList,
+            (b) => b,
+            (b) => b,
+            { placeholder: "-- Select Batch --" }
+          )}
+
           {renderSelect(
             "Course",
             "programmeId",
             filteredProgrammes,
-            (p) => p.programmeId,
+            (p) => String(p.programmeId), // ✅ ALWAYS STRING
             (p) => `${p.programmeName} (${p.programmeCode})`,
             { placeholder: "-- Select Course --" }
           )}
+
           {renderSelect(
             "Pursuing Degree",
             "degree",
@@ -552,16 +697,22 @@ const ErrorDetailsModal = ({ open, info, onClose }) => {
         {!readOnly && (
           <div className="student-form-actions mt-3 d-flex gap-2">
             <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting ? "Submitting..." : (editMode ? "Update" : "Add") + " Student"}
+              {isSubmitting
+                ? "Submitting..."
+                : (editMode ? "Update" : "Add") + " Student"}
             </button>
-            <button type="button" className="btn btn-secondary" onClick={() => window.history.back()} disabled={isSubmitting}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => window.history.back()}
+              disabled={isSubmitting}
+            >
               Cancel
             </button>
           </div>
         )}
       </form>
 
-      {/* Error Modal (Portal) */}
       <ErrorDetailsModal
         open={showErrModal}
         info={errInfo}
