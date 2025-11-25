@@ -8,6 +8,7 @@ function TransactionsTable() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState(null);
+  const [courseFilter, setCourseFilter] = useState("");
 
   // Decode JWT to get user ID
   useEffect(() => {
@@ -90,8 +91,12 @@ function TransactionsTable() {
     });
   };
 
-  // select all / clear all
-  const allKeys = transactions.map(rowKey);
+  // select all / clear all (apply to currently displayed rows)
+  const filteredTransactions = courseFilter
+    ? transactions.filter((t) => String(t.course || "").trim() === String(courseFilter).trim())
+    : transactions;
+
+  const allKeys = filteredTransactions.map(rowKey);
   const allSelected =
     selectedKeys.size > 0 && selectedKeys.size === allKeys.length;
   const someSelected =
@@ -230,7 +235,32 @@ function TransactionsTable() {
             College-wise Student Fee Transactions
           </h6>
         </div>
-        <small>Total Records: {transactions.length}</small>
+        <div className="d-flex align-items-center gap-2">
+          <small className="text-light">Showing {filteredTransactions.length} of {transactions.length} records</small>
+          <select
+            className="form-select form-select-sm"
+            style={{ width: 220 }}
+            value={courseFilter}
+            onChange={(e) => setCourseFilter(e.target.value)}
+            title="Filter by course"
+          >
+            <option value="">All Courses</option>
+            {Array.from(new Set(transactions.map((t) => t.course || "")))
+              .filter((c) => c && c.trim())
+              .map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+          </select>
+          <button
+            className="btn btn-sm btn-light"
+            onClick={() => setCourseFilter("")}
+            title="Clear course filter"
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
       <div className="card-body p-0">
@@ -250,6 +280,7 @@ function TransactionsTable() {
                   <th>Reg No</th>
                   <th>Student Name</th>
                   <th>Course</th>
+                  <th>Fee Head</th>
                   {/* <th>Fee Head</th>
                   <th>Installment</th> */}
                   <th>Amount Due</th>
@@ -272,7 +303,7 @@ function TransactionsTable() {
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((transaction, index) => {
+                {filteredTransactions.map((transaction, index) => {
                   const balance =
                     (transaction.amountDue || 0) - (transaction.paid || 0);
                   return (
@@ -292,6 +323,11 @@ function TransactionsTable() {
                           <strong>{transaction.course || "No course"}</strong>
                         </small>
                       </td> 
+                      <td>
+                        <small className="text-muted">
+                         <strong>{transaction.feeHead || "N/A"}</strong> 
+                         </small>
+                      </td>
                       {/* <td>
                         <span className="text-primary font-weight-bold">
                           {transaction.feeHead || "N/A"}
@@ -361,26 +397,19 @@ function TransactionsTable() {
             <div className="col-md-3">
               <small className="text-muted">
                 <i className="fa fa-users mr-1"></i>
-                Total Students:{" "}
-                {new Set(transactions.map((t) => t.studentId)).size}
+                Total Students: {new Set(filteredTransactions.map((t) => t.studentId)).size}
               </small>
             </div>
             <div className="col-md-3">
               <small className="text-muted">
                 <i className="fa fa-money-bill-wave mr-1"></i>
-                Total Due:{" "}
-                {formatCurrency(
-                  transactions.reduce((sum, t) => sum + (t.amountDue || 0), 0)
-                )}
+                Total Due: {formatCurrency(filteredTransactions.reduce((sum, t) => sum + (t.amountDue || 0), 0))}
               </small>
             </div>
             <div className="col-md-3">
               <small className="text-muted">
                 <i className="fa fa-check-circle mr-1"></i>
-                Total Paid:{" "}
-                {formatCurrency(
-                  transactions.reduce((sum, t) => sum + (t.paid || 0), 0)
-                )}
+                Total Paid: {formatCurrency(filteredTransactions.reduce((sum, t) => sum + (t.paid || 0), 0))}
               </small>
             </div>
             <div className="col-md-3">
