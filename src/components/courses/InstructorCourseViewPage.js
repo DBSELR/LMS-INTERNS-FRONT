@@ -1,6 +1,5 @@
-// ✅ Final – Simple any-file modal (no pdf.js) – InstructorCourseViewPage.js
+// ✅ Final – Any-file modal WITH PROGRESS – InstructorCourseViewPage.js
 import React, { useEffect, useState, useRef } from "react";
-import { Modal } from "react-bootstrap";
 import HeaderTop from "../../components/HeaderTop";
 import RightSidebar from "../../components/RightSidebar";
 import LeftSidebar from "../../components/LeftSidebar";
@@ -8,7 +7,7 @@ import Footer from "../../components/Footer";
 import { useParams, useLocation, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import API_BASE_URL from "../../config";
-import UniversalFileViewerModal from '../UniversalFileViewerModal.jsx'
+import UniversalFileViewerModal from "../UniversalFileViewerModal.jsx";
 
 /* =========================
    Debug helpers (toggleable)
@@ -29,7 +28,10 @@ const error = (...args) => DEBUG && console.error(`[${tag}]`, ...args);
 function normalizeUrl(raw) {
   if (!raw) return "";
   let u = String(raw).trim();
-  if ((u.startsWith('"') && u.endsWith('"')) || (u.startsWith("'") && u.endsWith("'"))) {
+  if (
+    (u.startsWith('"') && u.endsWith('"')) ||
+    (u.startsWith("'") && u.endsWith("'"))
+  ) {
     u = u.slice(1, -1);
   }
   u = u.replace(/&amp;/g, "&");
@@ -65,10 +67,11 @@ function toAbsoluteLocal(origin, pathOrUrl) {
   return `${origin}/${pathOrUrl}`;
 }
 
-/* =========================
-   Robust fetch helper
-   ========================= */
-async function safeFetchJson(url, options = {}, { label = "", retries = 0, signal } = {}) {
+async function safeFetchJson(
+  url,
+  options = {},
+  { label = "", retries = 0, signal } = {}
+) {
   const attempt = async () => {
     const res = await fetch(url, { ...options, signal });
     if (!res.ok) {
@@ -109,7 +112,6 @@ function InstructorCourseViewPage() {
   const examId = location.state?.examinationID || "Unknown examination ID";
   const className = location.state?.class || "Unknown Class";
 
-  // Raw content + unit titles map
   const [rawContent, setRawContent] = useState([]);
   const [unitTitleByUnit, setUnitTitleByUnit] = useState({});
 
@@ -125,9 +127,11 @@ function InstructorCourseViewPage() {
   const [exams, setExams] = useState([]);
   const [liveClasses, setLiveClasses] = useState([]);
 
-  // File modal state (simple iframe preview)
-  const [showFileModal, setShowFileModal] = useState(false);
-  const [fileUrl, setFileUrl] = useState("");
+  // === Any-file viewer modal state ===
+  const [viewerShow, setViewerShow] = useState(false);
+  const [viewerUrl, setViewerUrl] = useState("");
+  const [currentProgressKey, setCurrentProgressKey] = useState(null);
+  const [progressVersion, setProgressVersion] = useState(0); // force re-render when progress changes
 
   const [activeUnit, setActiveUnit] = useState("");
   const [allUnits, setAllUnits] = useState([]);
@@ -143,11 +147,8 @@ function InstructorCourseViewPage() {
   };
 
   const apiOrigin = getApiOrigin();
-const [viewerShow, setViewerShow] = useState(false);
-const [viewerUrl, setViewerUrl] = useState("");
+  const jwt = localStorage.getItem("jwt") || "";
 
-// wherever you build apiOrigin you already have:
-const jwt = localStorage.getItem("jwt") || "";
   // Delete helpers
   function getContentId(obj) {
     return (
@@ -183,7 +184,11 @@ const jwt = localStorage.getItem("jwt") || "";
       alert("Delete failed: content id not found.");
       return;
     }
-    if (!window.confirm("Are you sure you want to delete this content? This cannot be undone.")) {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this content? This cannot be undone."
+      )
+    ) {
       return;
     }
     try {
@@ -194,20 +199,21 @@ const jwt = localStorage.getItem("jwt") || "";
         headers: { Authorization: `Bearer ${token}` },
       });
       const bodyText = await res.text().catch(() => "");
-      log("DELETE Content response", { status: res.status, ok: res.ok, bodyText });
+      log("DELETE Content response", {
+        status: res.status,
+        ok: res.ok,
+        bodyText,
+      });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${bodyText || ""}`);
 
-      // Best-effort: clean cached progress keys (legacy)
+      // Clean cached progress keys (best effort)
       try {
-        const fileUrlAbs = item?.fileUrl ? toAbsoluteLocal(apiOrigin, item.fileUrl) : "";
-        const vurl = normalizeUrl(item?.vurl || "");
-        const playableUrl = isHttpUrl(vurl) ? vurl : fileUrlAbs;
+        const fileUrlAbs = item?.fileUrl
+          ? toAbsoluteLocal(apiOrigin, item.fileUrl)
+          : "";
         [
-          `video-progress-${playableUrl}`,
-          `ebook-progress-${fileUrlAbs}`,
           `webresource-progress-${fileUrlAbs}`,
           `faq-progress-${fileUrlAbs}`,
-          `misconception-progress-${fileUrlAbs}`,
           `practiceassignment-progress-${fileUrlAbs}`,
           `studyguide-progress-${fileUrlAbs}`,
         ].forEach((k) => localStorage.removeItem(k));
@@ -225,45 +231,81 @@ const jwt = localStorage.getItem("jwt") || "";
 
   useEffect(() => {
     log("Component mounted", {
-      courseId, examId, courseName, courseCode, batchName, semester, courseDisplayName, apiOrigin, API_BASE_URL,
+      courseId,
+      examId,
+      courseName,
+      courseCode,
+      batchName,
+      semester,
+      courseDisplayName,
+      apiOrigin,
+      API_BASE_URL,
     });
     return () => log("Component unmounted");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* =========================
-     Video open (new tab)
+     File view + progress
      ========================= */
-  const handleWatchVideo = (item) => {
-    const vurlClean = normalizeUrl(item.vurl || "");
-    const chosen = item.fileUrl ? toAbsoluteLocal(apiOrigin, item.fileUrl) : vurlClean;
-    if (!chosen) {
-      error("No playable URL found for video item");
-      return;
+  const cleanPath = (u) =>
+    String(u || "").replace(/^['"]|['"]$/g, "").replace(/&amp;/g, "&");
+
+  const buildProgressKey = (sectionKey, fileUrlAbs) => {
+    switch (sectionKey) {
+      case "webresources":
+        return `webresource-progress-${fileUrlAbs}`;
+      case "faq":
+        return `faq-progress-${fileUrlAbs}`;
+      case "practiceassignment":
+        return `practiceassignment-progress-${fileUrlAbs}`;
+      case "studyguide":
+        return `studyguide-progress-${fileUrlAbs}`;
+      default:
+        return `file-progress-${fileUrlAbs}`;
     }
-    window.open(chosen, "_blank", "noopener,noreferrer");
   };
 
-  /* =========================
-     File open/close (ANY file via iframe)
-     ========================= */
-const cleanPath = (u) =>
-  String(u || "").replace(/^['"]|['"]$/g, "").replace(/&amp;/g, "&");
+  const getProgressForItem = (sectionKey, item) => {
+    const raw = cleanPath(item.fileUrl);
+    if (!raw) return { value: 0, key: null };
+    const fullUrl = raw.startsWith("http")
+      ? raw
+      : `${apiOrigin.replace(/\/+$/, "")}/${raw.replace(/^\/+/, "")}`;
+    const key = buildProgressKey(sectionKey, fullUrl);
+    const val = parseInt(localStorage.getItem(key), 10);
+    const value = Number.isFinite(val) && val >= 0 && val <= 100 ? val : 0;
+    return { value, key };
+  };
 
-const handleViewFile = (urlOrPath) => {
-  const p = cleanPath(urlOrPath);
-  if (!p) return;
-  const fullUrl = p.startsWith("http")
-    ? p
-    : `${apiOrigin.replace(/\/+$/,"")}/${p.replace(/^\/+/,"")}`;
-  setViewerUrl(fullUrl);
-  setViewerShow(true);
-};
+  const handleViewFile = (sectionKey, item) => {
+    const raw = cleanPath(item.fileUrl);
+    if (!raw) return;
+    const fullUrl = raw.startsWith("http")
+      ? raw
+      : `${apiOrigin.replace(/\/+$/, "")}/${raw.replace(/^\/+/, "")}`;
 
+    const { key } = getProgressForItem(sectionKey, item);
+    setCurrentProgressKey(key || buildProgressKey(sectionKey, fullUrl));
 
-  const handleCloseFile = () => {
-    setShowFileModal(false);
-    setFileUrl("");
+    setViewerUrl(fullUrl);
+    setViewerShow(true);
+  };
+
+  const handleViewerHide = () => {
+    // When user closes the viewer, mark this file as 100% complete
+    if (currentProgressKey) {
+      const existing = parseInt(localStorage.getItem(currentProgressKey), 10);
+      const updated =
+        Number.isFinite(existing) && existing > 0
+          ? Math.max(existing, 100)
+          : 100;
+      localStorage.setItem(currentProgressKey, updated);
+      setProgressVersion((v) => v + 1); // trigger re-render
+    }
+    setViewerShow(false);
+    setViewerUrl("");
+    setCurrentProgressKey(null);
   };
 
   /* =========================
@@ -279,8 +321,15 @@ const handleViewFile = (urlOrPath) => {
       try {
         const decoded = jwtDecode(token);
         const extractedUserId = parseInt(decoded?.UserId);
-        const extractedRole = decoded["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"];
-        log("JWT decoded", { userId: extractedUserId, role: extractedRole, token: `Bearer ${mask(token)}` });
+        const extractedRole =
+          decoded[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ];
+        log("JWT decoded", {
+          userId: extractedUserId,
+          role: extractedRole,
+          token: `Bearer ${mask(token)}`,
+        });
         setUserId(extractedUserId);
         setRole(extractedRole);
       } catch (err) {
@@ -291,7 +340,6 @@ const handleViewFile = (urlOrPath) => {
     }
   }, []);
 
-  // Fetch practice exams for student
   useEffect(() => {
     const fetchPracticeExams = async () => {
       if (!activeUnit || !userId) return;
@@ -301,7 +349,9 @@ const handleViewFile = (urlOrPath) => {
       const token = localStorage.getItem("jwt");
 
       try {
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         if (Array.isArray(data)) setPracticeExams(data);
@@ -314,7 +364,6 @@ const handleViewFile = (urlOrPath) => {
     fetchPracticeExams();
   }, [activeUnit, examId, userId]);
 
-  // Admin practice tests
   const [adminPracticeTests, setAdminPracticeTests] = useState([]);
   useEffect(() => {
     const fetchAdminPracticeTests = async () => {
@@ -325,11 +374,20 @@ const handleViewFile = (urlOrPath) => {
       const token = localStorage.getItem("jwt");
 
       try {
-        const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+        const res = await fetch(url, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         if (!res.ok) {
           const errorText = await res.text().catch(() => "");
-          error("AdminPracticeTests API error", { status: res.status, url, responseText: errorText });
-          if (res.status === 500) { setAdminPracticeTests([]); return; }
+          error("AdminPracticeTests API error", {
+            status: res.status,
+            url,
+            responseText: errorText,
+          });
+          if (res.status === 500) {
+            setAdminPracticeTests([]);
+            return;
+          }
           throw new Error(`HTTP ${res.status}: ${errorText || res.statusText}`);
         }
         const data = await res.json();
@@ -343,7 +401,6 @@ const handleViewFile = (urlOrPath) => {
     fetchAdminPracticeTests();
   }, [userId, activeUnit, examId]);
 
-  // Load content bundle
   useEffect(() => {
     if (!courseId) return;
     const token = localStorage.getItem("jwt");
@@ -353,9 +410,21 @@ const handleViewFile = (urlOrPath) => {
     (async () => {
       try {
         const [content, allAssignments, allLiveClasses] = await Promise.all([
-          safeFetchJson(`${API_BASE_URL}/Content/Course/${courseId}`, { headers, signal: ac.signal }, { label: "Content/Course", retries: 1 }),
-          safeFetchJson(`${API_BASE_URL}/Assignment/GetAllAssignments`, { headers, signal: ac.signal }, { label: "Assignments", retries: 1 }),
-          safeFetchJson(`${API_BASE_URL}/LiveClass/All`, { headers, signal: ac.signal }, { label: "LiveClass", retries: 1 }),
+          safeFetchJson(
+            `${API_BASE_URL}/Content/Course/${courseId}`,
+            { headers, signal: ac.signal },
+            { label: "Content/Course", retries: 1 }
+          ),
+          safeFetchJson(
+            `${API_BASE_URL}/Assignment/GetAllAssignments`,
+            { headers, signal: ac.signal },
+            { label: "Assignments", retries: 1 }
+          ),
+          safeFetchJson(
+            `${API_BASE_URL}/LiveClass/All`,
+            { headers, signal: ac.signal },
+            { label: "LiveClass", retries: 1 }
+          ),
         ]);
 
         setRawContent(Array.isArray(content) ? content : []);
@@ -363,16 +432,28 @@ const handleViewFile = (urlOrPath) => {
         const ci = (v) => String(v || "").toLowerCase();
         setEBOOKS(content.filter((c) => ci(c.contentType) === "ebook"));
         setVideos(content.filter((c) => ci(c.contentType) === "video"));
-        setwebresources(content.filter((c) => ci(c.contentType) === "webresources"));
+        setwebresources(
+          content.filter((c) => ci(c.contentType) === "webresources")
+        );
         setfaq(content.filter((c) => ci(c.contentType) === "faq"));
-        setmisconceptions(content.filter((c) => ci(c.contentType) === "misconceptions"));
-        setpracticeassignment(content.filter((c) => ci(c.contentType) === "practiceassignment"));
-        setstudyguide(content.filter((c) => ci(c.contentType) === "studyguide"));
+        setmisconceptions(
+          content.filter((c) => ci(c.contentType) === "misconceptions")
+        );
+        setpracticeassignment(
+          content.filter((c) => ci(c.contentType) === "practiceassignment")
+        );
+        setstudyguide(
+          content.filter((c) => ci(c.contentType) === "studyguide")
+        );
         setMaterials(content.filter((c) => ci(c.contentType) === "pdf"));
 
         const cid = parseInt(courseId);
-        setAssignments((allAssignments || []).filter((a) => a.examinationid === cid));
-        setLiveClasses((allLiveClasses || []).filter((lc) => lc.examinationID === cid));
+        setAssignments(
+          (allAssignments || []).filter((a) => a.examinationid === cid)
+        );
+        setLiveClasses(
+          (allLiveClasses || []).filter((lc) => lc.examinationID === cid)
+        );
       } catch (err) {
         console.error("[ICVP] Content bundle load failed", err);
       }
@@ -381,11 +462,11 @@ const handleViewFile = (urlOrPath) => {
     return () => ac.abort();
   }, [courseId]);
 
-  // Build unit tabs from raw content
   useEffect(() => {
     const toStr = (v) => (v == null ? "" : String(v).trim());
     const getUnit = (it) => toStr(it.unit ?? it.Unit);
-    const getTitle = (it) => toStr(it.title ?? it.Title ?? it.unitTitle ?? it.UnitTitle);
+    const getTitle = (it) =>
+      toStr(it.title ?? it.Title ?? it.unitTitle ?? it.UnitTitle);
 
     const unitSet = new Set();
     const titleMap = {};
@@ -440,6 +521,9 @@ const handleViewFile = (urlOrPath) => {
   const filteredPracticeAssignment = filteredByUnit(practiceassignment);
   const filteredStudyGuide = filteredByUnit(studyguide);
 
+  const getProgressColor = (p) =>
+    p < 30 ? "#e74c3c" : p < 70 ? "#f39c12" : "#27ae60";
+
   return (
     <div id="main_content" className="font-muli theme-blush">
       <HeaderTop />
@@ -453,8 +537,13 @@ const handleViewFile = (urlOrPath) => {
               <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
                 <div className="d-flex justify-content-between align-items-center mb-2">
                   <div style={{ width: "150px" }}></div>
-                  <h2 className="page-title text-primary pt-0 dashboard-hero-title">View Course Content</h2>
-                  <a href="/my-courseware" className="btn btn-outline-primary mt-3 mt-md-0">
+                  <h2 className="page-title text-primary pt-0 dashboard-hero-title">
+                    View Course Content
+                  </h2>
+                  <a
+                    href="/my-courseware"
+                    className="btn btn-outline-primary mt-3 mt-md-0"
+                  >
                     <i className="fa fa-arrow-left mr-1"></i> Back to Courseware
                   </a>
                 </div>
@@ -471,7 +560,9 @@ const handleViewFile = (urlOrPath) => {
                 return (
                   <button
                     key={unit}
-                    className={`unit-tab ${activeUnit === unit ? "active" : ""}`}
+                    className={`unit-tab ${
+                      activeUnit === unit ? "active" : ""
+                    }`}
                     onClick={() => setActiveUnit(unit)}
                     title={`${titleForUnit}`}
                   >
@@ -480,12 +571,13 @@ const handleViewFile = (urlOrPath) => {
                 );
               })}
 
-              {/* Pass both examinationId and unitId */}
               <Link
                 to="/discussionforum"
                 state={{
                   examinationId: parseInt(courseId),
-                  unitId: activeUnit ? Number(String(activeUnit).split("-")[1]) : null,
+                  unitId: activeUnit
+                    ? Number(String(activeUnit).split("-")[1])
+                    : null,
                 }}
               >
                 <button className="unit-tab">Discussion Forum</button>
@@ -499,7 +591,8 @@ const handleViewFile = (urlOrPath) => {
             {activeUnit && (
               <div className="d-flex justify-content-between align-items-center mb-3 px-1">
                 <h5 className="mb-0">
-                  <i className="fa fa-book text-primary me-2 mr-2"></i> Unit Title: {unitTitleByUnit[activeUnit] || "No title found"}
+                  <i className="fa fa-book text-primary me-2 mr-2"></i> Unit
+                  Title: {unitTitleByUnit[activeUnit] || "No title found"}
                 </h5>
                 {role !== "Student" && (
                   <Link
@@ -521,14 +614,46 @@ const handleViewFile = (urlOrPath) => {
               </div>
             )}
 
-            {/* Sections (open any file in modal) */}
+            {/* Sections with progress */}
             {[
-              { title: "Web Resources Materials", key: "webresources", data: filteredWebResources, ref: sectionRefs.webresources, color: "primary", icon: "fas fa-file" },
-              { title: "Pre-Learning : FAQ", key: "faq", data: filteredFAQ, ref: sectionRefs.faq, color: "primary", icon: "fas fa-question-circle" },
-              { title: "Practice Assignment", key: "practiceassignment", data: filteredPracticeAssignment, ref: sectionRefs.practiceassignment, color: "primary", icon: "fas fa-tasks" },
-              { title: "Study Guide", key: "studyguide", data: filteredStudyGuide, ref: sectionRefs.studyguide, color: "primary", icon: "fas fa-book" },
+              {
+                title: "Web Resources Materials",
+                key: "webresources",
+                data: filteredWebResources,
+                ref: sectionRefs.webresources,
+                color: "primary",
+                icon: "fas fa-file",
+              },
+              {
+                title: "Pre-Learning : FAQ",
+                key: "faq",
+                data: filteredFAQ,
+                ref: sectionRefs.faq,
+                color: "primary",
+                icon: "fas fa-question-circle",
+              },
+              {
+                title: "Practice Assignment",
+                key: "practiceassignment",
+                data: filteredPracticeAssignment,
+                ref: sectionRefs.practiceassignment,
+                color: "primary",
+                icon: "fas fa-tasks",
+              },
+              {
+                title: "Study Guide",
+                key: "studyguide",
+                data: filteredStudyGuide,
+                ref: sectionRefs.studyguide,
+                color: "primary",
+                icon: "fas fa-book",
+              },
             ].map((section) => (
-              <div key={section.key} ref={section.ref} className={`card shadow-sm mb-4 section-card animate-section border-${section.color}`}>
+              <div
+                key={section.key}
+                ref={section.ref}
+                className={`card shadow-sm mb-4 section-card animate-section border-${section.color}`}
+              >
                 <div className={`card-header bg-${section.color} text-white`}>
                   <h6 className="mb-0">
                     <i className={`${section.icon} me-2 mr-2`}></i>
@@ -541,37 +666,101 @@ const handleViewFile = (urlOrPath) => {
                   ) : (
                     <div className="row">
                       {section.data.map((item, idx2) => {
-                        const idKey = item.id ?? item.contentId ?? item.examid ?? idx2;
-                        const thisItemId = (item.id ?? item.contentId ?? item.Id ?? item.ContentId);
+                        // we use progressVersion in deps to force re-read from localStorage
+                        const { value: progress } = getProgressForItem(
+                          section.key,
+                          item
+                        );
+                        const progressColor = getProgressColor(progress);
+
+                        const idKey =
+                          item.id ??
+                          item.contentId ??
+                          item.examid ??
+                          `${section.key}-${idx2}`;
+                        const thisItemId =
+                          item.id ?? item.contentId ?? item.Id ?? item.ContentId;
 
                         return (
-                          <div className="col-md-6 col-lg-4 mb-3" key={idKey}>
-                            <div className="resource-card welcome-card animate-welcome h-100" style={{ position: "relative" }}>
-                              {/* Delete icon (only for non-students) */}
+                          <div
+                            className="col-md-6 col-lg-4 mb-3"
+                            key={`${idKey}-${progressVersion}`}
+                          >
+                            <div
+                              className="resource-card welcome-card animate-welcome h-100"
+                              style={{ position: "relative" }}
+                            >
                               {role !== "Student" && (
                                 <button
                                   type="button"
                                   className="delete-btn text-danger btn btn-link p-0"
                                   title="Delete content"
-                                  onClick={(e) => handleDeleteContent(item, e)}
+                                  onClick={(e) =>
+                                    handleDeleteContent(item, e)
+                                  }
                                   disabled={deletingId === thisItemId}
                                   aria-label="Delete content"
                                   style={{ lineHeight: 0 }}
                                 >
-                                  <i className="fa fa-trash" aria-hidden="true"></i>
+                                  <i
+                                    className="fa fa-trash"
+                                    aria-hidden="true"
+                                  ></i>
                                 </button>
                               )}
 
                               <div className="card-body d-flex flex-column">
                                 <h6 className="fw-bold">{item.title}</h6>
-                                <p className="text-muted flex-grow-1">{item.description}</p>
+                                <p className="text-muted flex-grow-1">
+                                  {item.description}
+                                </p>
 
                                 <button
                                   className="btn btn-sm btn-outline-primary mt-auto"
-                                  onClick={() => handleViewFile(item.fileUrl)}
+                                  onClick={() =>
+                                    handleViewFile(section.key, item)
+                                  }
                                 >
                                   View File
                                 </button>
+
+                                {/* Progress bar, same style as first page */}
+                                <div style={{ marginTop: "12px" }}>
+                                  <div
+                                    style={{
+                                      fontSize: "0.95rem",
+                                      marginBottom: "2px",
+                                    }}
+                                  >
+                                    <span>{section.title} Progress: </span>
+                                    <span
+                                      style={{
+                                        color: progressColor,
+                                        fontWeight: 600,
+                                      }}
+                                    >
+                                      {progress}%
+                                    </span>
+                                  </div>
+                                  <div
+                                    style={{
+                                      width: "100%",
+                                      height: "8px",
+                                      background: "#eee",
+                                      borderRadius: "6px",
+                                      overflow: "hidden",
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        width: `${progress}%`,
+                                        height: "100%",
+                                        background: progressColor,
+                                        transition: "width 0.5s",
+                                      }}
+                                    ></div>
+                                  </div>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -583,28 +772,45 @@ const handleViewFile = (urlOrPath) => {
               </div>
             ))}
 
-            {/* Student vs Admin Practice sections */}
+            {/* Student vs Admin Practice sections – unchanged */}
             {role === "Student" ? (
               <div className="container-fluid">
                 <div className="card shadow-sm mb-5 section-card animate-section border-info">
                   <div className="card-header bg-info text-white">
-                    <h6 className="mb-0"><i className="fa fa-tools me-2 mr-2"></i> Student Practice Exams</h6>
+                    <h6 className="mb-0">
+                      <i className="fa fa-tools me-2 mr-2"></i> Student Practice
+                      Exams
+                    </h6>
                   </div>
 
                   <div className="card-body">
                     {practiceExams.length === 0 ? (
-                      <div className="text-muted text-center py-3">No practice exams available.</div>
+                      <div className="text-muted text-center py-3">
+                        No practice exams available.
+                      </div>
                     ) : (
                       <div className="row">
                         {practiceExams.map((exam) => {
-                          const isSubjective = (exam.examType || "").toUpperCase() === "DP";
-                          const isAttendStatus = (exam.examStatus || "").toLowerCase() === "attendexam";
+                          const isSubjective =
+                            (exam.examType || "").toUpperCase() === "DP";
+                          const isAttendStatus =
+                            (exam.examStatus || "").toLowerCase() ===
+                            "attendexam";
                           const isMCQ = exam.examType === "MP";
 
                           return (
-                            <div className="col-md-6 col-lg-4 mb-3" key={exam.examid}>
+                            <div
+                              className="col-md-6 col-lg-4 mb-3"
+                              key={exam.examid}
+                            >
                               <div className="resource-card welcome-card animate-welcome h-100">
-                                <div className="card-body d-flex flex-column" style={{ textAlign: "left", gap: "6px" }}>
+                                <div
+                                  className="card-body d-flex flex-column"
+                                  style={{
+                                    textAlign: "left",
+                                    gap: "6px",
+                                  }}
+                                >
                                   <h6 className="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
                                     <i className="fa fa-book text-primary mr-2"></i>
                                     {exam.title}
@@ -612,17 +818,22 @@ const handleViewFile = (urlOrPath) => {
 
                                   <p className="mb-2">
                                     <i className="fa fa-calendar-plus me-2 mr-2 text-success"></i>
-                                    <strong>Created At:</strong> {new Date(exam.createdAt).toLocaleString()}
+                                    <strong>Created At:</strong>{" "}
+                                    {new Date(
+                                      exam.createdAt
+                                    ).toLocaleString()}
                                   </p>
 
                                   <p className="mb-2">
                                     <i className="fa fa-clock me-2 mr-2 text-primary"></i>
-                                    <strong>Duration:</strong> {exam.durationMinutes} min
+                                    <strong>Duration:</strong>{" "}
+                                    {exam.durationMinutes} min
                                   </p>
 
                                   <p className="mb-2">
                                     <i className="fa fa-star me-2 mr-2 text-warning"></i>
-                                    <strong>Marks:</strong> {exam.totmrk} | <strong>Pass:</strong> {exam.passmrk}
+                                    <strong>Marks:</strong> {exam.totmrk} |{" "}
+                                    <strong>Pass:</strong> {exam.passmrk}
                                   </p>
 
                                   <p className="mb-2">
@@ -632,21 +843,42 @@ const handleViewFile = (urlOrPath) => {
 
                                   {exam.fileurl ? (
                                     <a
-                                      href={toAbsoluteLocal(apiOrigin, exam.fileurl)}
+                                      href={toAbsoluteLocal(
+                                        apiOrigin,
+                                        exam.fileurl
+                                      )}
                                       className="btn btn-sm btn-outline-primary"
                                       target="_blank"
                                       rel="noreferrer"
-                                      onClick={() => log("Opening exam attachment", { url: toAbsoluteLocal(apiOrigin, exam.fileurl) })}
+                                      onClick={() =>
+                                        log("Opening exam attachment", {
+                                          url: toAbsoluteLocal(
+                                            apiOrigin,
+                                            exam.fileurl
+                                          ),
+                                        })
+                                      }
                                     >
                                       📄 View Attachment
                                     </a>
                                   ) : !isMCQ ? (
-                                    <button className="btn btn-sm btn-outline-secondary" disabled>🚫 No Attachment</button>
+                                    <button
+                                      className="btn btn-sm btn-outline-secondary"
+                                      disabled
+                                    >
+                                      🚫 No Attachment
+                                    </button>
                                   ) : null}
 
                                   {isMCQ && isAttendStatus && (
-                                    <Link to={`/practice-exam/${exam.examid}`} state={{ exam }} className="mt-2">
-                                      <button className="btn btn-sm btn-success w-100">📝 Attend Practice Exam</button>
+                                    <Link
+                                      to={`/practice-exam/${exam.examid}`}
+                                      state={{ exam }}
+                                      className="mt-2"
+                                    >
+                                      <button className="btn btn-sm btn-success w-100">
+                                        📝 Attend Practice Exam
+                                      </button>
                                     </Link>
                                   )}
 
@@ -657,20 +889,33 @@ const handleViewFile = (urlOrPath) => {
                                       onChange={(e) => {
                                         const f = e.target.files?.[0];
                                         if (f && userId) {
-                                          const token = localStorage.getItem("jwt");
+                                          const token =
+                                            localStorage.getItem("jwt");
                                           const url = `${API_BASE_URL}/ExamSubmissions/PracticeExamSubjective?ExamId=${exam.examid}&studentId=${userId}`;
-                                          const headers = { Authorization: `Bearer ${token}` };
                                           const formData = new FormData();
                                           formData.append("file", f);
-                                          fetch(url, { method: "POST", body: formData, headers })
+                                          fetch(url, {
+                                            method: "POST",
+                                            body: formData,
+                                            headers: {
+                                              Authorization: `Bearer ${token}`,
+                                            },
+                                          })
                                             .then(async (r) => {
                                               const t = await r.text();
                                               if (!r.ok) throw new Error(t);
-                                              alert("✅ Subjective practice exam submitted successfully!");
+                                              alert(
+                                                "✅ Subjective practice exam submitted successfully!"
+                                              );
                                             })
                                             .catch((err) => {
-                                              error("Failed to submit subjective practice exam", err);
-                                              alert("❌ Failed to submit subjective practice exam.");
+                                              error(
+                                                "Failed to submit subjective practice exam",
+                                                err
+                                              );
+                                              alert(
+                                                "❌ Failed to submit subjective practice exam."
+                                              );
                                             });
                                         }
                                       }}
@@ -691,17 +936,26 @@ const handleViewFile = (urlOrPath) => {
               <div className="container-fluid">
                 <div className="card shadow-sm mb-5 section-card animate-section border-info">
                   <div className="card-header bg-info text-white">
-                    <h6 className="mb-0"><i className="fa fa-tools me-2 mr-2"></i> View Practice Tests</h6>
+                    <h6 className="mb-0">
+                      <i className="fa fa-tools me-2 mr-2"></i> View Practice
+                      Tests
+                    </h6>
                   </div>
 
                   <div className="card-body">
                     {adminPracticeTests.length === 0 ? (
-                      <div className="text-muted text-center py-3">No practice test records found.</div>
+                      <div className="text-muted text-center py-3">
+                        No practice test records found.
+                      </div>
                     ) : (
                       <div className="row">
                         {adminPracticeTests.map((test) => {
-                          const isObjective = (test.PracticeExamType || "").toLowerCase() === "objective";
-                          const isSubjective = (test.PracticeExamType || "").toLowerCase() === "subjective";
+                          const isObjective =
+                            (test.PracticeExamType || "").toLowerCase() ===
+                            "objective";
+                          const isSubjective =
+                            (test.PracticeExamType || "").toLowerCase() ===
+                            "subjective";
 
                           const typeBadge = isObjective ? (
                             <span className="badge bg-primary text-white px-2 py-1 rounded-pill">
@@ -718,24 +972,58 @@ const handleViewFile = (urlOrPath) => {
                           );
 
                           return (
-                            <div className="col-md-6 col-lg-4 mb-3" key={test.examid}>
+                            <div
+                              className="col-md-6 col-lg-4 mb-3"
+                              key={test.examid}
+                            >
                               <div className="resource-card welcome-card animate-welcome h-100">
-                                <div className="card-body d-flex flex-column" style={{ textAlign: "left", gap: "6px" }}>
+                                <div
+                                  className="card-body d-flex flex-column"
+                                  style={{ textAlign: "left", gap: "6px" }}
+                                >
                                   <h6 className="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
                                     <i className="fa fa-book text-primary"></i>
                                     {test.AssignmentTitle}
                                   </h6>
 
-                                  <p className="mb-2"><i className="fa fa-user me-2 mr-2 text-dark"></i>{test.pname}</p>
-                                  <p className="mb-2"><i className="fa fa-layer-group me-2 mr-2 text-secondary"></i><strong>Unit:</strong> {activeUnit}</p>
-                                  <p className="mb-2"><i className="fa fa-clock me-2 mr-2 text-primary"></i><strong>Duration:</strong> {test.Duration} min</p>
-                                  <p className="mb-2"><i className="fa fa-star me-2 mr-2 text-warning"></i><strong>Marks:</strong> {test.totmrk} | <strong>Pass:</strong> {test.passmrk}</p>
-                                  <p className="mb-2"><i className="fa fa-check-circle me-2 mr-2 text-success"></i><strong>Attempted:</strong> {test.attempted ? "Yes" : "No"}</p>
-                                  <p className="mb-2"><i className="fa fa-calendar-alt me-2 mr-2 text-danger"></i>
-                                    <strong>From:</strong> {new Date(test.StartDate).toLocaleDateString()} - {new Date(test.EndDate).toLocaleDateString()}
+                                  <p className="mb-2">
+                                    <i className="fa fa-user me-2 mr-2 text-dark"></i>
+                                    {test.pname}
+                                  </p>
+                                  <p className="mb-2">
+                                    <i className="fa fa-layer-group me-2 mr-2 text-secondary"></i>
+                                    <strong>Unit:</strong> {activeUnit}
+                                  </p>
+                                  <p className="mb-2">
+                                    <i className="fa fa-clock me-2 mr-2 text-primary"></i>
+                                    <strong>Duration:</strong> {test.Duration}{" "}
+                                    min
+                                  </p>
+                                  <p className="mb-2">
+                                    <i className="fa fa-star me-2 mr-2 text-warning"></i>
+                                    <strong>Marks:</strong> {test.totmrk} |{" "}
+                                    <strong>Pass:</strong> {test.passmrk}
+                                  </p>
+                                  <p className="mb-2">
+                                    <i className="fa fa-check-circle me-2 mr-2 text-success"></i>
+                                    <strong>Attempted:</strong>{" "}
+                                    {test.attempted ? "Yes" : "No"}
+                                  </p>
+                                  <p className="mb-2">
+                                    <i className="fa fa-calendar-alt me-2 mr-2 text-danger"></i>
+                                    <strong>From:</strong>{" "}
+                                    {new Date(
+                                      test.StartDate
+                                    ).toLocaleDateString()}{" "}
+                                    -{" "}
+                                    {new Date(
+                                      test.EndDate
+                                    ).toLocaleDateString()}
                                   </p>
 
-                                  <div className="mt-auto text-end">{typeBadge}</div>
+                                  <div className="mt-auto text-end">
+                                    {typeBadge}
+                                  </div>
                                 </div>
                               </div>
                             </div>
@@ -751,14 +1039,15 @@ const handleViewFile = (urlOrPath) => {
         </div>
       </div>
 
-   <UniversalFileViewerModal
-  show={viewerShow}
-  onHide={() => setViewerShow(false)}
-  fileUrl={viewerUrl}
-  apiOrigin={apiOrigin}
-  jwt={jwt}
-  title="View File"
-/>
+      {/* Viewer modal (any file) */}
+      <UniversalFileViewerModal
+        show={viewerShow}
+        onHide={handleViewerHide}
+        fileUrl={viewerUrl}
+        apiOrigin={apiOrigin}
+        jwt={jwt}
+        title="View File"
+      />
 
       <Footer />
     </div>

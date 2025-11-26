@@ -22,7 +22,7 @@ function AdminCourseUploadPage() {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    contentType: "EBOOK",
+    contentType: "WEBRESOURCES",
     vurl: "",            // <-- NEW
   });
   const [file, setFile] = useState(null);
@@ -75,7 +75,7 @@ function AdminCourseUploadPage() {
     fd.append("courseId", courseId);
     fd.append("title", form.title || "");
     fd.append("description", form.description || "");
-    fd.append("contentType", form.contentType || "");
+    fd.append("contentType", form.contentType || "WEBRESOURCES");
     fd.append("unitId", Number(selectedUnitId));
     fd.append("vurl", form.vurl || ""); // <-- ALWAYS APPEND
 
@@ -85,7 +85,7 @@ function AdminCourseUploadPage() {
       unitId: Number(selectedUnitId),
       title: form.title,
       description: form.description,
-      contentType: form.contentType,
+      contentType: form.contentType || "WEBRESOURCES",
       hasFile: !!file,
       fileName: file?.name || null,
       vurl: form.vurl || "",
@@ -112,7 +112,7 @@ function AdminCourseUploadPage() {
 
       alert("✅ Content uploaded successfully");
 
-      setForm({ title: "", description: "", contentType: "EBOOK", vurl: "" });
+      setForm({ title: "", description: "", contentType: "WEBRESOURCES", vurl: "" });
       setFile(null);
       setSelectedUnitId("");
       setShowUploadModal(false);
@@ -225,14 +225,15 @@ function AdminCourseUploadPage() {
                     className="form-control"
                     value={form.contentType}
                     onChange={(e) => setForm({ ...form, contentType: e.target.value })}
+                    required
                   >
-                    {/* <option value="EBOOK">EBOOK</option> */}
-                    <option value="WebResources">Web Resources</option>
+                    <option value="">-- Select Content Type --</option>
+                    <option value="EBOOK">EBOOK</option>
+                    <option value="WEBRESOURCES">Web Resources</option>
                     <option value="FAQ">Pre-Learning : FAQ</option>
-                    {/* <option value="Misconceptions">Pre-Learning : Misconceptions</option> */}
-                    <option value="PracticeAssignment">Practice Test</option>
-                    <option value="StudyGuide">Study Guide</option>
-                    {/* <option value="Video">Video</option> */}
+                    <option value="PRACTICEASSIGNMENT">Practice Test</option>
+                    <option value="STUDYGUIDE">Study Guide</option>
+                    <option value="VIDEO">Video</option>
                   </select>
                 </div>
 
