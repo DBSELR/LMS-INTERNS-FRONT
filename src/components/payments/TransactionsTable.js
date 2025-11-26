@@ -9,6 +9,7 @@ function TransactionsTable() {
   const [error, setError] = useState("");
   const [userId, setUserId] = useState(null);
   const [courseFilter, setCourseFilter] = useState("");
+  const [feeHeadFilter, setFeeHeadFilter] = useState("");
 
   // Decode JWT to get user ID
   useEffect(() => {
@@ -92,19 +93,41 @@ function TransactionsTable() {
   };
 
   // select all / clear all (apply to currently displayed rows)
-  const filteredTransactions = courseFilter
-    ? transactions.filter((t) => String(t.course || "").trim() === String(courseFilter).trim())
-    : transactions;
+  const filteredTransactions = transactions.filter((t) => {
+    const courseMatch = courseFilter
+      ? String(t.course || "").trim() === String(courseFilter).trim()
+      : true;
+    const feeHeadMatch = feeHeadFilter
+      ? String(t.feeHead || "").trim() === String(feeHeadFilter).trim()
+      : true;
+    return courseMatch && feeHeadMatch;
+  });
 
-  const allKeys = filteredTransactions.map(rowKey);
-  const allSelected =
-    selectedKeys.size > 0 && selectedKeys.size === allKeys.length;
-  const someSelected =
-    selectedKeys.size > 0 && selectedKeys.size < allKeys.length;
+  // Only rows that are selectable when doing a "select all" — i.e. have outstanding balance and not marked PD
+  const selectableTransactions = filteredTransactions.filter((t) => {
+    const amountDue = Number(t.amountDue || 0);
+    const paid = Number(t.paid || 0);
+    const balance = Math.max(0, amountDue - paid);
+    const disabled = t.remarks === "PD";
+    return balance > 0 && !disabled;
+  });
+
+  const allKeys = selectableTransactions.map(rowKey);
+  const allSelected = selectedKeys.size > 0 && selectedKeys.size === allKeys.length;
+  const someSelected = selectedKeys.size > 0 && selectedKeys.size < allKeys.length;
 
   const toggleAll = (checked) => {
     setSelectedKeys(checked ? new Set(allKeys) : new Set());
   };
+
+  // Compute selected items and their total payable amount
+  const selectedItems = transactions.filter((t) => selectedKeys.has(rowKey(t)));
+  const totalSelectedAmount = selectedItems.reduce((sum, t) => {
+    const amountDue = Number(t.amountDue || 0);
+    const paid = Number(t.paid || 0);
+    const balance = Math.max(0, amountDue - paid);
+    return sum + balance;
+  }, 0);
 
   const handleBulkPay = async () => {
     if (selectedKeys.size === 0) {
@@ -197,7 +220,7 @@ function TransactionsTable() {
       <div className="card shadow-sm">
         <div className="card-header bg-primary text-white d-flex align-items-center">
           <i className="fa fa-exchange-alt mr-2"></i>
-          <h6 className="mb-0">College-wise Student Fee Transactions</h6>
+          <h6 className="mb-0">Student Fee Transactions</h6>
         </div>
         <div className="card-body text-center py-5">
           <div className="spinner-border text-primary" role="status">
@@ -214,7 +237,7 @@ function TransactionsTable() {
       <div className="card shadow-sm">
         <div className="card-header bg-primary text-white d-flex align-items-center">
           <i className="fa fa-exchange-alt mr-2"></i>
-          <h6 className="mb-0">College-wise Student Fee Transactions</h6>
+          <h6 className="mb-0">Student Fee Transactions</h6>
         </div>
         <div className="card-body text-center py-5">
           <div className="alert alert-warning">
@@ -232,11 +255,27 @@ function TransactionsTable() {
         <div>
           <i className="fa fa-exchange-alt mr-2"></i>
           <h6 className="mb-0 d-inline">
-            College-wise Student Fee Transactions
+            Fee Transactions
           </h6>
         </div>
         <div className="d-flex align-items-center gap-2">
           <small className="text-light">Showing {filteredTransactions.length} of {transactions.length} records</small>
+          <select
+            className="form-select form-select-sm"
+            style={{ width: 220 }}
+            value={feeHeadFilter}
+            onChange={(e) => setFeeHeadFilter(e.target.value)}
+            title="Filter by fee head"
+          >
+            <option value="">All Fee Heads</option>
+            {Array.from(new Set(transactions.map((t) => t.feeHead || "")))
+              .filter((h) => h && h.trim())
+              .map((h) => (
+                <option key={h} value={h}>
+                  {h}
+                </option>
+              ))}
+          </select>
           <select
             className="form-select form-select-sm"
             style={{ width: 220 }}
@@ -253,13 +292,15 @@ function TransactionsTable() {
                 </option>
               ))}
           </select>
-          <button
-            className="btn btn-sm btn-light"
-            onClick={() => setCourseFilter("")}
-            title="Clear course filter"
-          >
-            Clear
-          </button>
+          <div className="btn-group">
+            <button
+              className="btn btn-sm btn-light"
+              onClick={() => { setFeeHeadFilter(""); setCourseFilter(""); }}
+              title="Clear filters"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
@@ -418,7 +459,9 @@ function TransactionsTable() {
                 onClick={handleBulkPay}
                 disabled={selectedKeys.size === 0 || loading}
               >
-                {loading ? "Processing..." : `Pay Now (${selectedKeys.size})`}
+                {loading
+                  ? "Processing..."
+                  : `Pay Now (${selectedKeys.size}) • ${formatCurrency(totalSelectedAmount)}`}
               </Button>
             </div>
           </div>
