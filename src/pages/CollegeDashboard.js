@@ -24,6 +24,7 @@ function CollegeDashboard() {
     liveClassCount: 0,
     taskCount: 0,
     examCount: 0,
+    contentReadPercentPerBatch: 0,
   });
 
   useEffect(() => {
@@ -116,6 +117,11 @@ function CollegeDashboard() {
           liveClassCount: Number(data.liveClassCount || data.LiveClassCount) || 0,
           taskCount: Number(data.taskCount || data.TaskCount) || 0,
           examCount: Number(data.examCount || data.ExamCount) || 0,
+           contentReadPercentPerBatch:
+              data.contentReadPercentPerBatch !== undefined &&
+              data.contentReadPercentPerBatch !== null
+                ? Number(data.contentReadPercentPerBatch)
+                : 0,
         };
         
         console.log("Processed summary data:", summaryData);
@@ -167,6 +173,7 @@ function CollegeDashboard() {
     { label: "Tasks", value: summary.taskCount, icon: "fa-tasks", link: "/taskboard" },
     { label: "Exams (MT/DT)", value: summary.examCount, icon: "fa-file-alt", link: "/exams" },
     { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/library" },
+    { label: "Content Read %",  value: `${summary.contentReadPercentPerBatch.toFixed?.(2) || "0.00"}%`, icon: "fa-line-chart", link: "/content-read-analytics" },
   ];
 
   console.log("Dashboard cards:", cards);

@@ -132,6 +132,7 @@ function InstructorCourseViewPage() {
   const [viewerUrl, setViewerUrl] = useState("");
   const [currentProgressKey, setCurrentProgressKey] = useState(null);
   const [progressVersion, setProgressVersion] = useState(0); // force re-render when progress changes
+  const [currentContentId, setCurrentContentId] = useState(null); // 🔴 NEW: which content item is open
 
   const [activeUnit, setActiveUnit] = useState("");
   const [allUnits, setAllUnits] = useState([]);
@@ -246,6 +247,36 @@ function InstructorCourseViewPage() {
   }, []);
 
   /* =========================
+     🔹 Helper: send progress to API (SP-based)
+     ========================= */
+  const reportProgressToServer = async (contentId, percent) => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token || !contentId) return;
+
+      await fetch(`${API_BASE_URL}/Content/updateprogress`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          contentId,
+          progressPercent: percent,
+        }),
+      });
+
+      log("Progress reported to server", { contentId, percent });
+    } catch (err) {
+      error("Failed to report progress to server", {
+        contentId,
+        percent,
+        err,
+      });
+    }
+  };
+
+  /* =========================
      File view + progress
      ========================= */
   const cleanPath = (u) =>
@@ -288,24 +319,36 @@ function InstructorCourseViewPage() {
     const { key } = getProgressForItem(sectionKey, item);
     setCurrentProgressKey(key || buildProgressKey(sectionKey, fullUrl));
 
+    // 🔴 NEW: store which contentId is being opened (for DB progress)
+    const cid = getContentId(item);
+    setCurrentContentId(cid || null);
+
     setViewerUrl(fullUrl);
     setViewerShow(true);
   };
 
   const handleViewerHide = () => {
-    // When user closes the viewer, mark this file as 100% complete
+    // When user closes the viewer, mark this file as 100% complete (or keep max)
     if (currentProgressKey) {
       const existing = parseInt(localStorage.getItem(currentProgressKey), 10);
       const updated =
         Number.isFinite(existing) && existing > 0
           ? Math.max(existing, 100)
           : 100;
+
       localStorage.setItem(currentProgressKey, updated);
       setProgressVersion((v) => v + 1); // trigger re-render
+
+      // 🔴 NEW: also report to API (only for students)
+      if (currentContentId && role === "Student") {
+        reportProgressToServer(currentContentId, updated);
+      }
     }
+
     setViewerShow(false);
     setViewerUrl("");
     setCurrentProgressKey(null);
+    setCurrentContentId(null);
   };
 
   /* =========================
@@ -666,7 +709,6 @@ function InstructorCourseViewPage() {
                   ) : (
                     <div className="row">
                       {section.data.map((item, idx2) => {
-                        // we use progressVersion in deps to force re-read from localStorage
                         const { value: progress } = getProgressForItem(
                           section.key,
                           item
@@ -724,7 +766,7 @@ function InstructorCourseViewPage() {
                                   View File
                                 </button>
 
-                                {/* Progress bar, same style as first page */}
+                                {/* Progress bar, same style as earlier page */}
                                 <div style={{ marginTop: "12px" }}>
                                   <div
                                     style={{
@@ -732,7 +774,7 @@ function InstructorCourseViewPage() {
                                       marginBottom: "2px",
                                     }}
                                   >
-                                    <span>{section.title} Progress: </span>
+                                    <span> Progress: </span>
                                     <span
                                       style={{
                                         color: progressColor,

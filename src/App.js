@@ -161,7 +161,7 @@ import BusinessExecutiveDashboard from "./pages/BusinessExecutiveDashboard";
 // at the top of App.jsx
 import Footer from "./components/Footer"; // adjust path if your Footer.jsx lives elsewhere
 import Transactions from "./pages/Transactions";
-
+import AdminContentReadAnalytics from "./pages/AdminContentReadAnalytics";
 
 
 function App() {
@@ -519,6 +519,8 @@ function App() {
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+        <Route path="/content-read-analytics" element={<AdminContentReadAnalytics />}
+/>
       </Routes>
 
       {/* ✅ Global footer */}
