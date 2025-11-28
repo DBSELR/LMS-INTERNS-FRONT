@@ -20,7 +20,8 @@ function AdminDashboard() {
     liveClasses: 0,
     tasks: 0,
     leaves: 0,
-    contentReadPercentPerBatch: 0, // 👈 new field
+    contentReadPercentPerBatch: 0, 
+    liveClassAttendancePercentPerBatch: 0,
   });
   const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
@@ -72,6 +73,14 @@ function AdminDashboard() {
               data.contentReadPercentPerBatch !== null
                 ? Number(data.contentReadPercentPerBatch)
                 : 0,
+                liveClassAttendancePercentPerBatch:
+    data.liveClassAttendancePercentPerBatch !== undefined &&
+    data.liveClassAttendancePercentPerBatch !== null
+      ? Number(data.liveClassAttendancePercentPerBatch)
+      : data.LiveClassAttendancePercentPerBatch !== undefined &&
+        data.LiveClassAttendancePercentPerBatch !== null
+      ? Number(data.LiveClassAttendancePercentPerBatch)
+      : 0,
           });
         } catch (err) {
           console.error("Failed to fetch dashboard summary", err);
@@ -160,6 +169,12 @@ function AdminDashboard() {
                     icon: "fa-line-chart", // pick any icon you like
                     link: "/content-read-analytics", // or some analytics page
                   },
+                  {
+        label: "Live Class Attendance %",
+        value: `${summary.liveClassAttendancePercentPerBatch.toFixed?.(2) || "0.00"}%`,
+        icon: "fa-bar-chart",
+        link: "/live-class-attendance-analytics", // you can change this route as needed
+      },
                 ].map((item, idx) => (
                   <div className="col-12 col-sm-6 col-lg-3 mb-3" key={idx}>
                     <div

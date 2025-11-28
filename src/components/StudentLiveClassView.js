@@ -43,6 +43,7 @@ const StudentLiveClassView = () => {
 
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [selectedVideoUrl, setSelectedVideoUrl] = useState("");
+  const [studentId, setStudentId] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -53,7 +54,7 @@ const StudentLiveClassView = () => {
     try {
       const decoded = jwtDecode(token);
       const id = decoded["UserId"] || decoded.userId || decoded.nameid;
-
+      setStudentId(id);
       fetch(`${API_BASE_URL}/LiveClass/Student/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
@@ -151,6 +152,58 @@ const StudentLiveClassView = () => {
       },
     };
   });
+
+  const handleJoinClick = async (cls) => {
+  if (!studentId) {
+    console.warn("No studentId found, cannot mark attendance");
+    // Still allow joining
+    window.open(cls.meetingLink, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  const token = localStorage.getItem("jwt");
+
+  // Try to resolve examinationId property name
+  const examinationId =
+    cls.examinationId || cls.examinationID || cls.examinationid || cls.examination_id;
+
+  const payload = {
+    studentId: parseInt(studentId, 10),
+    examinationId: examinationId ? parseInt(examinationId, 10) : null,
+    joinTime: new Date().toISOString(), // backend takes .Date so only date is used
+    status: "Present",                  // or "Joined", "Attended", etc.
+    liveClassId: cls.liveClassId,
+  };
+
+  console.log("📝 Marking live class attendance:", payload);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/LiveClass/MarkLiveClassAttendance`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const text = await response.text();
+      console.error("❌ Failed to mark attendance:", response.status, text);
+    } else {
+      const msg = await response.text();
+      console.log("✅ Attendance marked:", msg);
+    }
+  } catch (err) {
+    console.error("❌ Error calling attendance API:", err);
+  }
+
+  // Always open meeting (even if attendance API fails)
+  if (cls.meetingLink) {
+    window.open(cls.meetingLink, "_blank", "noopener,noreferrer");
+  }
+};
+
 
   return (
     <div id="main_content" className="font-muli theme-blush">
@@ -268,17 +321,21 @@ const StudentLiveClassView = () => {
                                         </div>
 
                                         {cls.meetingLink && canJoin(cls) && (
-                                          <button className="btn btn-sm btn-success mt-2" onClick={() => window.open(cls.meetingLink, "_blank")}>
-                                            <i className="fa fa-play-circle mr-1"></i> Join
-                                          </button>
-                                        )}
+  <button
+    className="btn btn-sm btn-success mt-2"
+    onClick={() => handleJoinClick(cls)}
+  >
+    <i className="fa fa-play-circle mr-1"></i> Join
+  </button>
+)}
+
 
                                         {cls.fileurl && (
                                           <button
   className="btn btn-sm btn-info mt-2"
   onClick={() => {
    const fullUrl = cls.fileurl.startsWith("/")
-  ? `http://localhost:5129${cls.fileurl}`
+  ? `http://localhost:7163${cls.fileurl}`
   : cls.fileurl;
 
 console.log("🎬 Opening recording:", fullUrl);

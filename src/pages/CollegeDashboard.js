@@ -25,6 +25,7 @@ function CollegeDashboard() {
     taskCount: 0,
     examCount: 0,
     contentReadPercentPerBatch: 0,
+    liveClassAttendancePercentPerBatch: 0,
   });
 
   useEffect(() => {
@@ -122,6 +123,14 @@ function CollegeDashboard() {
               data.contentReadPercentPerBatch !== null
                 ? Number(data.contentReadPercentPerBatch)
                 : 0,
+                liveClassAttendancePercentPerBatch:
+    data.liveClassAttendancePercentPerBatch !== undefined &&
+    data.liveClassAttendancePercentPerBatch !== null
+      ? Number(data.liveClassAttendancePercentPerBatch)
+      : data.LiveClassAttendancePercentPerBatch !== undefined &&
+        data.LiveClassAttendancePercentPerBatch !== null
+      ? Number(data.LiveClassAttendancePercentPerBatch)
+      : 0,
         };
         
         console.log("Processed summary data:", summaryData);
@@ -174,6 +183,13 @@ function CollegeDashboard() {
     { label: "Exams (MT/DT)", value: summary.examCount, icon: "fa-file-alt", link: "/exams" },
     { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/library" },
     { label: "Content Read %",  value: `${summary.contentReadPercentPerBatch.toFixed?.(2) || "0.00"}%`, icon: "fa-line-chart", link: "/content-read-analytics" },
+    {
+        label: "Live Class Attendance %",
+        value: `${summary.liveClassAttendancePercentPerBatch.toFixed?.(2) || "0.00"}%`,
+        icon: "fa-bar-chart",
+        link: "/live-class-attendance-analytics", // you can change this route as needed
+      },
+ 
   ];
 
   console.log("Dashboard cards:", cards);
