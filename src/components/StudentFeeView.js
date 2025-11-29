@@ -23,6 +23,8 @@ const StudentFeeView = () => {
   const [payHeadID, setPayHeadID] = useState("");
   const [payHead, setPayHead] = useState("");
   const [payInstallment, setpayInstallment] = useState("");
+  const [selectedInstallmentNo, setSelectedInstallmentNo] = useState(null);
+
 
   const toggleFeePlan = () => {
     setFeePlanOpen((prev) => !prev);
@@ -31,22 +33,41 @@ const StudentFeeView = () => {
     //console.log(showFields);
   }
 
+const handlePayNow = (fee) => {
+  console.log("Paying for:", fee);
+  if (!showFields) setShowFields(true);
 
-  const handlePayNow = (fee) => {
-    console.log("Paying for:", fee);
-    if (!showFields)
-      setShowFields(true);
-    const due = parseFloat(fee.amountDue) || 0;
-    const paid = parseFloat(fee.paid) || 0;
-    setPayAmount(due - paid);
+  const due = parseFloat(fee.amountDue) || 0;
+  const paid = parseFloat(fee.paid) || 0;
+  setPayAmount(due - paid);
 
-    // setPayAmount(fee.amountDue - (fee.paid || 0));  
-    setPayHead(fee.feeHead);
-    setPayHeadID(fee.hid);
-    setPaidAmount(fee.paid);
-    setpayInstallment('Installment ' + fee.installment);
-    setSelectedInstallment(fee.hid.toString()); // ✅ Add this line to update dropdown selection
-  };
+  setPayHead(fee.feeHead);
+  setPayHeadID(fee.hid);
+  setPaidAmount(fee.paid);
+
+  // For display only
+  setpayInstallment("Installment " + fee.installment);
+
+  // 🔹 This is the REAL numeric installment we will send to backend
+  setSelectedInstallmentNo(fee.installment);
+};
+
+
+  // const handlePayNow = (fee) => {
+  //   console.log("Paying for:", fee);
+  //   if (!showFields)
+  //     setShowFields(true);
+  //   const due = parseFloat(fee.amountDue) || 0;
+  //   const paid = parseFloat(fee.paid) || 0;
+  //   setPayAmount(due - paid);
+
+  //   // setPayAmount(fee.amountDue - (fee.paid || 0));  
+  //   setPayHead(fee.feeHead);
+  //   setPayHeadID(fee.hid);
+  //   setPaidAmount(fee.paid);
+  //   setpayInstallment('Installment ' + fee.installment);
+  //   setSelectedInstallment(fee.hid.toString()); // ✅ Add this line to update dropdown selection
+  // };
 
 
   const fetchFees = async (studentId, token) => {
@@ -136,73 +157,144 @@ const StudentFeeView = () => {
 
   }, []);
 
+const updatePayment = async () => {
+  const amount = document.getElementById("payAmount").value;
+  const paymentMethod = document.getElementById("payMode").value;
+  const transactionId = document.getElementById("txnId").value;
 
+  if (!amount || !paymentMethod || !transactionId) {
+    toast.warning("Please fill all fields.");
+    return;
+  }
 
-  const updatePayment = async () => {
-    const amount = document.getElementById("payAmount").value;
-    const paymentMethod = document.getElementById("payMode").value;
-    const transactionId = document.getElementById("txnId").value;
-    // const payHeadID = document.getElementById("payHeadID").value;
-    if (!amount || !paymentMethod || !transactionId) {
-      toast.warning("Please fill all fields.");
-      return;
-    }
-    // if (amount > currentInstallmentDue[0].amountDue) {
-    //   toast.warning("Installment Due Amount is ₹" + currentInstallmentDue[0].amountDue + " Only");
-    //   return;
-    // }
-    const token = localStorage.getItem("jwt");
-    let decoded;
-    try {
-      decoded = jwtDecode(token);
-    } catch (err) {
-      toast.error("Invalid token.");
-      return;
-    }
+  // optional: prevent over-payment
+  // if (currentInstallmentDue.length > 0 && parseFloat(amount) > currentInstallmentDue[0].amountDue) {
+  //   toast.warning("Installment Due Amount is ₹" + currentInstallmentDue[0].amountDue + " Only");
+  //   return;
+  // }
 
-    const studentId = decoded["UserId"] || decoded.userId || decoded.nameid;
-    const payInstallmentRaw = document.getElementById("payInstallment").value; // or however you're getting it
+  const token = localStorage.getItem("jwt");
+  let decoded;
+  try {
+    decoded = jwtDecode(token);
+  } catch (err) {
+    toast.error("Invalid token.");
+    return;
+  }
 
-    const payload = {
-      studentId,
-      amount: parseFloat(amount),
-      Installment: payInstallmentRaw.replace("Installment ", ""), // OR use regex
-      // payInstallment,
-      paymentMethod,
-      transactionId,
-      payHeadID,
-    };
+  const studentId = decoded["UserId"] || decoded.userId || decoded.nameid;
 
-    try {
-      const res = await fetch(`${API_BASE_URL}/Fee/Pay`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(payload),
-      });
+  if (!selectedInstallmentNo) {
+    toast.warning("Installment not selected.");
+    return;
+  }
 
-      if (!res.ok) throw new Error("Payment failed.");
-
-      toast.success("Payment updated!");
-      setShowFields(false);
-      fetchFees(studentId, token);
-      fetch(`${API_BASE_URL}/Fee/StudentDues/${studentId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-        .then((res) => res.json())
-        .then(setDues);
-
-      fetchcurrentInstallmentDue(studentId, token);
- fetchInstallmentFees(studentId, token);
-    } catch (err) {
-      console.error(err);
-      toast.error("Payment failed.");
-    }
+  const payload = {
+    studentId,                              // 🔹 must match DTO property
+    amount: parseFloat(amount),
+    installment: selectedInstallmentNo,     // 🔹 pure number (1, 2, 3…)
+    paymentMethod,
+    transactionId,
+    payHeadId: payHeadID,                   // 🔹 camelCase key to match DTO
   };
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/Fee/Pay`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) throw new Error("Payment failed.");
+
+    toast.success("Payment updated!");
+    setShowFields(false);
+
+    // Refresh data
+    fetchFees(studentId, token);
+    fetch(`${API_BASE_URL}/Fee/StudentDues/${studentId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then((res) => res.json())
+      .then(setDues);
+
+    fetchcurrentInstallmentDue(studentId, token);
+    fetchInstallmentFees(studentId, token);
+  } catch (err) {
+    console.error(err);
+    toast.error("Payment failed.");
+  }
+};
+
+
+//   const updatePayment = async () => {
+//     const amount = document.getElementById("payAmount").value;
+//     const paymentMethod = document.getElementById("payMode").value;
+//     const transactionId = document.getElementById("txnId").value;
+//     // const payHeadID = document.getElementById("payHeadID").value;
+//     if (!amount || !paymentMethod || !transactionId) {
+//       toast.warning("Please fill all fields.");
+//       return;
+//     }
+//     // if (amount > currentInstallmentDue[0].amountDue) {
+//     //   toast.warning("Installment Due Amount is ₹" + currentInstallmentDue[0].amountDue + " Only");
+//     //   return;
+//     // }
+//     const token = localStorage.getItem("jwt");
+//     let decoded;
+//     try {
+//       decoded = jwtDecode(token);
+//     } catch (err) {
+//       toast.error("Invalid token.");
+//       return;
+//     }
+
+//     const studentId = decoded["UserId"] || decoded.userId || decoded.nameid;
+//     const payInstallmentRaw = document.getElementById("payInstallment").value; // or however you're getting it
+
+//     const payload = {
+//       studentId,
+//       amount: parseFloat(amount),
+//       Installment: payInstallmentRaw.replace("Installment ", ""), // OR use regex
+//       // payInstallment,
+//       paymentMethod,
+//       transactionId,
+//       payHeadID,
+//     };
+
+//     try {
+//       const res = await fetch(`${API_BASE_URL}/Fee/Pay`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(payload),
+//       });
+
+//       if (!res.ok) throw new Error("Payment failed.");
+
+//       toast.success("Payment updated!");
+//       setShowFields(false);
+//       fetchFees(studentId, token);
+//       fetch(`${API_BASE_URL}/Fee/StudentDues/${studentId}`, {
+//         headers: {
+//           Authorization: `Bearer ${token}`,
+//         },
+//       })
+//         .then((res) => res.json())
+//         .then(setDues);
+
+//       fetchcurrentInstallmentDue(studentId, token);
+//  fetchInstallmentFees(studentId, token);
+//     } catch (err) {
+//       console.error(err);
+//       toast.error("Payment failed.");
+//     }
+//   };
 
   const percentPaid = dues.length > 0 && dues[0].fee > 0
     ? Math.round((dues[0].paid / dues[0].fee) * 100)
@@ -289,7 +381,7 @@ const StudentFeeView = () => {
                               <tr style={{ fontSize: "13.5px" }}>
                                 <th>#</th>
                                 <th>FeeHead</th>
-                                <th>Sem / Installment</th>
+                                {/* <th>Sem / Installment</th> */}
                                 <th>Amount</th>
                                 <th>Due Date</th>
                                 <th>Payment</th>
@@ -307,7 +399,7 @@ const StudentFeeView = () => {
                                   <tr key={index}>
                                     <td>{index + 1}</td>
                                     <td> {fee.feeHead}</td>
-                                    <td>Installment {fee.installment}</td>
+                                    {/* <td>Installment {fee.installment}</td> */}
                                     <td>₹{fee.amountDue.toLocaleString()}</td>
                                     <td>
                                       {fee.dueDate
