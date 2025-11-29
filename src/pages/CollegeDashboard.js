@@ -178,10 +178,10 @@ function CollegeDashboard() {
     { label: "Students", value: summary.studentCount, icon: "fa-users", link: "/students" },
     { label: "Professors", value: summary.professorCount, icon: "fa-user-tie", link: "/professors" },
     { label: "Courses", value: summary.courseCount, icon: "fa-book", link: "/my-courseware" },
-    { label: "Live Classes", value: summary.liveClassCount, icon: "fa-video-camera", link: "/instructor/live-classes" },
+    { label: "Live Classes", value: summary.liveClassCount, icon: "fa-video-camera", link: "/student/live-classes" },
     { label: "Tasks", value: summary.taskCount, icon: "fa-tasks", link: "/taskboard" },
     { label: "Exams (MT/DT)", value: summary.examCount, icon: "fa-file-alt", link: "/exams" },
-    { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/library" },
+    { label: "Library Books", value: summary.bookCount, icon: "fa-book-open", link: "/studentlibrary" },
     { label: "Content Read %",  value: `${summary.contentReadPercentPerBatch.toFixed?.(2) || "0.00"}%`, icon: "fa-line-chart", link: "/content-read-analytics" },
     {
         label: "Live Class Attendance %",

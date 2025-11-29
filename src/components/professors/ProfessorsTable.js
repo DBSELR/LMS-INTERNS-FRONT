@@ -8,6 +8,7 @@ const ProfessorsTable = ({
   onEdit,
   onDelete,
   onAssignCourses,
+  showActions = true,
 }) => {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
@@ -84,37 +85,39 @@ const ProfessorsTable = ({
                 </div>
 
                 {/* Actions */}
-                <div className="mt-3">
-                  <button
-                    className="btn btn-sm btn-outline-primary mr-2 rounded-pill"
-                    onClick={() => onView(prof)}
-                  >
-                    <i className="fa fa-eye mr-1"></i> View
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-info mr-2 rounded-pill"
-                    onClick={() => onEdit(prof)}
-                  >
-                    <i className="fa fa-edit mr-1"></i> Edit
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-warning mr-2 rounded-pill"
-                    onClick={() =>
-                      onAssignCourses(
-                        prof,
-                        prof.assignedCourses?.map((c) => c.examinationId) || []
-                      )
-                    }
-                  >
-                    <i className="fa fa-book mr-1"></i> Assign Courses
-                  </button>
-                  <button
-                    className="btn btn-sm btn-outline-danger rounded-pill"
-                    onClick={() => handleDeleteClick(prof.userId)}
-                  >
-                    <i className="fa fa-trash mr-1"></i> Delete
-                  </button>
-                </div>
+                {showActions && (
+                  <div className="mt-3">
+                    <button
+                      className="btn btn-sm btn-outline-primary mr-2 rounded-pill"
+                      onClick={() => onView(prof)}
+                    >
+                      <i className="fa fa-eye mr-1"></i> View
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-info mr-2 rounded-pill"
+                      onClick={() => onEdit(prof)}
+                    >
+                      <i className="fa fa-edit mr-1"></i> Edit
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-warning mr-2 rounded-pill"
+                      onClick={() =>
+                        onAssignCourses(
+                          prof,
+                          prof.assignedCourses?.map((c) => c.examinationId) || []
+                        )
+                      }
+                    >
+                      <i className="fa fa-book mr-1"></i> Assign Courses
+                    </button>
+                    <button
+                      className="btn btn-sm btn-outline-danger rounded-pill"
+                      onClick={() => handleDeleteClick(prof.userId)}
+                    >
+                      <i className="fa fa-trash mr-1"></i> Delete
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

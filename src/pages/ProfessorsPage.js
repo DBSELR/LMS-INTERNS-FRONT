@@ -8,6 +8,7 @@ import LeftSidebar from "../components/LeftSidebar";
 import Footer from "../components/Footer";
 import { FaChalkboardTeacher } from "react-icons/fa";
 import API_BASE_URL from "../config";
+import { getUserRole } from "../utils/auth";
 
 function ProfessorsPage() {
   const [professors, setProfessors] = useState([]);
@@ -20,6 +21,8 @@ function ProfessorsPage() {
   const [showAddEditModal, setShowAddEditModal] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
+  // determine user role to control UI permissions
+  const userRole = getUserRole();
 
   useEffect(() => {
     const loadData = async () => {
@@ -255,9 +258,11 @@ const handleAdd = async (payload) => {
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
 
-                  <button className="btn btn-primary" onClick={handleAddNew}>
-                    <i className="fa fa-plus mr-1"></i> Add Faculty
-                  </button>
+                  {userRole !== "College" && (
+                    <button className="btn btn-primary" onClick={handleAddNew}>
+                      <i className="fa fa-plus mr-1"></i> Add Faculty
+                    </button>
+                  )}
                 </div>
                 
                 <div className="semester-panel-body">
@@ -270,6 +275,8 @@ const handleAdd = async (payload) => {
                     onEdit={handleEdit}
                     onDelete={handleDelete}
                     onAssignCourses={handleAssignCourses}
+                    // hide action buttons for College role
+                    showActions={userRole !== "College"}
                   />
                 )}
                 </div>
