@@ -42,10 +42,7 @@ function Login() {
         try {
           const maybeJson = await response.json();
           msg =
-            maybeJson?.message ||
-            maybeJson?.title ||
-            maybeJson?.error ||
-            msg;
+            maybeJson?.message || maybeJson?.title || maybeJson?.error || msg;
         } catch {
           const text = await response.text();
           if (text) msg = text;
@@ -88,7 +85,9 @@ function Login() {
       try {
         const decoded = jwtDecode(token);
         role =
-          decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+          decoded?.[
+            "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+          ] ||
           decoded?.role ||
           decoded?.["roles"] || // sometimes frameworks use 'roles'
           "";
@@ -119,13 +118,13 @@ function Login() {
         case "Accountant":
           navigate("/accountant-dashboard");
           break;
-          case "College":
+        case "College":
           navigate("/college-dashboard");
           break;
         case "Director":
           navigate("/director-dashboard");
           break;
-          
+
         default:
           alert("Unknown role in token. Please contact admin.");
           break;
@@ -141,7 +140,7 @@ function Login() {
   return (
     <div
       className="d-flex align-items-center justify-content-center vh-100"
-      style={{ background: "#e4e9f0" }}
+      style={{ background: "#e4e9f0", display: "flex", flexDirection: "column", justifyContent: "center", height: "100vh" }}
     >
       <div
         className="card shadow-lg border-0"
@@ -153,75 +152,34 @@ function Login() {
           </div>
 
           <form onSubmit={handleSubmit} noValidate>
-
-            {/* <div className="form-group mb-3">
-              <label htmlFor="email" className="font-weight-semibold">
-                Username
-              </label>
+            <div className="form-item">
               <input
                 type="text"
-                className="form-control rounded-pill border-0 shadow-sm"
+                className="form-control mb-2"
                 id="email"
                 name="email"
-                placeholder="Enter your username"
                 value={form.email}
                 onChange={handleChange}
                 required
                 autoComplete="username"
-                style={{ backgroundColor: "#f9f9f9" }}
               />
-            </div> */}
+              <label htmlFor="username">Username</label>
+            </div>
 
             <div className="form-item">
-        <input
-          type="text"
-          className="form-control mb-2"
-          id="email"
-                name="email"
-                // placeholder="Enter your username"
-                value={form.email}
-                onChange={handleChange}
-                required
-                autoComplete="username"
-          /* use defaultValue to keep it uncontrolled */
-        />
-        <label htmlFor="username">Username</label>
-        </div>
-            
-
-            {/* <div className="form-group mb-4">
-              <label htmlFor="password" className="font-weight-semibold">
-                Password
-              </label>
               <input
                 type="password"
-                className="form-control rounded-pill border-0 shadow-sm"
+                className="form-control mb-2"
                 id="password"
-                name="password"
-                placeholder="Enter your password"
-                value={form.password}
-                onChange={handleChange}
-                required
-                autoComplete="current-password"
-                style={{ backgroundColor: "#f9f9f9" }}
-              />
-            </div> */}
-
-            <div className="form-item">
-        <input
-          type="password"
-          className="form-control mb-2"
-          id="password"
                 name="password"
                 // placeholder="Enter your password"
                 value={form.password}
                 onChange={handleChange}
                 required
                 autoComplete="current-password"
-          /* use defaultValue to keep it uncontrolled */
-        />
-        <label htmlFor="password">Password</label>
-        </div>
+              />
+              <label htmlFor="password">Password</label>
+            </div>
 
             <div className="d-flex align-items-center mb-3 remember-me">
               <input
@@ -247,6 +205,16 @@ function Login() {
           </form>
         </div>
       </div>
+
+
+    <div className="privacy-footer">
+  <a href="/privacy-policy" className="privacy-link">Privacy Policy</a>
+  <a href="/refund-policy" className="privacy-link">Refund Policy</a>
+  <a href="/return-exchange-policy" className="privacy-link">Return/Exchange Policy</a>
+  <a href="/cancellation-policy" className="privacy-link">Cancellation Policy</a>
+  <a href="/terms-and-conditions" className="privacy-link">Terms & Conditions</a>
+</div>
+
     </div>
   );
 }

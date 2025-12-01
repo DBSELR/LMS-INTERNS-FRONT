@@ -13,17 +13,19 @@ import { Pie } from "react-chartjs-2";
 import { Chart, ArcElement, Tooltip, Legend } from "chart.js";
 Chart.register(ArcElement, Tooltip, Legend);
 
+
+
 function AdminLiveClassAttendanceAnalytics() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Batch-wise stats (existing)
-  const [stats, setStats] = useState([]); // raw data from API
+  // 🔹 Batch-wise stats
+  const [stats, setStats] = useState([]);
   const [selectedBatch, setSelectedBatch] = useState("");
   const [selectedCourseKey, setSelectedCourseKey] = useState("");
   const [lastSelectedCourse, setLastSelectedCourse] = useState(null);
 
-  // 🔹 Student-wise stats (NEW)
+  // 🔹 Student-wise stats
   const [studentStats, setStudentStats] = useState([]);
   const [studentBatchFilter, setStudentBatchFilter] = useState("");
   const [studentCourseFilter, setStudentCourseFilter] = useState("");
@@ -66,16 +68,12 @@ function AdminLiveClassAttendanceAnalytics() {
           return;
         }
 
-        // ==========================
-        // 1) Batch-wise API (existing)
-        // ==========================
+        // ========== 1) Batch-wise ==========
         const res = await fetch(
           `${API_BASE_URL}/LiveClass/GetLiveclassAttPercent?InstructorId=${instructorId}`,
           {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -88,7 +86,6 @@ function AdminLiveClassAttendanceAnalytics() {
           const data = await res.json();
           console.log("📊 Live class attendance stats (batch-wise):", data);
 
-          // normalize keys (PascalCase / camelCase)
           const normalized = data.map((row) => ({
             batchName: row.batchName ?? row.BatchName,
             examinationID: row.examinationID ?? row.ExaminationID,
@@ -121,22 +118,17 @@ function AdminLiveClassAttendanceAnalytics() {
           if (normalized.length > 0) {
             const firstBatch = normalized[0].batchName;
             setSelectedBatch(firstBatch);
-
             const firstCourseKey = `${normalized[0].batchName}-${normalized[0].examinationID}`;
             setSelectedCourseKey(firstCourseKey);
           }
         }
 
-        // ==========================
-        // 2) Student-wise API (NEW)
-        // ==========================
+        // ========== 2) Student-wise ==========
         const resStudents = await fetch(
           `${API_BASE_URL}/LiveClass/GetLiveclassAttPercentByStudents?InstructorId=${instructorId}`,
           {
             method: "GET",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
 
@@ -191,11 +183,8 @@ function AdminLiveClassAttendanceAnalytics() {
     init();
   }, [navigate]);
 
-  // ==========================
-  // Batch-wise derived data
-  // ==========================
+  // ================= Batch-wise derived =================
 
-  // Group by batch
   const batches = useMemo(() => {
     const map = {};
     stats.forEach((row) => {
@@ -207,13 +196,11 @@ function AdminLiveClassAttendanceAnalytics() {
 
   const batchNames = Object.keys(batches);
 
-  // All courses for selected batch
   const coursesForBatch = useMemo(() => {
     if (!selectedBatch || !batches[selectedBatch]) return [];
     return batches[selectedBatch];
   }, [batches, selectedBatch]);
 
-  // Selected course row
   const selectedCourse = useMemo(() => {
     if (!selectedCourseKey || coursesForBatch.length === 0) return null;
     const [batch, examIdStr] = selectedCourseKey.split("-");
@@ -223,14 +210,13 @@ function AdminLiveClassAttendanceAnalytics() {
     );
   }, [selectedCourseKey, coursesForBatch]);
 
-  // Keep last selected course so temporary clearing doesn't hide chart
   useEffect(() => {
     if (selectedCourse) setLastSelectedCourse(selectedCourse);
   }, [selectedCourse]);
 
   const displayedCourse = selectedCourse || lastSelectedCourse;
 
-  // Pie chart data: attended vs not attended
+  // Pie chart: attended vs not attended
   const pieData = useMemo(() => {
     const attPercent = displayedCourse?.courseAttendancePercent ?? 0;
     const clampedAtt = Math.max(0, Math.min(100, attPercent));
@@ -241,9 +227,9 @@ function AdminLiveClassAttendanceAnalytics() {
       datasets: [
         {
           data: [clampedAtt, notAtt],
-          backgroundColor: ["#2196f3", "#ececec"],
-          borderWidth: 1,
-          hoverOffset: 0,
+          backgroundColor: ["#2563eb", "#e5e7eb"],
+          borderWidth: 0,
+          hoverOffset: 4,
         },
       ],
     };
@@ -251,8 +237,8 @@ function AdminLiveClassAttendanceAnalytics() {
 
   const pieOptions = {
     responsive: true,
-    animation: { duration: 0 },
-    hover: { mode: null },
+    maintainAspectRatio: false,
+    animation: { duration: 400 },
     plugins: {
       legend: {
         position: "bottom",
@@ -269,9 +255,7 @@ function AdminLiveClassAttendanceAnalytics() {
     },
   };
 
-  // ==========================
-  // Student-wise derived data
-  // ==========================
+  // ================= Student-wise derived =================
 
   const studentBatchNames = useMemo(() => {
     const set = new Set();
@@ -291,15 +275,19 @@ function AdminLiveClassAttendanceAnalytics() {
     return Array.from(set);
   }, [studentStats, studentBatchFilter]);
 
-  const filteredStudentStats = useMemo(() => {
-    return studentStats.filter((row) => {
-      if (studentBatchFilter && row.batchName !== studentBatchFilter)
-        return false;
-      if (studentCourseFilter && row.course !== studentCourseFilter)
-        return false;
-      return true;
-    });
-  }, [studentStats, studentBatchFilter, studentCourseFilter]);
+  const filteredStudentStats = useMemo(
+    () =>
+      studentStats.filter((row) => {
+        if (studentBatchFilter && row.batchName !== studentBatchFilter)
+          return false;
+        if (studentCourseFilter && row.course !== studentCourseFilter)
+          return false;
+        return true;
+      }),
+    [studentStats, studentBatchFilter, studentCourseFilter]
+  );
+
+  // ================= RENDER =================
 
   return (
     <div id="main_content" className="font-muli theme-blush">
@@ -313,62 +301,79 @@ function AdminLiveClassAttendanceAnalytics() {
       <RightSidebar />
       <LeftSidebar role="Admin" />
 
-      <div className="section-wrapper">
+      <div className="section-wrapper analytics-page">
         <div className="page admin-dashboard pt-0">
           <div className="section-body mt-3 pt-0">
-            <div className="container-fluid">
-              {/* Header */}
-              <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
-                <h2 className="page-title text-primary pt-0 dashboard-hero-title">
-                  <i className="fa fa-bar-chart me-2" /> Live Class Attendance
-                  Analytics
-                </h2>
-                <p className="text-muted mb-0 dashboard-hero-sub">
-                  Batch-wise and student-wise live class attendance analytics.
-                </p>
+            <div className="container-fluid analytics-container">
+              {/* ===== HEADER ===== */}
+              <div className="analytics-header">
+                <div className="analytics-header__titles">
+                  <h2 className="analytics-title">
+                    <span className="analytics-title__icon">
+                      <i className="fa fa-bar-chart" />
+                    </span>
+                    Live Class Attendance Analytics
+                  </h2>
+                  <p className="analytics-subtitle">
+                    Understand how students attend your live sessions — batch-wise
+                    & student-wise.
+                  </p>
+                </div>
+                <button
+                  className="btn analytics-back-btn"
+                  onClick={() => navigate(-1)}
+                >
+                  <i className="fa fa-arrow-left me-1" />
+                  Back to Dashboard
+                </button>
               </div>
 
-              {/* 🔹 Tabs: Batch-wise / Student-wise */}
-              <ul className="nav nav-tabs mb-3">
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className={
-                      "nav-link " + (activeTab === "batch" ? "active" : "")
-                    }
-                    onClick={() => setActiveTab("batch")}
-                  >
+              {/* ===== TAB TOGGLE ===== */}
+              <div className="analytics-tab-toggle">
+                <button
+                  type="button"
+                  className={
+                    "analytics-tab-toggle__btn" +
+                    (activeTab === "batch" ? " is-active" : "")
+                  }
+                  onClick={() => setActiveTab("batch")}
+                >
+                  <span className="analytics-tab-toggle__label">
                     Batch-wise
-                  </button>
-                </li>
-                <li className="nav-item">
-                  <button
-                    type="button"
-                    className={
-                      "nav-link " + (activeTab === "student" ? "active" : "")
-                    }
-                    onClick={() => setActiveTab("student")}
-                  >
+                  </span>
+                  <span className="analytics-tab-toggle__hint">
+                    Per course / batch
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  className={
+                    "analytics-tab-toggle__btn" +
+                    (activeTab === "student" ? " is-active" : "")
+                  }
+                  onClick={() => setActiveTab("student")}
+                >
+                  <span className="analytics-tab-toggle__label">
                     Student-wise
-                  </button>
-                </li>
-              </ul>
+                  </span>
+                  <span className="analytics-tab-toggle__hint">
+                    Per student detail
+                  </span>
+                </button>
+              </div>
 
-              {/* ==========================
-                  TAB 1: BATCH-WISE (existing UI)
-                 ========================== */}
+              {/* ============== TAB 1: BATCH-WISE ============== */}
               {activeTab === "batch" && (
                 <>
                   {/* Filters */}
                   {batchNames.length > 0 && (
-                    <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                      <div>
-                        <label className="form-label mb-1">
+                    <div className="analytics-filter-bar">
+                      <div className="analytics-filter-bar__item">
+                        <label className="analytics-filter__label">
                           Select Batch <span className="text-danger">*</span>
                         </label>
                         <select
-                          className="form-select form-select-sm"
-                          style={{ minWidth: "220px" }}
+                          className="form-select form-select-sm analytics-filter__select"
                           value={selectedBatch}
                           onChange={(e) => {
                             const newBatch = e.target.value;
@@ -390,75 +395,64 @@ function AdminLiveClassAttendanceAnalytics() {
                           ))}
                         </select>
                       </div>
-
-                      <div>
-                        <button
-                          className="btn btn-sm btn-outline-secondary me-2"
-                          onClick={() => navigate(-1)}
-                        >
-                          <i className="fa fa-arrow-left me-1" />
-                          Back to Dashboard
-                        </button>
-                      </div>
                     </div>
                   )}
 
-                  {/* Main content row: Pie + details */}
-                  <div className="row">
+                  <div className="row g-3 analytics-main-row">
                     {/* Left: Pie chart */}
-                    <div className="col-12 col-lg-5 mb-3">
-                      <div className="welcome-card dashboard-card animate-welcome h-100">
-                        <div className="d-flex align-items-center justify-content-between mb-3">
-                          <h5 className="mb-0">
-                            <i className="fa fa-pie-chart me-2" />
-                            Course Attendance %
-                          </h5>
-                          {/* Course selector beside title */}
-                          <div style={{ minWidth: 260 }}>
-                            <select
-                              className="form-select form-select-sm"
-                              value={selectedCourseKey}
-                              onChange={(e) =>
-                                setSelectedCourseKey(e.target.value)
-                              }
-                            >
-                              {coursesForBatch.map((c) => {
-                                const key = `${c.batchName}-${c.examinationID}`;
-                                return (
-                                  <option key={key} value={key}>
-                                    {c.paperCode} - {c.paperName}
-                                  </option>
-                                );
-                              })}
-                            </select>
+                    <div className="col-12 col-lg-5">
+                      <div className="analytics-card analytics-card--chart">
+                        <div className="analytics-card__header">
+                          <div className="analytics-card__title-wrap">
+                            <span className="analytics-card__icon">
+                              <i className="fa fa-pie-chart" />
+                            </span>
+                            <h5 className="analytics-card__title">
+                              Course Attendance %
+                            </h5>
                           </div>
+                          <select
+                            className="form-select form-select-sm analytics-card__select"
+                            value={selectedCourseKey}
+                            onChange={(e) =>
+                              setSelectedCourseKey(e.target.value)
+                            }
+                          >
+                            {coursesForBatch.map((c) => {
+                              const key = `${c.batchName}-${c.examinationID}`;
+                              return (
+                                <option key={key} value={key}>
+                                  {c.paperCode} - {c.paperName}
+                                </option>
+                              );
+                            })}
+                          </select>
                         </div>
+
                         {selectedCourse ? (
                           <>
-                            <div
-                              style={{ maxWidth: "360px", margin: "0 auto" }}
-                            >
+                            <div className="analytics-chart-container">
                               <Pie data={pieData} options={pieOptions} />
                             </div>
-                            <div className="text-center mt-3">
-                              <div className="fw-bold">
+                            <div className="analytics-chart-footer">
+                              <div className="analytics-chart-footer__title">
                                 {selectedCourse.paperCode} -{" "}
                                 {selectedCourse.paperName}
                               </div>
-                              <div className="text-muted small">
+                              <div className="analytics-chart-footer__meta">
                                 Batch:{" "}
                                 <strong>{selectedCourse.batchName}</strong>
                               </div>
-                              <div className="mt-2">
-                                <span className="badge bg-primary me-2">
-                                  Attendance:{" "}
+                              <div className="analytics-chart-footer__badges">
+                                <span className="analytics-pill analytics-pill--info">
+                                  Attendance{" "}
                                   {selectedCourse.courseAttendancePercent.toFixed(
                                     2
                                   )}
                                   %
                                 </span>
-                                <span className="badge bg-secondary">
-                                  Reach:{" "}
+                                <span className="analytics-pill analytics-pill--success">
+                                  Reach{" "}
                                   {selectedCourse.studentReachPercent.toFixed(
                                     2
                                   )}
@@ -475,64 +469,56 @@ function AdminLiveClassAttendanceAnalytics() {
                       </div>
                     </div>
 
-                    {/* Right: Description & table */}
-                    <div className="col-12 col-lg-7 mb-3">
-                      <div className="welcome-card dashboard-card animate-welcome h-100">
-                        <h5 className="mb-3">
-                          <i className="fa fa-list-alt me-2" />
-                          Batch-wise Live Class Stats
-                        </h5>
+                    {/* Right: Stats + table */}
+                    <div className="col-12 col-lg-7">
+                      <div className="analytics-card analytics-card--table">
+                        <div className="analytics-card__header mb-2">
+                          <div className="analytics-card__title-wrap">
+                            <span className="analytics-card__icon">
+                              <i className="fa fa-list-alt" />
+                            </span>
+                            <h5 className="analytics-card__title">
+                              Batch-wise Live Class Stats
+                            </h5>
+                          </div>
+                        </div>
 
                         {displayedCourse && (
-                          <div className="mb-3">
-                            <div className="row g-2">
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Total Live Classes"
-                                  value={displayedCourse.totalLiveClasses}
-                                />
-                              </div>
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Total Students"
-                                  value={displayedCourse.totalStudents}
-                                />
-                              </div>
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Total Attendances"
-                                  value={displayedCourse.totalAttendances}
-                                />
-                              </div>
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Students Attended"
-                                  value={displayedCourse.studentsWhoAttended}
-                                />
-                              </div>
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Course Attendance %"
-                                  value={`${displayedCourse.courseAttendancePercent.toFixed(
-                                    2
-                                  )}%`}
-                                />
-                              </div>
-                              <div className="col-6 col-md-4">
-                                <StatBadge
-                                  label="Overall Batch %"
-                                  value={`${displayedCourse.overallAttendancePercentPerBatch.toFixed(
-                                    2
-                                  )}%`}
-                                />
-                              </div>
-                            </div>
+                          <div className="analytics-stat-grid">
+                            <StatBadge
+                              label="Total Live Classes"
+                              value={displayedCourse.totalLiveClasses}
+                            />
+                            <StatBadge
+                              label="Total Students"
+                              value={displayedCourse.totalStudents}
+                            />
+                            <StatBadge
+                              label="Total Attendances"
+                              value={displayedCourse.totalAttendances}
+                            />
+                            <StatBadge
+                              label="Students Attended"
+                              value={displayedCourse.studentsWhoAttended}
+                            />
+                            <StatBadge
+                              label="Course Attendance %"
+                              value={`${displayedCourse.courseAttendancePercent.toFixed(
+                                2
+                              )}%`}
+                            />
+                            <StatBadge
+                              label="Overall Batch %"
+                              value={`${displayedCourse.overallAttendancePercentPerBatch.toFixed(
+                                2
+                              )}%`}
+                            />
                           </div>
                         )}
 
-                        <div className="table-responsive mt-2">
-                          <table className="table table-sm table-hover align-middle">
-                            <thead className="table-light">
+                        <div className="analytics-table-wrapper mt-3">
+                          <table className="table table-sm table-hover align-middle analytics-table">
+                            <thead className="analytics-table__head">
                               <tr>
                                 <th>Course</th>
                                 <th className="text-end">Live Classes</th>
@@ -560,7 +546,12 @@ function AdminLiveClassAttendanceAnalytics() {
                                 return (
                                   <tr
                                     key={key}
-                                    className={isActive ? "table-primary" : ""}
+                                    className={
+                                      "analytics-table__row" +
+                                      (isActive
+                                        ? " analytics-table__row--active"
+                                        : "")
+                                    }
                                     role="button"
                                     onClick={() => setSelectedCourseKey(key)}
                                   >
@@ -599,21 +590,18 @@ function AdminLiveClassAttendanceAnalytics() {
                 </>
               )}
 
-              {/* ==========================
-                  TAB 2: STUDENT-WISE (NEW)
-                 ========================== */}
+              {/* ============== TAB 2: STUDENT-WISE ============== */}
               {activeTab === "student" && (
-                <div className="welcome-card dashboard-card animate-welcome">
-                  <div className="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
-                    <div className="d-flex flex-wrap gap-3">
-                      {/* Batch filter */}
-                      <div>
-                        <label className="form-label mb-1">
+                <div className="analytics-card analytics-card--full">
+                  {/* Filters */}
+                  <div className="analytics-filter-bar analytics-filter-bar--student">
+                    <div className="analytics-filter-bar__left">
+                      <div className="analytics-filter-bar__item">
+                        <label className="analytics-filter__label">
                           Batch <span className="text-danger">*</span>
                         </label>
                         <select
-                          className="form-select form-select-sm"
-                          style={{ minWidth: "200px" }}
+                          className="form-select form-select-sm analytics-filter__select"
                           value={studentBatchFilter}
                           onChange={(e) => {
                             const newBatch = e.target.value;
@@ -630,12 +618,12 @@ function AdminLiveClassAttendanceAnalytics() {
                         </select>
                       </div>
 
-                      {/* Course filter */}
-                      <div>
-                        <label className="form-label mb-1">Course</label>
+                      <div className="analytics-filter-bar__item">
+                        <label className="analytics-filter__label">
+                          Course
+                        </label>
                         <select
-                          className="form-select form-select-sm"
-                          style={{ minWidth: "220px" }}
+                          className="form-select form-select-sm analytics-filter__select"
                           value={studentCourseFilter}
                           onChange={(e) =>
                             setStudentCourseFilter(e.target.value)
@@ -651,7 +639,7 @@ function AdminLiveClassAttendanceAnalytics() {
                       </div>
                     </div>
 
-                    <div>
+                    <div className="analytics-filter-bar__right">
                       <button
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => {
@@ -665,25 +653,23 @@ function AdminLiveClassAttendanceAnalytics() {
                     </div>
                   </div>
 
-                  <div className="table-responsive mt-2">
-                    <table className="table table-sm table-hover align-middle">
-                      <thead className="table-light">
+                  {/* Table */}
+                  <div className="analytics-table-wrapper analytics-table-wrapper--student">
+                    <table className="table table-sm table-hover align-middle analytics-table analytics-table--student">
+                      <thead className="analytics-table__head">
                         <tr>
-                          <th style={{ width: "60px" }}>#</th>
-                          {/* <th>Batch</th> */}
-                          <th>Reg. No</th>
+                          <th style={{ width: "50px" }}>#</th>
+                          <th>Registration No.</th>
                           <th>Student Name</th>
-                          {/* <th>Course</th> */}
                           <th className="text-end">Live Classes</th>
                           <th className="text-end">Classes Attended</th>
-                          {/* <th className="text-end">Attendance Events</th> */}
                           <th className="text-end">Attendance %</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredStudentStats.length === 0 && (
                           <tr>
-                            <td colSpan={9} className="text-center text-muted">
+                            <td colSpan={6} className="text-center text-muted">
                               No records found for selected filters.
                             </td>
                           </tr>
@@ -694,19 +680,14 @@ function AdminLiveClassAttendanceAnalytics() {
                             key={`${row.batchName}-${row.registrationNo}-${row.course}-${idx}`}
                           >
                             <td>{idx + 1}</td>
-                            {/* <td>{row.batchName}</td> */}
                             <td>{row.registrationNo}</td>
                             <td>{row.studentName}</td>
-                            {/* <td>{row.course}</td> */}
                             <td className="text-end">
                               {row.totalLiveClasses}
                             </td>
                             <td className="text-end">
                               {row.classesAttendedByStudent}
                             </td>
-                            {/* <td className="text-end">
-                              {row.totalAttendanceEvents}
-                            </td> */}
                             <td className="text-end">
                               {row.studentCourseAttendancePercent.toFixed(2)}%
                             </td>
@@ -729,9 +710,9 @@ function AdminLiveClassAttendanceAnalytics() {
 
 function StatBadge({ label, value }) {
   return (
-    <div className="p-2 rounded border bg-light h-100">
-      <div className="text-muted small">{label}</div>
-      <div className="fw-bold">{value}</div>
+    <div className="analytics-stat-badge">
+      <div className="analytics-stat-badge__label">{label}</div>
+      <div className="analytics-stat-badge__value">{value}</div>
     </div>
   );
 }
