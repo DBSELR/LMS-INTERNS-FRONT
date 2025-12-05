@@ -1,0 +1,110 @@
+/* Policy Page Styling */
+.policy-page {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 30px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  font-family: "Arial", sans-serif;
+  line-height: 1.7;
+  color: #222;
+}
+
+/* Headings */
+.policy-page h1 {
+  font-size: 32px;
+  font-weight: 700;
+  color: #5a67d8; /* Your primary color */
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.policy-page h2 {
+  font-size: 24px;
+  color: #5a67d8;
+  margin-top: 25px;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.policy-page h3 {
+  font-size: 20px;
+  color: #5a67d8; /* Dark shade */
+  margin-top: 18px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+/* Paragraphs */
+.policy-page p {
+  font-size: 15px;
+  margin-bottom: 14px;
+  color: #333;
+}
+
+/* Lists */
+.policy-page ul {
+  padding-left: 20px;
+  margin-bottom: 15px;
+}
+
+.policy-page ul li {
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+/* Horizontal Line */
+.policy-page hr {
+  border: none;
+  border-top: 1px solid #e0e0e0;
+  margin: 25px 0;
+}
+
+/* Links */
+.policy-page a {
+  color: #e11b22; /* Secondary red */
+  text-decoration: none;
+}
+
+.policy-page a:hover {
+  text-decoration: underline;
+}
+
+/* Mobile Responsive */
+@media (max-width: 600px) {
+  .policy-page {
+    padding: 20px;
+    margin: 20px;
+  }
+
+  .policy-page h1 {
+    font-size: 26px;
+  }
+
+  .policy-page h2 {
+    font-size: 20px;
+  }
+
+  .policy-page p,
+  .policy-page ul li {
+    font-size: 14px;
+  }
+}
+
+
+.back-btn {
+  background: #5a67d8;
+  color: white;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 18px;
+  font-size: 14px;
+  transition: 0.2s;
+}
+
+.back-btn:hover {
+  background: #5a67d8;
+}

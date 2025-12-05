@@ -163,6 +163,11 @@ import Footer from "./components/Footer"; // adjust path if your Footer.jsx live
 import Transactions from "./pages/Transactions";
 import AdminContentReadAnalytics from "./pages/AdminContentReadAnalytics";
 import AdminLiveClassAttendanceAnalytics from "./pages/AdminLiveClassAttendanceAnalytics";
+import PrivacyPolicy from "./pages/Tc/PrivacyPolicy";
+import CancellationPolicy from "./pages/Tc/CancellationPolicy";
+import TermsAndConditions from "./pages/Tc/TermsAndConditions";
+import ReturnExchangePolicy from "./pages/Tc/ReturnExchangePolicy";
+import RefundPolicy from "./pages/Tc/RefundPolicy";
 
 
 function App() {
@@ -522,6 +527,11 @@ function App() {
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
         <Route path="/content-read-analytics" element={<AdminContentReadAnalytics />} />
         <Route path="/live-class-attendance-analytics" element={<AdminLiveClassAttendanceAnalytics />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+<Route path="/cancellation-policy" element={<CancellationPolicy />} />
+<Route path="/return-exchange-policy" element={<ReturnExchangePolicy />} />
+<Route path="/refund-policy" element={<RefundPolicy />} />
       </Routes>
 
       {/* ✅ Global footer */}

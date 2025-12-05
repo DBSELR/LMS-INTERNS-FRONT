@@ -3148,3 +3148,588 @@ background-size: cover; */
   display: flex;
  
 }
+
+
+
+/* privacy policy footer start */
+
+/* ===== PAGE WRAPPER ===== */
+.analytics-page {
+  background: #f5f7fb;
+}
+
+.analytics-container {
+  padding-bottom: 1.5rem;
+}
+
+/* ===== HEADER ===== */
+.analytics-header {
+  background: linear-gradient(120deg, #f3f7ff, #ffffff);
+  border-radius: 18px;
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+.analytics-header__titles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.analytics-title {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #111827;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.analytics-title__icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  background: #e0ebff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a67d8;
+  font-size: 0.95rem;
+}
+
+.analytics-subtitle {
+  margin: 0;
+  font-size: 0.87rem;
+  color: #6b7280;
+}
+
+.analytics-back-btn {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #374151;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.06);
+}
+
+.analytics-back-btn:hover {
+  background: #f9fafb;
+}
+
+/* ===== TAB TOGGLE (SEGMENT CONTROL) ===== */
+.analytics-tab-toggle {
+  background: #ffffff;
+  border-radius: 999px;
+  padding: 0.18rem;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.06);
+  border: 1px solid #e5e7eb;
+  display: inline-flex;
+  gap: 0.15rem;
+  margin: 0 auto 1rem;
+  position: relative;
+}
+
+.analytics-tab-toggle__btn {
+  border: none;
+  background: transparent;
+  border-radius: 999px;
+  padding: 0.4rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 148px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  margin: auto;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #000;
+}
+
+.analytics-tab-toggle__label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #6b7280;
+}
+
+.analytics-tab-toggle__hint {
+  font-size: 0.7rem;
+  color: #9ca3af;
+}
+
+.analytics-tab-toggle__btn.is-active {
+  background: #5a67d8;
+  color: #ffffff;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+}
+
+.analytics-tab-toggle__btn.is-active .analytics-tab-toggle__label,
+.analytics-tab-toggle__btn.is-active .analytics-tab-toggle__hint {
+  color: #ffffff;
+}
+
+/* Center the toggle */
+.analytics-tab-toggle {
+  display: flex;
+  justify-content: center;
+  width: 50%;
+    border: none;
+    box-shadow: none;
+    text-align: center;
+}
+
+/* ===== FILTER BAR ===== */
+.analytics-filter-bar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-end;
+  gap: 1.5rem;
+  margin-bottom: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.analytics-filter-bar--student {
+  justify-content: space-between;
+}
+
+.analytics-filter-bar__left {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
+}
+
+.analytics-filter-bar__item {
+  min-width: 190px;
+}
+
+.analytics-filter__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-bottom: 0.25rem;
+}
+
+.analytics-filter__select {
+  font-size: 0.85rem;
+}
+
+/* ===== CARDS ===== */
+.analytics-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 1rem 1.1rem;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.07);
+  border: 1px solid #e5e7eb;
+}
+
+.analytics-card--chart {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.analytics-card--table {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.analytics-card--full {
+  margin-top: 0.4rem;
+}
+
+.analytics-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.analytics-card__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analytics-card__icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #5a67d8;
+  font-size: 0.8rem;
+}
+
+.analytics-card__title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.analytics-card__select {
+  min-width: 230px;
+  font-size: 0.84rem;
+}
+
+/* ===== CHART AREA ===== */
+.analytics-chart-container {
+  position: relative;
+  width: 100%;
+  height: 260px;
+  margin-top: 0.6rem;
+}
+
+.analytics-chart-footer {
+  text-align: center;
+  margin-top: 0.8rem;
+}
+
+.analytics-chart-footer__title {
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+
+.analytics-chart-footer__meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+}
+
+.analytics-chart-footer__badges {
+  margin-top: 0.5rem;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+/* pills/badges */
+.analytics-pill {
+  border-radius: 999px;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.65rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.analytics-pill--success {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.analytics-pill--info {
+  background: #e0f2fe;
+  color: #0369a1;
+}
+
+/* ===== STAT GRID ===== */
+.analytics-stat-grid {
+  margin-top: 0.35rem;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.analytics-stat-badge {
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  padding: 0.6rem 0.7rem;
+}
+
+.analytics-stat-badge__label {
+  font-size: 0.72rem;
+  color: #6b7280;
+  margin-bottom: 0.2rem;
+}
+
+.analytics-stat-badge__value {
+  font-size: 0.96rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* ===== TABLES ===== */
+.analytics-table-wrapper {
+  max-height: 430px;
+  overflow: auto;
+}
+
+.analytics-table-wrapper--student {
+  max-height: 520px;
+}
+
+.analytics-table {
+  margin-bottom: 0;
+  font-size: 0.86rem;
+}
+
+.analytics-table__head {
+  background: #f3f4f6;
+}
+
+.analytics-table__head th {
+  border-bottom: none;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+.analytics-table__row--active {
+  background: #eef2ff;
+}
+
+.analytics-table__row--active td:first-child {
+  border-left: 3px solid #4f46e5;
+}
+
+/* ===== MISC ===== */
+.analytics-main-row {
+  margin-top: 0.3rem;
+}
+
+/* ====== RESPONSIVE BREAKPOINTS ====== */
+
+/* lg and below */
+@media (max-width: 1199.98px) {
+  .analytics-stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* md and below */
+@media (max-width: 991.98px) {
+  .analytics-header {
+    padding: 1rem 1rem;
+  }
+
+  .analytics-title {
+    font-size: 1.2rem;
+  }
+
+  .analytics-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .analytics-card__select {
+    min-width: 210px;
+  }
+}
+
+/* sm and below (tablets / big phones) */
+@media (max-width: 767.98px) {
+  .analytics-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .analytics-back-btn {
+    align-self: stretch;
+    text-align: center;
+  }
+
+  .analytics-tab-toggle {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .analytics-tab-toggle__btn {
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+  }
+
+  .analytics-filter-bar,
+  .analytics-filter-bar--student {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .analytics-filter-bar__left {
+    width: 100%;
+  }
+
+  .analytics-filter-bar__item {
+    width: 100%;
+  }
+
+  .analytics-filter-bar__right {
+    display: flex;
+    justify-content: flex-start;
+  }
+
+  .analytics-card {
+    padding: 0.9rem 0.9rem;
+  }
+
+  .analytics-chart-container {
+    height: 230px;
+  }
+
+  .analytics-table-wrapper {
+    max-height: 360px;
+  }
+
+  .analytics-table-wrapper--student {
+    max-height: 420px;
+  }
+}
+
+/* xs and below (small phones) */
+@media (max-width: 575.98px) {
+  .analytics-header {
+    padding: 0.85rem 0.85rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .analytics-title {
+    font-size: 1.05rem;
+  }
+
+  .analytics-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .analytics-tab-toggle {
+    margin-bottom: 0.75rem;
+  }
+
+  .analytics-tab-toggle__label {
+    font-size: 0.8rem;
+  }
+
+  .analytics-tab-toggle__hint {
+    display: none;
+  }
+
+  .analytics-stat-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .analytics-stat-badge {
+    padding: 0.5rem 0.55rem;
+  }
+
+  .analytics-table {
+    font-size: 0.78rem;
+  }
+
+  .analytics-table__head th {
+    font-size: 0.7rem;
+  }
+}
+
+
+
+/* AdminContentReadAnalytics end  */
+
+
+/* ============================================
+   🌐 FIXED BOTTOM PRIVACY FOOTER
+   ============================================ */
+.privacy-footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 12px 10px;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 22px;
+  z-index: 99999;
+  flex-wrap: wrap;
+}
+
+/* ============================================
+   🔗 LINK STYLING
+   ============================================ */
+.privacy-link {
+  color: #0058d9;
+  font-size: 14px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.22s ease-in-out;
+  padding-bottom: 2px;
+  border-bottom: 1px solid transparent;
+}
+
+.privacy-link:hover {
+  color: #003c8f;
+  border-bottom: 1px solid #003c8f;
+}
+
+/* ============================================
+   📱 VERY SMALL SCREENS (max-width: 480px)
+   → Reduce size, stack neatly
+   ============================================ */
+@media (max-width: 480px) {
+  .privacy-footer {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px;
+  }
+
+  .privacy-link {
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   📱 MOBILE SCREENS (481px - 768px)
+   → Slightly smaller, compact spacing
+   ============================================ */
+@media (min-width: 481px) and (max-width: 768px) {
+  .privacy-footer {
+    gap: 14px;
+  }
+
+  .privacy-link {
+    font-size: 13px;
+  }
+}
+
+/* ============================================
+   🖥 TABLETS (769px - 1024px)
+   ============================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .privacy-footer {
+    gap: 18px;
+  }
+
+  .privacy-link {
+    font-size: 14px;
+  }
+}
+
+/* ============================================
+   🖥 LARGE SCREENS (DESKTOP)
+   ============================================ */
+@media (min-width: 1025px) {
+  .privacy-footer {
+    gap: 25px;
+    padding: 14px 0;
+  }
+
+  .privacy-link {
+    font-size: 14px;
+  }
+}
