@@ -137,7 +137,7 @@
                           <td>{new Date(s.submissionDate).toLocaleString()}</td>
                           <td>
                             <a
-                              href={`http://localhost:5129${s.filePath}`}
+                              href={`https://localhost:7163${s.filePath}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

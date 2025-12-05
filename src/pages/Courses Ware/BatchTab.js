@@ -9,7 +9,11 @@ const DEBUG = true;
 async function readBody(res) {
   const text = await res.text().catch(() => "");
   let json;
-  try { json = text ? JSON.parse(text) : undefined; } catch { json = undefined; }
+  try {
+    json = text ? JSON.parse(text) : undefined;
+  } catch {
+    json = undefined;
+  }
   return { text, json };
 }
 function logRequest(label, { url, method, headers, body }) {
@@ -19,7 +23,11 @@ function logRequest(label, { url, method, headers, body }) {
   console.log("Method:", method);
   console.log("Headers:", headers);
   if (body !== undefined) {
-    try { console.log("Body (parsed):", JSON.parse(body)); } catch { console.log("Body (text):", body); }
+    try {
+      console.log("Body (parsed):", JSON.parse(body));
+    } catch {
+      console.log("Body (text):", body);
+    }
   }
   console.groupEnd();
 }
@@ -38,7 +46,8 @@ async function logResponse(label, res) {
 
 /* ===================== Date utils (robust) ===================== */
 const isIsoDate = (s) => typeof s === "string" && /^\d{4}-\d{2}-\d{2}/.test(s);
-const isSlashDate = (s) => typeof s === "string" && /^\d{2}[-/]\d{2}[-/]\d{4}$/.test(s);
+const isSlashDate = (s) =>
+  typeof s === "string" && /^\d{2}[-/]\d{2}[-/]\d{4}$/.test(s);
 const isMsAjaxDate = (s) => typeof s === "string" && /\/Date\(\d+\)\//.test(s);
 
 function toIsoFromMsAjax(s) {
@@ -47,7 +56,9 @@ function toIsoFromMsAjax(s) {
     if (!Number.isFinite(ms)) return "";
     const d = new Date(ms);
     return d.toISOString();
-  } catch { return ""; }
+  } catch {
+    return "";
+  }
 }
 function toIsoFromSlash(s) {
   const m = s.match(/^(\d{2})[-/](\d{2})[-/](\d{4})$/);
@@ -57,14 +68,21 @@ function toIsoFromSlash(s) {
 }
 const toInputDate = (s) => {
   if (!s) return "";
-  if (isIsoDate(s)) return s.includes("T") ? s.split("T")[0] : s.substring(0, 10);
+  if (isIsoDate(s))
+    return s.includes("T") ? s.split("T")[0] : s.substring(0, 10);
   if (isMsAjaxDate(s)) return toInputDate(toIsoFromMsAjax(s));
   if (isSlashDate(s)) return toInputDate(toIsoFromSlash(s));
   const d = new Date(s);
   if (!isNaN(d.getTime())) return d.toISOString().substring(0, 10);
   return "";
 };
-const toIsoMidnight = (dateStr) => `${dateStr}T00:00:00`;
+
+/**
+ * We still send an ISO-like string, but the final 00:00:00 is
+ * GUARANTEED in the stored procedure by casting to DATE.
+ */
+const toIsoMidnight = (dateStr) =>
+  dateStr ? `${dateStr}T00:00:00` : null;
 
 /* ===================== Shape-safe normalizer ===================== */
 function ci(obj) {
@@ -80,13 +98,23 @@ function ci(obj) {
 }
 function looksLikeDateString(x) {
   if (typeof x !== "string") return false;
-  return isIsoDate(x) || isSlashDate(x) || isMsAjaxDate(x) || !isNaN(new Date(x).getTime());
+  return (
+    isIsoDate(x) ||
+    isSlashDate(x) ||
+    isMsAjaxDate(x) ||
+    !isNaN(new Date(x).getTime())
+  );
 }
 function normalizeFromArray(arr) {
-  let bid = 0, batchName = "", startDate = "", endDate = "";
+  let bid = 0,
+    batchName = "",
+    startDate = "",
+    endDate = "";
   if (!Array.isArray(arr)) return { bid, batchName, startDate, endDate };
 
-  const idCandidate = arr.find((v) => typeof v === "number" && Number.isFinite(v));
+  const idCandidate = arr.find(
+    (v) => typeof v === "number" && Number.isFinite(v)
+  );
   if (idCandidate !== undefined) bid = Number(idCandidate);
 
   const strings = arr.filter((v) => typeof v === "string");
@@ -104,30 +132,42 @@ function normalizeFromArray(arr) {
   return { bid, batchName, startDate, endDate };
 }
 
-/* ⚠️ KEY FIX: capture programmeId and classId */
 function normalizeBatchDto(dto) {
   if (Array.isArray(dto)) return normalizeFromArray(dto);
   const get = ci(dto || {});
-  const bid =
-    get(["Bid", "BID", "bid", "Id", "ID"]) ?? 0;
+  const bid = get(["Bid", "BID", "bid", "Id", "ID"]) ?? 0;
   const batchName =
-    get(["BatchName", "batchName", "Batch", "BATCH", "Name", "NAME", "Batch_Title", "Batch_Name", "batch"]) ?? "";
+    get([
+      "BatchName",
+      "batchName",
+      "Batch",
+      "BATCH",
+      "Name",
+      "NAME",
+      "Batch_Title",
+      "Batch_Name",
+      "batch",
+    ]) ?? "";
   const startDate =
-    get(["StartDate", "startDate", "Start", "StartDt", "Start_Date", "FromDate", "From"]) ?? "";
+    get([
+      "StartDate",
+      "startDate",
+      "Start",
+      "StartDt",
+      "Start_Date",
+      "FromDate",
+      "From",
+    ]) ?? "";
   const endDate =
-    get(["EndDate", "endDate", "End", "EndDt", "End_Date", "ToDate", "To"]) ?? "";
+    get(["EndDate", "endDate", "End", "EndDt", "End_Date", "ToDate", "To"]) ??
+    "";
 
   const programmeId =
     get(["ProgrammeId", "programmeid", "ProgrammeID", "Pid", "pid"]) ?? "";
-  const classId =
-    get(["GroupId", "groupid", "GroupID" ]) ?? "";
-
   const programmeName =
-    get(["programmeName", "ProgrammeName", "programName", "ProgramName"]) ?? "";
-  const groupName =
-    get(["groupName", "GroupName", "ClassName", "className"]) ?? "";
-  const fee =
-    get(["fee", "Fee", "totalFee", "TotalFee"]) ?? "";
+    get(["programmeName", "ProgrammeName", "programName", "ProgramName"]) ??
+    "";
+  const fee = get(["fee", "Fee", "totalFee", "TotalFee"]) ?? "";
   const university =
     get(["university", "University", "uname", "Uname"]) ?? "";
 
@@ -137,9 +177,7 @@ function normalizeBatchDto(dto) {
     startDate,
     endDate,
     programmeId: programmeId !== "" ? String(programmeId) : "",
-    classId: classId !== "" ? String(classId) : "",
     programmeName: String(programmeName || ""),
-    groupName: String(groupName || ""),
     fee: String(fee || ""),
     university: String(university || ""),
   };
@@ -149,11 +187,19 @@ function normalizeBatchDto(dto) {
 async function postBatchArray(payloadArray, token) {
   const url = `${API_BASE_URL}/Programme/insertBatches`;
   const body = JSON.stringify(payloadArray);
-  const headers = { "Content-Type": "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+  const headers = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
   logRequest("insertBatches", { url, method: "POST", headers, body });
   const res = await fetch(url, { method: "POST", headers, body });
   const { text, json } = await logResponse("insertBatches", res);
-  if (!res.ok) throw new Error(text || (json && (json.title || json.message)) || `HTTP ${res.status}`);
+  if (!res.ok)
+    throw new Error(
+      text ||
+        (json && (json.title || json.message)) ||
+        `HTTP ${res.status}`
+    );
   return json ?? text;
 }
 async function getAllBatches(token) {
@@ -163,14 +209,24 @@ async function getAllBatches(token) {
   logRequest("GetAllBatch", { url, method: "GET", headers });
   const res = await fetch(url, { headers });
   const { text, json } = await logResponse("GetAllBatch", res);
-  if (!res.ok) throw new Error(text || (json && (json.title || json.message)) || `HTTP ${res.status}`);
+  if (!res.ok)
+    throw new Error(
+      text ||
+        (json && (json.title || json.message)) ||
+        `HTTP ${res.status}`
+    );
 
   let data;
-  try { data = json ?? (text ? JSON.parse(text) : []); } catch { data = []; }
+  try {
+    data = json ?? (text ? JSON.parse(text) : []);
+  } catch {
+    data = [];
+  }
 
   if (!Array.isArray(data)) {
     const wrapper = (data && (data.data || data.result || data.items)) || [];
-    if (!Array.isArray(wrapper)) throw new Error("GetAllBatch did not return an array");
+    if (!Array.isArray(wrapper))
+      throw new Error("GetAllBatch did not return an array");
     return wrapper;
   }
   return data;
@@ -181,7 +237,12 @@ async function getBatchById(bid, token) {
   logRequest("GetBatchById", { url, method: "GET", headers });
   const res = await fetch(url, { headers });
   const { text, json } = await logResponse("GetBatchById", res);
-  if (!res.ok) throw new Error(text || (json && (json.title || json.message)) || `HTTP ${res.status}`);
+  if (!res.ok)
+    throw new Error(
+      text ||
+        (json && (json.title || json.message)) ||
+        `HTTP ${res.status}`
+    );
   return json ?? (text ? JSON.parse(text) : {});
 }
 async function deleteBatchById(bid, token) {
@@ -196,65 +257,30 @@ async function deleteBatchById(bid, token) {
     logRequest("DeleteBatchById(GET fallback)", { url, method: "GET", headers });
     res = await fetch(url, { method: "GET", headers });
     out = await logResponse("DeleteBatchById(GET fallback)", res);
-    if (!res.ok) throw new Error(out.text || (out.json && (out.json.title || out.json.message)) || `HTTP ${res.status}`);
+    if (!res.ok)
+      throw new Error(
+        out.text ||
+          (out.json && (out.json.title || out.json.message)) ||
+          `HTTP ${res.status}`
+      );
   }
   return out.json ?? out.text;
 }
 
-/* ===================== NEW: Universities API helper ===================== */
-async function getUniversities(token) {
-  const base = String(API_BASE_URL || "").replace(/\/+$/, "");
-  const url = `${base}/User/GetUniversity`;
-  const headers = { ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-  logRequest("GetUniversity", { url, method: "GET", headers });
-  const res = await fetch(url, { headers });
-  const { text, json } = await logResponse("GetUniversity", res);
-  if (!res.ok) throw new Error(text || (json && (json.title || json.message)) || `HTTP ${res.status}`);
-  const arr = json ?? (text ? JSON.parse(text) : []);
-  return Array.isArray(arr) ? arr : [];
-}
-
-/* ===================== Helpers for Batch split/join ===================== */
-// Join WITHOUT any separator (no hyphen, no space)
-function joinBatchName(university, suffix) {
-  const u = String(university || "").trim();
-  const s = String(suffix || "").trim();
-  return `${u}${s}`; // <-- just concat
-}
-
-// Split by removing the leading university from the saved batch name
-function splitBatchName(batchName, university) {
-  const u = String(university || "").trim();
-  const b = String(batchName || "");
-  if (!u) return { prefix: "", suffix: b };
-  if (b.startsWith(u)) {
-    // take the rest as the suffix (keep as-is; no trimming to preserve digits/format)
-    return { prefix: u, suffix: b.slice(u.length) };
-  }
-  // fallback: if saved name doesn't start with given university, don't force split
-  return { prefix: u, suffix: b };
-}
-
-
 /* ===================== Component ===================== */
 const BatchTab = () => {
   const [form, setForm] = useState({
-    batchName: "",          // kept for preview only (not directly edited)
-    batchNameSuffix: "",    // <-- NEW: user-editable second half
+    batchName: "",
     startDate: "",
     endDate: "",
     bid: 0,
-    programmeId: "",
+    programmeId: "", // or "ALL" for all courses
     classId: "",
-    fee: "",
-    university: "",
   });
   const [saving, setSaving] = useState(false);
 
   const [batches, setBatches] = useState([]);
   const [boards, setBoards] = useState([]);
-  const [universities, setUniversities] = useState([]);
-  const [loadingUniversities, setLoadingUniversities] = useState(false);
   const [loadingList, setLoadingList] = useState(false);
   const [listError, setListError] = useState("");
 
@@ -263,7 +289,6 @@ const BatchTab = () => {
   useEffect(() => {
     refreshList();
     fetchBoards();
-    fetchUniversities();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -276,35 +301,16 @@ const BatchTab = () => {
       const data = await res.json();
       const normalized = Array.isArray(data)
         ? data.map((b) => ({
-            programmeId: b.programmeId != null ? String(b.programmeId) : "",
+            programmeId:
+              b.programmeId != null ? String(b.programmeId) : "",
             programmeCode: b.programmeCode,
             programmeName: b.programmeName,
-            fee: b.fee || "",
           }))
         : [];
-      console.log("📋 Boards loaded with fee data:", normalized);
+      console.log("📋 Boards loaded:", normalized);
       setBoards(normalized);
     } catch {
-      toast.error("❌ Failed to load boards");
-    }
-  };
-
-  const fetchUniversities = async () => {
-    setLoadingUniversities(true);
-    try {
-      const token = localStorage.getItem("jwt");
-      const list = await getUniversities(token);
-      const normalized = list.map((u) => {
-        const val = u?.uname || u?.universityName || u?.name || u?.UniversityName || u;
-        return String(val || "").trim();
-      }).filter(Boolean);
-      if (DEBUG) console.log("🎓 Universities:", normalized);
-      setUniversities(normalized);
-    } catch (err) {
-      console.error("❌ Error fetching universities:", err);
-      toast.error("Failed to load universities");
-    } finally {
-      setLoadingUniversities(false);
+      toast.error("❌ Failed to load courses");
     }
   };
 
@@ -316,7 +322,12 @@ const BatchTab = () => {
       const rows = await getAllBatches(token);
       const normalized = rows.map(normalizeBatchDto).map((r, i) => {
         if (DEBUG && (!r.batchName || r.batchName === "")) {
-          console.warn("⚠️ Row missing batchName, raw:", rows[i], "normalized:", r);
+          console.warn(
+            "⚠️ Row missing batchName, raw:",
+            rows[i],
+            "normalized:",
+            r
+          );
         }
         return r;
       });
@@ -333,54 +344,37 @@ const BatchTab = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (DEBUG) console.log(`✏️ handleChange ${name}=`, value);
-    setForm((p) => {
-      // When university changes, keep suffix, recompute preview batchName
-      if (name === "university") {
-        const batchName = joinBatchName(value, p.batchNameSuffix);
-        return { ...p, university: value, batchName };
-      }
-      if (name === "batchNameSuffix") {
-        const batchName = joinBatchName(p.university, value);
-        return { ...p, batchNameSuffix: value, batchName };
-      }
-      return { ...p, [name]: value };
-    });
+    setForm((p) => ({
+      ...p,
+      [name]: value,
+    }));
   };
 
   const handleBoardChange = (e) => {
     const programmeId = e.target.value;
     if (programmeId) {
-      const selectedBoard = boards.find(board => board.programmeId === programmeId);
-      const boardFee = selectedBoard?.fee || "";
-      console.log("🔄 Board changed:", { programmeId, selectedBoard, boardFee });
-      setForm((prev) => ({ 
-        ...prev, 
-        programmeId, 
-        fee: boardFee
+      console.log("🔄 Course changed:", { programmeId });
+      setForm((prev) => ({
+        ...prev,
+        programmeId,
       }));
     } else {
-      setForm((prev) => ({ 
-        ...prev, 
-        programmeId: "", 
-        fee: ""
+      setForm((prev) => ({
+        ...prev,
+        programmeId: "",
       }));
     }
   };
 
   const handleEdit = (row) => {
     const programmeId = row.programmeId ? String(row.programmeId) : "";
-    // split existing batchName using row.university
-    const { suffix } = splitBatchName(row.batchName || "", row.university || "");
     setForm({
       batchName: row.batchName || "",
-      batchNameSuffix: suffix || "",
       startDate: toInputDate(row.startDate),
       endDate: toInputDate(row.endDate),
       bid: Number(row.bid) || 0,
       programmeId,
       classId: "",
-      fee: row.fee || "",
-      university: row.university || "",
     });
     toast.info("✏️ Edit mode");
   };
@@ -388,84 +382,117 @@ const BatchTab = () => {
   const handleCancelEdit = () => {
     setForm({
       batchName: "",
-      batchNameSuffix: "",
       startDate: "",
       endDate: "",
       bid: 0,
       programmeId: "",
       classId: "",
-      fee: "",
-      university: "",
     });
     toast.dismiss();
   };
 
   const handleDelete = async (row) => {
-    if (!window.confirm(`Delete batch "${row.batchName || "(no name)"}" (Bid=${row.bid})?`)) return;
+    if (
+      !window.confirm(
+        `Delete batch "${row.batchName || "(no name)"}" (Bid=${row.bid})?`
+      )
+    )
+      return;
     try {
       const token = localStorage.getItem("jwt");
       await deleteBatchById(row.bid, token);
       toast.success("🗑️ Deleted");
       await refreshList();
-      if (isEditMode && Number(form.bid) === Number(row.bid)) handleCancelEdit();
+      if (isEditMode && Number(form.bid) === Number(row.bid))
+        handleCancelEdit();
     } catch (err) {
       console.error("❌ Delete failed:", err);
       toast.error(`❌ Delete failed: ${err.message}`);
     }
   };
 
-  const handleSave = async () => {
-    const {
-      batchNameSuffix, startDate, endDate, bid, programmeId, fee, university
-    } = form;
+const handleSave = async () => {
+  const { batchName, startDate, endDate, bid, programmeId } = form;
 
-    if (DEBUG) console.log("🧾 handleSave form:", form);
+  if (DEBUG) console.log("🧾 handleSave form:", form);
 
-    const composedBatchName = joinBatchName(university, batchNameSuffix);
+  const trimmedBatchName = (batchName || "").trim();
 
-    if (!university || !batchNameSuffix || !startDate || !endDate || !programmeId) {
-      toast.error("Please fill all required fields: University, Batch (suffix), Start Date, End Date, and Programme.");
+  if (!trimmedBatchName || !startDate || !endDate || !programmeId) {
+    toast.error(
+      "Please fill all required fields: Batch, Start Date, End Date, and Course."
+    );
+    return;
+  }
+  if (new Date(startDate) > new Date(endDate)) {
+    toast.error("Start Date cannot be after End Date");
+    return;
+  }
+
+  const startIso = toIsoMidnight(startDate);
+  const endIso = toIsoMidnight(endDate);
+
+  let payload = [];
+
+  if (programmeId === "ALL") {
+    // 🔹 Save for ALL courses
+    if (!boards || boards.length === 0) {
+      toast.error("No courses available to save for ALL.");
       return;
     }
-    if (new Date(startDate) > new Date(endDate)) {
-      toast.error("Start Date cannot be after End Date");
-      return;
-    }
-
+    payload = boards.map((b) => ({
+      Bid: 0, // always insert new for ALL
+      Batch: trimmedBatchName,          // IMPORTANT: matches backend 'Batch'
+      BatchName: trimmedBatchName,      // optional, harmless
+      StartDate: startIso,
+      EndDate: endIso,
+      Pid: Number(b.programmeId),
+      Fee: 0,                           // IMPORTANT: decimal, not null
+      university: null,                 // we don't use it now
+    }));
+    console.log("📦 Payload for ALL courses:", payload);
+  } else {
+    // 🔹 Single course
     const dto = {
       Bid: Number(bid) || 0,
-      BatchName: composedBatchName,               // <-- save the joined name
-      StartDate: toIsoMidnight(startDate),
-      EndDate: toIsoMidnight(endDate),
+      Batch: trimmedBatchName,          // IMPORTANT
+      BatchName: trimmedBatchName,      // optional
+      StartDate: startIso,
+      EndDate: endIso,
       Pid: Number(programmeId),
-      Fee: fee ? Number(fee) : 0,
-      university: university,                     // <-- server expects this
+      Fee: 0,                           // IMPORTANT
+      university: null,                 // not used
     };
+    payload = [dto];
+    console.log("📦 Payload for single course:", payload);
+  }
 
-    try {
-      setSaving(true);
-      const token = localStorage.getItem("jwt");
-      await postBatchArray([dto], token);
-      toast.success(isEditMode ? "✅ Batch updated successfully" : "✅ Batch created successfully");
-      await refreshList();
-      setForm({
-        batchName: "",
-        batchNameSuffix: "",
-        startDate: "",
-        endDate: "",
-        bid: 0,
-        programmeId: "",
-        classId: "",
-        fee: "",
-        university: "",
-      });
-    } catch (err) {
-      console.error("❌ Save failed:", err);
-      toast.error(`❌ Save failed: ${err.message}`);
-    } finally {
-      setSaving(false);
-    }
-  };
+  try {
+    setSaving(true);
+    const token = localStorage.getItem("jwt");
+    await postBatchArray(payload, token);
+    toast.success(
+      isEditMode
+        ? "✅ Batch updated successfully"
+        : "✅ Batch created successfully"
+    );
+    await refreshList();
+    setForm({
+      batchName: "",
+      startDate: "",
+      endDate: "",
+      bid: 0,
+      programmeId: "",
+      classId: "",
+    });
+  } catch (err) {
+    console.error("❌ Save failed:", err);
+    toast.error(`❌ Save failed: ${err.message}`);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   return (
     <div className="container py-0 pt-0 welcome-card animate-welcome">
@@ -474,28 +501,6 @@ const BatchTab = () => {
         <h5 className="mb-3 text-primary">Add / Edit Batch</h5>
         <Form onSubmit={(e) => e.preventDefault()}>
           <div className="row g-3">
-            {/* Select University */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <Form.Group>
-                <Form.Label>Select University</Form.Label>
-                <Form.Control
-                  as="select"
-                  name="university"
-                  value={form.university}
-                  onChange={handleChange}
-                  disabled={loadingUniversities}
-                  required
-                >
-                  <option value="">
-                    {loadingUniversities ? "Loading universities..." : "Select University"}
-                  </option>
-                  {universities.map((u, idx) => (
-                    <option key={`${u}-${idx}`} value={u}>{u}</option>
-                  ))}
-                </Form.Control>
-              </Form.Group>
-            </div>
-
             {/* Select Course */}
             <div className="col-12 col-md-6 col-lg-4">
               <Form.Group>
@@ -508,8 +513,12 @@ const BatchTab = () => {
                   required
                 >
                   <option value="">Select Course</option>
+                  <option value="ALL">All Courses</option>
                   {boards.map((board) => (
-                    <option key={board.programmeId} value={board.programmeId}>
+                    <option
+                      key={board.programmeId}
+                      value={board.programmeId}
+                    >
                       {board.programmeCode} - {board.programmeName}
                     </option>
                   ))}
@@ -517,41 +526,16 @@ const BatchTab = () => {
               </Form.Group>
             </div>
 
-            {/* Batch (two-part input) */}
+            {/* Batch Name */}
             <div className="col-12 col-md-6 col-lg-4">
               <Form.Group>
                 <Form.Label>Batch</Form.Label>
-                <div className="d-flex align-items-stretch">
-                  <Form.Control
-                    readOnly
-                    value={form.university || ""}
-                    placeholder="University"
-                    className="me-2"
-                  />
-                  <Form.Control
-                    name="batchNameSuffix"
-                    value={form.batchNameSuffix}
-                    onChange={handleChange}
-                    placeholder="e.g., 2024(1)"
-                  />
-                </div>
-                {/* Optional live preview (hidden text, enable if you want) */}
-                {/* <Form.Text muted>
-                  Preview: <strong>{joinBatchName(form.university, form.batchNameSuffix) || "-"}</strong>
-                </Form.Text> */}
-              </Form.Group>
-            </div>
-
-            {/* Total Fee */}
-            <div className="col-12 col-md-6 col-lg-4">
-              <Form.Group>
-                <Form.Label>Fee</Form.Label>
                 <Form.Control
-                  name="fee"
-                  value={form.fee}
+                  name="batchName"
+                  value={form.batchName}
                   onChange={handleChange}
-                  placeholder={form.programmeId ? "Fee auto-filled from board" : ""}
-                  type="number"
+                  placeholder="e.g., 2024(1)"
+                  required
                 />
               </Form.Group>
             </div>
@@ -647,7 +631,7 @@ const BatchTab = () => {
                     <th style={{ width: 150 }}>Batch</th>
                     <th style={{ width: 120 }}>Start Date</th>
                     <th style={{ width: 120 }}>End Date</th>
-                    <th style={{ width: 100 }}>Fee</th>
+                    {/* Fee & University are intentionally hidden now */}
                     <th style={{ width: 120 }}>Actions</th>
                   </tr>
                 </thead>
@@ -665,20 +649,25 @@ const BatchTab = () => {
                         </td>
                         <td data-label="Start Date">{start}</td>
                         <td data-label="End Date">{end}</td>
-                        <td data-label="Fee" className="text-end">
-                          {b.fee ? `₹${b.fee}` : <em>(no fee)</em>}
-                        </td>
                         <td
                           data-label="Actions"
                           className="d-flex gap-2"
-                          style={{ margin: "auto", alignItems: "center", textAlign: "center", justifyContent: "center" }}
+                          style={{
+                            margin: "auto",
+                            alignItems: "center",
+                            textAlign: "center",
+                            justifyContent: "center",
+                          }}
                         >
                           <Button
                             size="sm"
                             variant="outline-info"
                             onClick={() => handleEdit(b)}
                             type="button"
-                            style={{ marginTop: "0px", marginBottom: "0px" }}
+                            style={{
+                              marginTop: "0px",
+                              marginBottom: "0px",
+                            }}
                           >
                             <i className="fa-solid fa-pen-to-square"></i>
                           </Button>
@@ -687,7 +676,10 @@ const BatchTab = () => {
                             variant="outline-danger"
                             onClick={() => handleDelete(b)}
                             type="button"
-                            style={{ marginTop: "0px", marginBottom: "0px" }}
+                            style={{
+                              marginTop: "0px",
+                              marginBottom: "0px",
+                            }}
                           >
                             <i className="fa-solid fa-trash"></i>
                           </Button>

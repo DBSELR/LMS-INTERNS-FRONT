@@ -134,9 +134,9 @@ function AdminExams() {
 
       const batch = course.batchName || "Unknown Batch";
       const semester = course.semester || "Unknown Semester";
-      const paper = `${course.paperCode} - ${course.paperName}` || "Unknown Paper";
+      const paper = `${course.board} - ${course.class}` || "Unknown Paper";
 
-      const batchSemesterKey = `Batch: ${batch} - Semester: ${semester}`;
+      const batchSemesterKey = `Batch: ${batch} `;
 
       if (!grouped[batchSemesterKey]) grouped[batchSemesterKey] = {};
       if (!grouped[batchSemesterKey][paper]) grouped[batchSemesterKey][paper] = [];
@@ -262,7 +262,7 @@ function AdminExams() {
                                 }
                                 style={{ cursor: "pointer", color: "#fff" }}
                               >
-                                <div><strong>Paper:</strong> {paperName}</div>
+                                <div><strong>Course:</strong> {paperName}</div>
                                 <div className="badge badge-light text-dark px-2 py-1">
                                   Total Exams: {examList.length}
                                   <i className={`fa ml-2 ${openPaper[paperKey] ? "fa-chevron-up" : "fa-chevron-down"}`}></i>

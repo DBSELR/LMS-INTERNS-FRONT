@@ -70,44 +70,133 @@ useEffect(() => {
   }
 }, []);
 
-  const getExamStatus = (exam) => {
-    const now = new Date();
-    const createdAt = new Date(exam.createdAt);
-    const examDate = new Date(exam.examDate);
-    const endDate = new Date(exam.examDate);
-    endDate.setMinutes(endDate.getMinutes() + exam.durationMinutes);
+const getExamStatus = (exam) => {
+  const now = new Date();
+  const createdAt = new Date(exam.createdAt);
+  const examDate = new Date(exam.examDate);
+  const endDate = new Date(exam.examDate);
+  endDate.setMinutes(endDate.getMinutes() + exam.durationMinutes);
 
-    let result;
+  // 1) Base status from TIME
+  let result;
 
-    if (exam.examType === "MA" || exam.examType === "DA") {
-      if (now < createdAt) {
-        result = { status: "Upcoming", color: "warning", desc: "", startTime: createdAt };
-      } else if (now > examDate) {
-        result = { status: "Closed", color: "danger", desc: "Exam closed" };
-      } else {
-        result = {
-          status: "Open",
-          color: "success",
-          desc: exam.examType === "MA" ? "You can attend" : "You can upload",
-        };
-      }
-    } else if (exam.examType === "MT" || exam.examType === "DT") {
-      if (now < examDate) {
-        result = { status: "Upcoming", color: "warning", desc: "", startTime: examDate };
-      } else if (now > endDate) {
-        result = { status: "Closed", color: "danger", desc: "Exam closed" };
-      } else {
-        result = {
-          status: "Open",
-          color: "success",
-          desc: exam.examType === "MT" ? "You can attend" : "You can upload",
-        };
-      }
+  if (exam.examType === "MA" || exam.examType === "DA") {
+    // Assignments (MCQ / Descriptive) – createdAt → examDate window
+    if (now < createdAt) {
+      result = {
+        status: "Upcoming",
+        color: "warning",
+        desc: "",
+        startTime: createdAt,
+      };
+    } else if (now > examDate) {
+      result = {
+        status: "Closed",
+        color: "danger",
+        desc: "Exam closed",
+      };
     } else {
-      result = { status: "Unknown", color: "secondary", desc: "Status unknown" };
+      result = {
+        status: "Open",
+        color: "success",
+        desc: exam.examType === "MA" ? "You can attend" : "You can upload",
+      };
     }
-    return result;
-  };
+  } else if (exam.examType === "MT" || exam.examType === "DT") {
+    // Theory (MCQ / Descriptive) – examDate → endDate window
+    if (now < examDate) {
+      result = {
+        status: "Upcoming",
+        color: "warning",
+        desc: "",
+        startTime: examDate,
+      };
+    } else if (now > endDate) {
+      result = {
+        status: "Closed",
+        color: "danger",
+        desc: "Exam closed",
+      };
+    } else {
+      result = {
+        status: "Open",
+        color: "success",
+        desc: exam.examType === "MT" ? "You can attend" : "You can upload",
+      };
+    }
+  } else {
+    result = {
+      status: "Unknown",
+      color: "secondary",
+      desc: "Status unknown",
+    };
+  }
+
+  // 2) OVERRIDE based on exam.examStatus from API
+  const dbStatus = (exam.examStatus || "").toLowerCase();
+
+  if (dbStatus === "attendexam") {
+    // 👉 Always treat as OPEN (even if time is over)
+    result = {
+      status: "Open",
+      color: "success",
+      desc:
+        exam.examType === "MA" || exam.examType === "MT"
+          ? "You can attend"
+          : "You can upload",
+      startTime: result.startTime || examDate,
+    };
+  } else if (dbStatus === "completed") {
+    // 👉 Completed exam
+    result = {
+      status: "Completed",
+      color: "secondary",
+      desc: "You have already completed this exam",
+    };
+  }
+
+  return result;
+};
+
+
+  // const getExamStatus = (exam) => {
+  //   const now = new Date();
+  //   const createdAt = new Date(exam.createdAt);
+  //   const examDate = new Date(exam.examDate);
+  //   const endDate = new Date(exam.examDate);
+  //   endDate.setMinutes(endDate.getMinutes() + exam.durationMinutes);
+
+  //   let result;
+
+  //   if (exam.examType === "MA" || exam.examType === "DA") {
+  //     if (now < createdAt) {
+  //       result = { status: "Upcoming", color: "warning", desc: "", startTime: createdAt };
+  //     } else if (now > examDate) {
+  //       result = { status: "Closed", color: "danger", desc: "Exam closed" };
+  //     } else {
+  //       result = {
+  //         status: "Open",
+  //         color: "success",
+  //         desc: exam.examType === "MA" ? "You can attend" : "You can upload",
+  //       };
+  //     }
+  //   } else if (exam.examType === "MT" || exam.examType === "DT") {
+  //     if (now < examDate) {
+  //       result = { status: "Upcoming", color: "warning", desc: "", startTime: examDate };
+  //     } else if (now > endDate) {
+  //       result = { status: "Closed", color: "danger", desc: "Exam closed" };
+  //     } else {
+  //       result = {
+  //         status: "Open",
+  //         color: "success",
+  //         desc: exam.examType === "MT" ? "You can attend" : "You can upload",
+  //       };
+  //     }
+  //   } else {
+  //     result = { status: "Unknown", color: "secondary", desc: "Status unknown" };
+  //   }
+  //   return result;
+  // };
 
   const assignmentExams = exams.filter((e) => e.examType === "MA" || e.examType === "DA");
   const theoryExams = exams.filter((e) => e.examType === "MT" || e.examType === "DT");
@@ -502,7 +591,7 @@ function ExamCard({ exam, formatDate, formatTime, getExamStatus, openGuidelines,
                 <div className="d-flex gap-2 flex-wrap justify-content-center" style={{ gap: '20px' }}>
                   {exam.fileurl && (
                     <a
-                      href={`http://localhost:5129${exam.fileurl}`}
+                      href={`https://localhost:7163${exam.fileurl}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn btn-sm btn-outline-primary"

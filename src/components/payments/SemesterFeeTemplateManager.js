@@ -157,7 +157,7 @@ function SemesterFeeTemplateManager() {
     setLoadingColleges(true);
     try {
       const token = localStorage.getItem("jwt");
-      const url = `${API_BASE_URL}/User/GetCollegebyUniversity?uname=${encodeURIComponent(
+      const url = `${API_BASE_URL}/User/GetFeeCollegesbyUniversity?uname=${encodeURIComponent(
         universityName
       )}`;
       console.log("🔍 Fetching colleges from:", url);
@@ -253,6 +253,8 @@ function SemesterFeeTemplateManager() {
   };
 
   // ----------------- Submit: Save Semester Fee Template -----------------
+
+    // ----------------- Submit: Save Semester Fee Template -----------------
   const handleSubmit = async () => {
     if (!selectedUniversity) {
       toast.error("Please select a university");
@@ -282,19 +284,18 @@ function SemesterFeeTemplateManager() {
       if (!proceedAll) return;
     }
 
-   // ✅ Allow 0, only block empty / non-numeric / negative
-if (feeAmount === "" || feeAmount === null || isNaN(parseFloat(feeAmount))) {
-  toast.error("Please enter fee amount (0 or above)");
-  return;
-}
+    // ✅ Allow 0, only block empty / non-numeric / negative
+    if (feeAmount === "" || feeAmount === null || isNaN(parseFloat(feeAmount))) {
+      toast.error("Please enter fee amount (0 or above)");
+      return;
+    }
 
-if (parseFloat(feeAmount) < 0) {
-  toast.error("Fee amount cannot be negative");
-  return;
-}
+    if (parseFloat(feeAmount) < 0) {
+      toast.error("Fee amount cannot be negative");
+      return;
+    }
 
-
-    // Resolve college id
+    // Resolve college id (as you already do)
     const selectedCollegeObj =
       (colleges || []).find((c) => {
         if (!c) return false;
@@ -344,8 +345,41 @@ if (parseFloat(feeAmount) < 0) {
       return;
     }
 
-    // Request body must match SemesterFeeRequest on backend
+    // 🔍 FIGURE OUT IF A RECORD ALREADY EXISTS FOR THIS COMBINATION
+    const programmeIdNumber = selectedCourse
+      ? (Number.isFinite(Number(selectedCourse))
+          ? parseInt(selectedCourse, 10)
+          : null)
+      : null;
+
+    let existingId = 0;
+
+    if (installmentFeeData && installmentFeeData.length > 0) {
+      const match = installmentFeeData.find((row) => {
+        const rowProgId =
+          row.programmeId !== undefined && row.programmeId !== null
+            ? parseInt(row.programmeId, 10)
+            : null;
+
+        // same batch
+        if (row.batch !== selectedBatch) return false;
+
+        // same programme id (null = "all courses" case; usually you pick a course)
+        if (programmeIdNumber === null) {
+          return rowProgId === null || rowProgId === 0;
+        }
+
+        return rowProgId === programmeIdNumber;
+      });
+
+      if (match && match.id) {
+        existingId = parseInt(match.id, 10);
+      }
+    }
+
+    // 🧠 If existingId > 0 => UPDATE, else INSERT
     const requestBody = {
+      Id: existingId || 0,  // 👈 IMPORTANT
       Batch: selectedBatch || null,
       ProgrammeId: selectedCourse
         ? Number.isFinite(Number(selectedCourse))
@@ -357,7 +391,7 @@ if (parseFloat(feeAmount) < 0) {
         : null,
       Fee: feeAmount ? parseFloat(feeAmount) : null,
       ColId: Number.isFinite(Number(colId)) ? parseInt(colId, 10) : null,
-      Hid: hid, // NEW: FeeHead Id
+      Hid: hid,
     };
 
     try {
@@ -409,6 +443,172 @@ if (parseFloat(feeAmount) < 0) {
       alert("Error: " + (err.message || String(err)));
     }
   };
+
+//   const handleSubmit = async () => {
+//     if (!selectedUniversity) {
+//       toast.error("Please select a university");
+//       return;
+//     }
+
+//     if (!selectedCollege) {
+//       toast.error("Please select a college");
+//       return;
+//     }
+
+//     if (!selectedBatch) {
+//       toast.error("Please select a batch");
+//       return;
+//     }
+
+//     if (!selectedFeeHead) {
+//       toast.error("Please select a fee head");
+//       return;
+//     }
+
+//     // If no course selected => apply to ALL courses in this batch + college
+//     if (!selectedCourse) {
+//       const proceedAll = window.confirm(
+//         "No course selected.\nThis will create/update fee template for ALL COURSES in this batch and college.\n\nDo you want to continue?"
+//       );
+//       if (!proceedAll) return;
+//     }
+
+//    // ✅ Allow 0, only block empty / non-numeric / negative
+// if (feeAmount === "" || feeAmount === null || isNaN(parseFloat(feeAmount))) {
+//   toast.error("Please enter fee amount (0 or above)");
+//   return;
+// }
+
+// if (parseFloat(feeAmount) < 0) {
+//   toast.error("Fee amount cannot be negative");
+//   return;
+// }
+
+
+//     // Resolve college id
+//     const selectedCollegeObj =
+//       (colleges || []).find((c) => {
+//         if (!c) return false;
+//         if (typeof c === "string") return String(c) === String(selectedCollege);
+//         const candidates = [
+//           c.college,
+//           c.cname,
+//           c.collegeName,
+//           c.name,
+//           c.CollegeName,
+//           c.colcode,
+//           c.colId,
+//           c.id,
+//           c.collegeId,
+//         ];
+//         return candidates.some(
+//           (v) => v !== undefined && String(v) === String(selectedCollege)
+//         );
+//       }) || null;
+
+//     const colId =
+//       (selectedCollegeObj && selectedCollegeObj.id) ??
+//       (selectedCollegeObj && selectedCollegeObj.colId) ??
+//       (selectedCollegeObj && selectedCollegeObj.collegeId) ??
+//       (selectedCollegeObj && selectedCollegeObj.colcode) ??
+//       (Number.isFinite(Number(selectedCollege))
+//         ? parseInt(selectedCollege, 10)
+//         : null);
+
+//     if (!colId) {
+//       console.error("Unable to resolve college id", {
+//         selectedCollege,
+//         selectedCollegeObj,
+//         colleges,
+//       });
+//       toast.error("Unable to find college ID. Please re-select the college.");
+//       return;
+//     }
+
+//     const hid =
+//       selectedFeeHead && Number.isFinite(Number(selectedFeeHead))
+//         ? parseInt(selectedFeeHead, 10)
+//         : null;
+
+//     if (!hid) {
+//       toast.error("Invalid fee head selected");
+//       return;
+//     }
+
+//     // Request body must match SemesterFeeRequest on backend
+//     const requestBody = {
+//       Batch: selectedBatch || null,
+//       ProgrammeId: selectedCourse
+//         ? Number.isFinite(Number(selectedCourse))
+//           ? parseInt(selectedCourse, 10)
+//           : null
+//         : null,
+//       DueDate: dueDateSelected
+//         ? installmentDueDate.toISOString().split("T")[0]
+//         : null,
+//       Fee: feeAmount ? parseFloat(feeAmount) : null,
+//       ColId: Number.isFinite(Number(colId)) ? parseInt(colId, 10) : null,
+//       Hid: hid, // NEW: FeeHead Id
+//     };
+
+//     try {
+//       const token = localStorage.getItem("jwt");
+//       console.log("➡️ Saving semester fee", {
+//         url: `${API_BASE_URL}/Fee/SaveInstallmentFee`,
+//         requestBody,
+//       });
+//       const response = await fetch(`${API_BASE_URL}/Fee/SaveInstallmentFee`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//           Authorization: `Bearer ${token}`,
+//         },
+//         body: JSON.stringify(requestBody),
+//       });
+
+//       const contentType = response.headers.get("content-type") || "";
+//       let payload = null;
+//       try {
+//         payload = contentType.includes("application/json")
+//           ? await response.json()
+//           : await response.text();
+//       } catch (parseErr) {
+//         payload = await response.text().catch(() => null);
+//       }
+
+//       if (response.ok) {
+//         console.log("✅ Save successful", payload);
+//         // reload data
+//         fetchInstallmentWiseFees(selectedBatch, selectedCourse, selectedGroup);
+//         const message =
+//           (payload && (payload.message || payload.Message)) ||
+//           "Saved successfully";
+//         toast.success(message);
+//         setFeeAmount("");
+//       } else {
+//         console.error("❌ Save failed", { status: response.status, payload });
+//         const serverMsg =
+//           (payload && (payload.error || payload.message)) ||
+//           String(payload) ||
+//           "Failed to save data";
+//        if (
+//   typeof serverMsg === "string" &&
+//   serverMsg.includes("Certificate fee") &&
+//   serverMsg.includes("Tuition Fee")
+// ) {
+//   toast.error(serverMsg); // already clear enough
+// } else {
+//   toast.error(`Save failed: ${serverMsg}`);
+// }
+
+// alert("Error: " + serverMsg);
+//       }
+//     } catch (err) {
+//       console.error("❌ Error while saving fee", err, { requestBody });
+//       toast.error("Error saving data: " + (err.message || String(err)));
+//       alert("Error: " + (err.message || String(err)));
+//     }
+//   };
 
   // ----------------- Delete Fee Record -----------------
   const handleDelete = async (item, index) => {
@@ -744,24 +944,7 @@ if (parseFloat(feeAmount) < 0) {
             ))}
           </Form.Control>
         </div>
-
-        {/* Fee Amount */}
-        <div className="col-12 col-md-3 mb-2">
-          <Form.Label>
-            Fee Amount <span className="text-danger">*</span>
-          </Form.Label>
-          <input
-            type="number"
-            className="form-control"
-            placeholder="Enter Fee Amount"
-            value={feeAmount}
-            onChange={(e) => setFeeAmount(e.target.value)}
-            min="0"
-            step="0.01"
-          />
-        </div>
-
-        {/* Course */}
+         {/* Course */}
         <div className="col-12 col-md-3 mb-2">
           <Form.Label>Course</Form.Label>
           <Form.Control
@@ -799,6 +982,24 @@ if (parseFloat(feeAmount) < 0) {
               })}
           </Form.Control>
         </div>
+
+        {/* Fee Amount */}
+        <div className="col-12 col-md-3 mb-2">
+          <Form.Label>
+            Fee Amount <span className="text-danger">*</span>
+          </Form.Label>
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Enter Fee Amount"
+            value={feeAmount}
+            onChange={(e) => setFeeAmount(e.target.value)}
+            min="0"
+            step="0.01"
+          />
+        </div>
+
+       
 
         {/* Due Date */}
         <div className="col-12 col-md-2 mb-2">

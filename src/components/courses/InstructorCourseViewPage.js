@@ -340,7 +340,7 @@ function InstructorCourseViewPage() {
       setProgressVersion((v) => v + 1); // trigger re-render
 
       // 🔴 NEW: also report to API (only for students)
-      if (currentContentId && role === "Student") {
+      if (currentContentId && role === "Student" || role === "College") {
         reportProgressToServer(currentContentId, updated);
       }
     }
@@ -408,6 +408,7 @@ function InstructorCourseViewPage() {
   }, [activeUnit, examId, userId]);
 
   const [adminPracticeTests, setAdminPracticeTests] = useState([]);
+  const [deletingPracticeId, setDeletingPracticeId] = useState(null);
   useEffect(() => {
     const fetchAdminPracticeTests = async () => {
       if (!userId || !activeUnit || !examId) return;
@@ -443,6 +444,61 @@ function InstructorCourseViewPage() {
     };
     fetchAdminPracticeTests();
   }, [userId, activeUnit, examId]);
+
+  const handleDeletePracticeTest = async (test, e) => {
+  if (e) e.stopPropagation();
+
+  // Decide which field is the ID
+  const id = test.examid ?? test.id ?? test.Id;
+  if (!id) {
+    alert("Delete failed: practice test ID not found.");
+    console.warn("[ICVP] No ID on practice test", test);
+    return;
+  }
+
+  if (
+    !window.confirm(
+      "Are you sure you want to delete this practice test? This cannot be undone."
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setDeletingPracticeId(id);
+    const token = localStorage.getItem("jwt");
+
+    const res = await fetch(
+      `${API_BASE_URL}/AssignmentSubmission/Delete/${id}`, // 👈 adjust controller route if different
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (!res.ok && res.status !== 204) {
+      const txt = await res.text().catch(() => "");
+      throw new Error(`HTTP ${res.status}: ${txt || "Delete failed"}`);
+    }
+
+    // Remove from UI list
+    setAdminPracticeTests((prev) =>
+      prev.filter(
+        (x) => (x.examid ?? x.id ?? x.Id) !== id
+      )
+    );
+
+    alert("✅ Practice test deleted successfully.");
+  } catch (err) {
+    console.error("[ICVP] Failed to delete practice test", err);
+    alert("❌ Failed to delete practice test. See console for details.");
+  } finally {
+    setDeletingPracticeId(null);
+  }
+};
+
 
   useEffect(() => {
     if (!courseId) return;
@@ -637,7 +693,7 @@ function InstructorCourseViewPage() {
                   <i className="fa fa-book text-primary me-2 mr-2"></i> Unit
                   Title: {unitTitleByUnit[activeUnit] || "No title found"}
                 </h5>
-                {role !== "Student" && (
+                {(role === "Admin" || role === "Faculty") && (
                   <Link
                     to="/add-objective-subjective-assignment"
                     state={{
@@ -732,7 +788,7 @@ function InstructorCourseViewPage() {
                               className="resource-card welcome-card animate-welcome h-100"
                               style={{ position: "relative" }}
                             >
-                              {role !== "Student" && (
+                              {(role === "Admin" || role === "Faculty") && (
                                 <button
                                   type="button"
                                   className="delete-btn text-danger btn btn-link p-0"
@@ -815,7 +871,7 @@ function InstructorCourseViewPage() {
             ))}
 
             {/* Student vs Admin Practice sections – unchanged */}
-            {role === "Student" ? (
+            {role === "Student" || role === "College" ? (
               <div className="container-fluid">
                 <div className="card shadow-sm mb-5 section-card animate-section border-info">
                   <div className="card-header bg-info text-white">
@@ -992,85 +1048,97 @@ function InstructorCourseViewPage() {
                     ) : (
                       <div className="row">
                         {adminPracticeTests.map((test) => {
-                          const isObjective =
-                            (test.PracticeExamType || "").toLowerCase() ===
-                            "objective";
-                          const isSubjective =
-                            (test.PracticeExamType || "").toLowerCase() ===
-                            "subjective";
+  const isObjective =
+    (test.PracticeExamType || "").toLowerCase() === "objective";
+  const isSubjective =
+    (test.PracticeExamType || "").toLowerCase() === "subjective";
 
-                          const typeBadge = isObjective ? (
-                            <span className="badge bg-primary text-white px-2 py-1 rounded-pill">
-                              <i className="fa fa-list me-1"></i> Objective
-                            </span>
-                          ) : isSubjective ? (
-                            <span className="badge bg-warning text-dark px-2 py-1 rounded-pill">
-                              <i className="fa fa-file-alt me-1"></i> Subjective
-                            </span>
-                          ) : (
-                            <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">
-                              {test.PracticeExamType}
-                            </span>
-                          );
+  const typeBadge = isObjective ? (
+    <span className="badge bg-primary text-white px-2 py-1 rounded-pill">
+      <i className="fa fa-list me-1"></i> Objective
+    </span>
+  ) : isSubjective ? (
+    <span className="badge bg-warning text-dark px-2 py-1 rounded-pill">
+      <i className="fa fa-file-alt me-1"></i> Subjective
+    </span>
+  ) : (
+    <span className="badge bg-secondary text-white px-2 py-1 rounded-pill">
+      {test.PracticeExamType}
+    </span>
+  );
 
-                          return (
-                            <div
-                              className="col-md-6 col-lg-4 mb-3"
-                              key={test.examid}
-                            >
-                              <div className="resource-card welcome-card animate-welcome h-100">
-                                <div
-                                  className="card-body d-flex flex-column"
-                                  style={{ textAlign: "left", gap: "6px" }}
-                                >
-                                  <h6 className="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
-                                    <i className="fa fa-book text-primary"></i>
-                                    {test.AssignmentTitle}
-                                  </h6>
+  const testId = test.examid ?? test.id ?? test.Id;
 
-                                  <p className="mb-2">
-                                    <i className="fa fa-user me-2 mr-2 text-dark"></i>
-                                    {test.pname}
-                                  </p>
-                                  <p className="mb-2">
-                                    <i className="fa fa-layer-group me-2 mr-2 text-secondary"></i>
-                                    <strong>Unit:</strong> {activeUnit}
-                                  </p>
-                                  <p className="mb-2">
-                                    <i className="fa fa-clock me-2 mr-2 text-primary"></i>
-                                    <strong>Duration:</strong> {test.Duration}{" "}
-                                    min
-                                  </p>
-                                  <p className="mb-2">
-                                    <i className="fa fa-star me-2 mr-2 text-warning"></i>
-                                    <strong>Marks:</strong> {test.totmrk} |{" "}
-                                    <strong>Pass:</strong> {test.passmrk}
-                                  </p>
-                                  <p className="mb-2">
-                                    <i className="fa fa-check-circle me-2 mr-2 text-success"></i>
-                                    <strong>Attempted:</strong>{" "}
-                                    {test.attempted ? "Yes" : "No"}
-                                  </p>
-                                  <p className="mb-2">
-                                    <i className="fa fa-calendar-alt me-2 mr-2 text-danger"></i>
-                                    <strong>From:</strong>{" "}
-                                    {new Date(
-                                      test.StartDate
-                                    ).toLocaleDateString()}{" "}
-                                    -{" "}
-                                    {new Date(
-                                      test.EndDate
-                                    ).toLocaleDateString()}
-                                  </p>
+  return (
+    <div
+      className="col-md-6 col-lg-4 mb-3"
+      key={test.examid}
+    >
+      <div className="resource-card welcome-card animate-welcome h-100">
+        {/* make card relative so delete icon can be absolutely positioned */}
+        <div
+          className="card-body d-flex flex-column"
+          style={{ textAlign: "left", gap: "6px", position: "relative" }}
+        >
+          {/* 🔴 DELETE ICON (ADMIN) */}
+          <button
+            type="button"
+            className="btn btn-link text-danger p-0"
+            style={{
+              position: "absolute",
+              top: "6px",
+              right: "8px",
+              lineHeight: 1,
+            }}
+            title="Delete practice test"
+            onClick={(e) => handleDeletePracticeTest(test, e)}
+            disabled={deletingPracticeId === testId}
+          >
+            <i className="fa fa-trash" aria-hidden="true"></i>
+          </button>
 
-                                  <div className="mt-auto text-end">
-                                    {typeBadge}
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+          <h6 className="fw-bold text-dark mb-2 d-flex align-items-center gap-2">
+            <i className="fa fa-book text-primary"></i>
+            {test.AssignmentTitle}
+          </h6>
+
+          <p className="mb-2">
+            <i className="fa fa-user me-2 mr-2 text-dark"></i>
+            {test.pname}
+          </p>
+          <p className="mb-2">
+            <i className="fa fa-layer-group me-2 mr-2 text-secondary"></i>
+            <strong>Unit:</strong> {activeUnit}
+          </p>
+          <p className="mb-2">
+            <i className="fa fa-clock me-2 mr-2 text-primary"></i>
+            <strong>Duration:</strong> {test.Duration} min
+          </p>
+          <p className="mb-2">
+            <i className="fa fa-star me-2 mr-2 text-warning"></i>
+            <strong>Marks:</strong> {test.totmrk} |{" "}
+            <strong>Pass:</strong> {test.passmrk}
+          </p>
+          <p className="mb-2">
+            <i className="fa fa-check-circle me-2 mr-2 text-success"></i>
+            <strong>Attempted:</strong> {test.attempted ? "Yes" : "No"}
+          </p>
+          <p className="mb-2">
+            <i className="fa fa-calendar-alt me-2 mr-2 text-danger"></i>
+            <strong>From:</strong>{" "}
+            {new Date(test.StartDate).toLocaleDateString()}{" "}
+            - {new Date(test.EndDate).toLocaleDateString()}
+          </p>
+
+          <div className="mt-auto text-end">
+            {typeBadge}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+})}
+
                       </div>
                     )}
                   </div>

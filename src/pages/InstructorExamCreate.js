@@ -571,7 +571,6 @@ function InstructorExamCreate() {
   });
 
   const [courses, setCourses] = useState([]);
-  const [file, setFile] = useState(null);
   const [questions, setQuestions] = useState([
     {
       questionText: "",
@@ -588,27 +587,60 @@ function InstructorExamCreate() {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [deleteIndex, setDeleteIndex] = useState(null);
 
+  // 🔹 NEW: Batch list + selected batch
+  const [batchList, setBatchList] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState("");
+
   const navigate = useNavigate();
+
+  // 🔹 NEW: fetch batches (GetUniqueBatches) – same style as reference
+  const fetchInitialData = async (token) => {
+    try {
+      const res = await fetch(
+        "https://localhost:7163/api/Programme/GetUniqueBatches",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      const data = await res.json();
+      // Data shape: [{ batch: "2023" }, { batch: "2024" }, ...]
+      const batches = (data || []).map((p) => p.batch);
+      setBatchList(batches);
+    } catch (error) {
+      console.error("❌ Error fetching batches:", error);
+      toast.error("Failed to load batches");
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
+    if (!token) {
+      toast.error("User not authenticated");
+      return;
+    }
+
     const decoded = jwtDecode(token);
     const instructorId = decoded["UserId"] || decoded.userId;
 
+    // Existing: fetch courses by instructor
     fetch(`${API_BASE_URL}/course/by-instructor/${instructorId}`, {
       method: "GET",
       headers: {
-        "Authorization": `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
       },
     })
       .then((res) => res.json())
       .then((data) => setCourses(data))
-      .catch((err) => toast.error("❌ Failed to fetch courses"));
+      .catch(() => toast.error("❌ Failed to fetch courses"));
 
     setExam((prev) => ({
       ...prev,
       createdBy: instructorId,
     }));
+
+    // NEW: also load batch list
+    fetchInitialData(token);
   }, []);
 
   const handleExamChange = (e) => {
@@ -663,106 +695,110 @@ function InstructorExamCreate() {
   };
 
   const handleExcelUpload = (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    const bstr = evt.target.result;
-    const wb = XLSX.read(bstr, { type: "binary" });
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(ws, { defval: "" });
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      const bstr = evt.target.result;
+      const wb = XLSX.read(bstr, { type: "binary" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(ws, { defval: "" });
 
-    try {
-      const formatted = data.map((row, index) => {
-        const {
-          questionText,
-          optionA,
-          optionB,
-          optionC,
-          optionD,
-          correctOption,
-          topic,
-          "Difficulty Level": level,
-          "Suggested Marks": suggestedMarks,
-        } = row;
+      try {
+        const formatted = data.map((row, index) => {
+          const {
+            questionText,
+            optionA,
+            optionB,
+            optionC,
+            optionD,
+            correctOption,
+            topic,
+            "Difficulty Level": level,
+            "Suggested Marks": suggestedMarks,
+          } = row;
 
-        if (
-          !questionText ||
-          !optionA ||
-          !optionB ||
-          !optionC ||
-          !optionD ||
-          !correctOption ||
-          !topic ||
-          !level
-        ) {
-          throw new Error(`Missing data in row ${index + 2}`);
-        }
+          if (
+            !questionText ||
+            !optionA ||
+            !optionB ||
+            !optionC ||
+            !optionD ||
+            !correctOption ||
+            !topic ||
+            !level
+          ) {
+            throw new Error(`Missing data in row ${index + 2}`);
+          }
 
-        return {
-          questionText,
-          optionA,
-          optionB,
-          optionC,
-          optionD,
-          correctOption: correctOption.toUpperCase(),
-          topic,
-          level,
-          suggestedMarks: parseInt(suggestedMarks) || 0,
-        };
-      });
+          return {
+            questionText,
+            optionA,
+            optionB,
+            optionC,
+            optionD,
+            correctOption: correctOption.toUpperCase(),
+            topic,
+            level,
+            suggestedMarks: parseInt(suggestedMarks) || 0,
+          };
+        });
 
-      setQuestions(formatted);
-      alert("✅ Questions imported from Excel successfully!");
-    } catch (err) {
-      alert(`❌ ${err.message}`);
-    }
+        setQuestions(formatted);
+        alert("✅ Questions imported from Excel successfully!");
+      } catch (err) {
+        alert(`❌ ${err.message}`);
+      }
+    };
+    reader.readAsBinaryString(file);
   };
-  reader.readAsBinaryString(file);
-};
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  if (
-    (questions.length === 0 ||
-      questions.some(
-        (q) =>
-          !q.questionText ||
-          !q.optionA ||
-          !q.optionB ||
-          !q.optionC ||
-          !q.optionD
-      )) &&
-    exam.type !== "DT" &&
-    exam.type !== "DA"
-  ) {
-    toast.warning("⚠️ Please fill in all question fields");
-    return;
-  }
-
-  if (!exam.file && (exam.type === "DA" || exam.type === "DT")) {
-    toast.warning("⚠️ Please upload a file for descriptive exam");
-    return;
-  }
-
-  // 🔍 Validate suggested marks against total marks
-  if (exam.type === "MA" || exam.type === "MT") {
-    const totalSuggestedMarks = questions.reduce(
-      (sum, q) => sum + (parseInt(q.suggestedMarks) || 0),
-      0
-    );
-
-    if (totalSuggestedMarks !== parseInt(exam.totalmarks)) {
-      toast.error(`❌ Total Suggested Marks (${totalSuggestedMarks}) must equal Total Marks (${exam.totalmarks})`);
+    if (
+      (questions.length === 0 ||
+        questions.some(
+          (q) =>
+            !q.questionText ||
+            !q.optionA ||
+            !q.optionB ||
+            !q.optionC ||
+            !q.optionD
+        )) &&
+      exam.type !== "DT" &&
+      exam.type !== "DA"
+    ) {
+      toast.warning("⚠️ Please fill in all question fields");
       return;
     }
+if (!selectedBatch) {
+    toast.error("Please select Batch");
+    return;
   }
+    if (!exam.file && (exam.type === "DA" || exam.type === "DT")) {
+      toast.warning("⚠️ Please upload a file for descriptive exam");
+      return;
+    }
+
+    // Validate suggested marks vs total marks (for MCQ types)
+    if (exam.type === "MA" || exam.type === "MT") {
+      const totalSuggestedMarks = questions.reduce(
+        (sum, q) => sum + (parseInt(q.suggestedMarks) || 0),
+        0
+      );
+
+      if (totalSuggestedMarks !== parseInt(exam.totalmarks)) {
+        toast.error(
+          `❌ Total Suggested Marks (${totalSuggestedMarks}) must equal Total Marks (${exam.totalmarks})`
+        );
+        return;
+      }
+    }
 
     const payload = {
+      BatchName: selectedBatch,
       title: exam.title,
       examDate: exam.examDate,
       durationMinutes: parseInt(exam.durationMinutes),
@@ -782,6 +818,8 @@ const handleSubmit = async (e) => {
         topic: q.topic || "General",
         suggestedMarks: parseInt(q.suggestedMarks) || 0,
       })),
+      // NOTE: selectedBatch is UI-only, not sent unless backend expects it
+       batchName: selectedBatch,
     };
 
     const formData = new FormData();
@@ -799,7 +837,7 @@ const handleSubmit = async (e) => {
         method: "POST",
         body: formData,
         headers: {
-          "Authorization": `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -838,44 +876,55 @@ const handleSubmit = async (e) => {
   };
 
   const handleDownloadSampleCSV = () => {
-  const headers = [
-    "questionText",
-    "optionA",
-    "optionB",
-    "optionC",
-    "optionD",
-    "correctOption",
-    "Difficulty Level",
-    "Suggested Marks",
-    "topic"
-  ];
+    const headers = [
+      "questionText",
+      "optionA",
+      "optionB",
+      "optionC",
+      "optionD",
+      "correctOption",
+      "Difficulty Level",
+      "Suggested Marks",
+      "topic",
+    ];
 
-  const sampleRow = [
-    "What is 2 + 2?",
-    "2",
-    "3",
-    "4",
-    "5",
-    "C",
-    "Easy",
-    "1",
-    "Unit-1"
-  ];
+    const sampleRow = [
+      "What is 2 + 2?",
+      "2",
+      "3",
+      "4",
+      "5",
+      "C",
+      "Easy",
+      "1",
+      "Unit-1",
+    ];
 
-  const csvContent =
-    [headers, sampleRow]
-      .map(row => row.map(field => `"${field}"`).join(","))
+    const csvContent = [headers, sampleRow]
+      .map((row) => row.map((field) => `"${field}"`).join(","))
       .join("\n");
 
-  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.setAttribute("download", "sample_questions.csv");
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-};
+    const blob = new Blob([csvContent], {
+      type: "text/csv;charset=utf-8;",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "sample_questions.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  // 🔹 Filter courses by selected batch (if any)
+  const filteredCourses =
+    selectedBatch && Array.isArray(courses)
+      ? courses.filter(
+          (course) =>
+            course.batchName === selectedBatch ||
+            course.batch === selectedBatch
+        )
+      : courses;
 
   return (
     <div id="main_content" className="font-muli theme-blush">
@@ -884,219 +933,265 @@ const handleSubmit = async (e) => {
       <LeftSidebar role="Faculty" />
 
       <div className="section-wrapper">
-      <div className="page admin-dashboard">
-        <div className="section-body mt-3 pt-0">
-        <div className="container-fluid">
-         <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
-              <h2 className="page-title text-primary pt-0 dashboard-hero-title">
-                <i class="fa-solid fa-pen"></i> Create Exam
-              </h2>
-              <p className="text-muted mb-0 dashboard-hero-sub">
-                Fill in the details below to set up a new exam for your
-                students.
-              </p>
+        <div className="page admin-dashboard">
+          <div className="section-body mt-3 pt-0">
+            <div className="container-fluid">
+              <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
+                <h2 className="page-title text-primary pt-0 dashboard-hero-title">
+                  <i className="fa-solid fa-pen" /> Create Exam
+                </h2>
+                <p className="text-muted mb-0 dashboard-hero-sub">
+                  Fill in the details below to set up a new exam for your
+                  students.
+                </p>
+              </div>
             </div>
-          </div>
+
             <div className="container-fluid mb-3">
-          <div className="d-flex justify-content-end">
-           <button
-            className="btn btn-outline-primary mb-3"
-            onClick={() => navigate(-1)}
-          >
-            ← Back
-          </button>
-          </div>
-        </div>
-
-          <div className="card shadow-sm" style={{ padding: "20px" }}>
-            <div className="card-header bg-primary text-white">
-              <h5 className="mb-0">Exam Details</h5>
+              <div className="d-flex justify-content-end">
+                <button
+                  className="btn btn-outline-primary mb-3"
+                  onClick={() => navigate(-1)}
+                >
+                  ← Back
+                </button>
+              </div>
             </div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
-                <div className="row">
-                  <div className="col-md-6 mb-3">
-                    <label>Title</label>
-                    <input
-                      className="form-control"
-                      name="title"
-                      value={exam.title}
-                      onChange={handleExamChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label>Type</label>
-                    <select
-                      name="type"
-                      className="form-control"
-                      value={exam.type}
-                      onChange={handletypeChange}
-                    >
-                      <option value="MA">MCQ-Assignment</option>
-                      <option value="MT">MCQ-Theory</option>
-                      <option value="DA">Desc-Assignment</option>
-                      <option value="DT">Desc-Theory</option>
-                    </select>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label>Course</label>
-                    <select
-                      className="form-control"
-                      name="courseId"
-                      value={exam.examinationID}
-                      onChange={handleExamChange}
-                      required
-                    >
-                      <option value="">Select Course</option>
-                      {courses.map((course) => (
-                        <option
-                          key={course.examinationID}
-                          value={course.examinationID}
+
+            <div className="container-fluid">
+              <div className="card shadow-sm" style={{ padding: "20px" }}>
+                <div className="card-header bg-primary text-white">
+                  <h5 className="mb-0">Exam Details</h5>
+                </div>
+                <div className="card-body">
+                  <form onSubmit={handleSubmit}>
+                    <div className="row">
+                      {/* 🔹 NEW: Batch dropdown (in front of Title) */}
+                      <div className="col-md-4 mb-3">
+                        <label>Batch</label>
+                        <select
+                          className="form-control"
+                          value={selectedBatch}
+                          onChange={(e) => {
+                            setSelectedBatch(e.target.value);
+                            // optional: clear selected course when batch changes
+                            setExam((prev) => ({
+                              ...prev,
+                              examinationID: 0,
+                              courseId: 0,
+                            }));
+                          }}
                         >
-                          {course.paperCode}-{course.paperName} (
-                          {course.semester}/{course.batchName})
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                          <option value="">Select Batch</option>
+                          {batchList.map((b, i) => (
+                            <option key={i} value={b}>
+                              {b}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                  <div className="col-md-6 mb-3">
-                    <label>Date & Time</label>
-                    <input
-                      type="datetime-local"
-                      className="form-control"
-                      name="examDate"
-                      value={exam.examDate}
-                      onChange={handleExamChange}
-                      required
-                    />
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <label>Duration (minutes)</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="durationMinutes"
-                      value={exam.durationMinutes}
-                      onChange={handleExamChange}
-                      required
-                    />
-                  </div>
-                   <div className="col-md-6 mb-3">
-                    <label>Total Marks </label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="totalmarks"
-                      value={exam.totalmarks}
-                      onChange={handleExamChange}
-                      required
-                    />
-                  </div>
-                   <div className="col-md-6 mb-3">
-                    <label>Passing Marks</label>
-                    <input
-                      type="number"
-                      className="form-control"
-                      name="passingmarks"
-                      value={exam.passingmarks}
-                      onChange={handleExamChange}
-                      required
-                    />
-                  </div>
-                  {(exam.type === "DA" || exam.type === "DT") && (
-                    <div className="col-md-6 mb-3">
-                      <label>Select File</label>
-                      <input
-                        type="file"
-                        className="form-control"
-                        onChange={(e) => {
-                          console.log("📁 File selected:", e.target.files[0]);
-                          setExam({ ...exam, file: e.target.files[0] });
-                        }}
-                      />
+                      <div className="col-md-4 mb-3">
+                        <label>Title</label>
+                        <input
+                          className="form-control"
+                          name="title"
+                          value={exam.title}
+                          onChange={handleExamChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-4 mb-3">
+                        <label>Type</label>
+                        <select
+                          name="type"
+                          className="form-control"
+                          value={exam.type}
+                          onChange={handletypeChange}
+                        >
+                          <option value="MA">MCQ-Assignment</option>
+                          <option value="MT">MCQ-Theory</option>
+                          <option value="DA">Desc-Assignment</option>
+                          <option value="DT">Desc-Theory</option>
+                        </select>
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label>Course</label>
+                        <select
+                          className="form-control"
+                          name="courseId"
+                          value={exam.examinationID}
+                          onChange={handleExamChange}
+                          required
+                          disabled={!selectedBatch}
+                        >
+                          <option value="">
+                            {selectedBatch
+                              ? "Select Course"
+                              : "Select Batch first"}
+                          </option>
+                          {filteredCourses.map((course) => (
+                            <option
+                              key={course.examinationID}
+                              value={course.examinationID}
+                            >
+                              {course.paperCode}-{course.paperName} (
+                              {course.semester}/{course.batchName})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label>Date & Time</label>
+                        <input
+                          type="datetime-local"
+                          className="form-control"
+                          name="examDate"
+                          value={exam.examDate}
+                          onChange={handleExamChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label>Duration (minutes)</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="durationMinutes"
+                          value={exam.durationMinutes}
+                          onChange={handleExamChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label>Total Marks</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="totalmarks"
+                          value={exam.totalmarks}
+                          onChange={handleExamChange}
+                          required
+                        />
+                      </div>
+
+                      <div className="col-md-6 mb-3">
+                        <label>Passing Marks</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          name="passingmarks"
+                          value={exam.passingmarks}
+                          onChange={handleExamChange}
+                          required
+                        />
+                      </div>
+
+                      {(exam.type === "DA" || exam.type === "DT") && (
+                        <div className="col-md-6 mb-3">
+                          <label>Select File</label>
+                          <input
+                            type="file"
+                            className="form-control"
+                            onChange={(e) => {
+                              setExam({
+                                ...exam,
+                                file: e.target.files[0],
+                              });
+                            }}
+                          />
+                        </div>
+                      )}
                     </div>
-                  )}
+
+                    {(exam.type === "MA" || exam.type === "MT") && (
+                      <>
+                        <div className="form-group mt-4">
+                          <div className="d-flex justify-content-between align-items-center mb-2">
+                            <label className="mb-0">
+                              Import Questions from Excel
+                            </label>
+                            <button
+                              type="button"
+                              className="btn btn-sm btn-outline-secondary"
+                              onClick={handleDownloadSampleCSV}
+                            >
+                              ⬇️ Download Sample
+                            </button>
+                          </div>
+                          <input
+                            type="file"
+                            accept=".xlsx,.xls,.csv"
+                            className="form-control-file"
+                            onChange={handleExcelUpload}
+                          />
+                          <small className="form-text text-muted">
+                            File must contain columns:{" "}
+                            <code>
+                              questionText, optionA, optionB, optionC, optionD,
+                              correctOption, Difficulty Level, Suggested Marks,
+                              topic
+                            </code>
+                          </small>
+                        </div>
+
+                        {questions.length > 0 && (
+                          <div className="table-responsive mt-3">
+                            <table className="table table-bordered table-hover shadow-sm">
+                              <thead className="thead-light">
+                                <tr>
+                                  <th>#</th>
+                                  <th>Topic</th>
+                                  <th>Suggested Marks</th>
+                                  <th>Difficulty</th>
+                                  <th>Question</th>
+                                  <th>Option A</th>
+                                  <th>Option B</th>
+                                  <th>Option C</th>
+                                  <th>Option D</th>
+                                  <th>Correct Option</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {questions.map((q, index) => (
+                                  <tr key={index}>
+                                    <td>{index + 1}</td>
+                                    <td>{q.topic}</td>
+                                    <td>{q.suggestedMarks || 0}</td>
+                                    <td>{q.level}</td>
+                                    <td>{q.questionText}</td>
+                                    <td>{q.optionA}</td>
+                                    <td>{q.optionB}</td>
+                                    <td>{q.optionC}</td>
+                                    <td>{q.optionD}</td>
+                                    <td>{q.correctOption}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    <div className="text-center mt-4">
+                      <button type="submit" className="btn btn-primary px-5">
+                        Create Exam
+                      </button>
+                    </div>
+                  </form>
                 </div>
-
-                {(exam.type === "MA" || exam.type === "MT") && (
-                  <>
-                    <div className="form-group mt-4">
-  <div className="d-flex justify-content-between align-items-center mb-2">
-    <label className="mb-0">Import Questions from Excel</label>
-    <button
-      type="button"
-      className="btn btn-sm btn-outline-secondary"
-      onClick={handleDownloadSampleCSV}
-    >
-      ⬇️ Download Sample
-    </button>
-  </div>
-  <input
-    type="file"
-    accept=".xlsx,.xls,.csv"
-    className="form-control-file"
-    onChange={handleExcelUpload}
-  />
-  <small className="form-text text-muted">
-    File must contain columns: <code>questionText, optionA, optionB, optionC, optionD, correctOption, Difficulty Level, Suggested Marks, topic</code>
-  </small>
-</div>
-
-
-                   {questions.length > 0 && (
-  <div className="table-responsive mt-3">
-    <table className="table table-bordered table-hover shadow-sm">
-      <thead className="thead-light">
-        <tr>
-          <th>#</th>
-          <th>Topic</th>
-          <th>Suggested Marks</th>
-          <th>Difficulty</th>
-          <th>Question</th>
-          <th>Option A</th>
-          <th>Option B</th>
-          <th>Option C</th>
-          <th>Option D</th>
-          <th>Correct Option</th>
-        </tr>
-      </thead>
-      <tbody>
-        {questions.map((q, index) => (
-          <tr key={index}>
-            <td>{index + 1}</td>
-            <td>{q.topic}</td>
-            <td>{q.suggestedMarks || 0}</td>
-            <td>{q.level}</td>
-            <td>{q.questionText}</td>
-            <td>{q.optionA}</td>
-            <td>{q.optionB}</td>
-            <td>{q.optionC}</td>
-            <td>{q.optionD}</td>
-            <td>{q.correctOption}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  </div>
-)}
-
-                  </>
-                )}
-
-                <div className="text-center mt-4">
-                  <button type="submit" className="btn btn-primary px-5">
-                    Create Exam
-                  </button>
-                </div>
-              </form>
+              </div>
             </div>
+
+            <Footer />
           </div>
         </div>
-
-         
-      </div>
       </div>
 
       <ConfirmationPopup

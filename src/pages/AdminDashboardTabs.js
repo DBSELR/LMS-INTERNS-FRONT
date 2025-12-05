@@ -11,6 +11,8 @@ import SubjectsBankTab from "./Courses Ware/SubjectsBankTab";
 import CourseGroupAssignmentTab from "./Courses Ware/CourseGroupAssignmentTab";
 import SubjectsListTab from "./Courses Ware/SubjectsListTab";
 import BatchTab from "./Courses Ware/BatchTab";
+import StudentBatchUpdateTab from "./Courses Ware/StudentBatchUpdateTab";
+
 
 function AdminDashboardTabs() {
   // Set initial tab to "courses" (Board)
@@ -22,6 +24,7 @@ function AdminDashboardTabs() {
     { key: "batch", label: "Batch", component: <BatchTab isActive={activeTab === "batch"} /> },
     { key: "subjects", label: "Subjects Bank", component: <SubjectsBankTab isActive={activeTab === "subjects"} /> },
     { key: "assignment", label: "Subject Assign", component: <CourseGroupAssignmentTab isActive={activeTab === "assignment"} /> },
+    { key: "studentBatchUpdate", label: "Batch Assign", component: <StudentBatchUpdateTab isActive={activeTab === "studentBatchUpdate"} /> },
     // { key: "subjectsList", label: "Subjects Overview", component: <SubjectsListTab isActive={activeTab === "subjectsList"} /> },
   ];
 

@@ -92,13 +92,13 @@ function StudentSubmissionHistory() {
                 className={`unit-tab ${activeTab === "theory" ? "active" : ""}`}
                 onClick={() => setActiveTab("theory")}
               >
-                Assignments
+                Objective Exams
               </button>
               <button
                 className={`unit-tab ${activeTab === "assignments" ? "active" : ""}`}
                 onClick={() => setActiveTab("assignments")}
               >
-                Theory Exams 
+                Subjective Exams 
               </button>
               
             </div>
@@ -107,12 +107,12 @@ function StudentSubmissionHistory() {
             {activeTab === "assignments" && (
               <div className="card shadow-sm border-0">
                 <div className="card-header bg-primary text-white font-weight-bold">
-                  Theory Exam Submissions
+                  Descriptive Theory & Assignment Submissions
                 </div>
                 <div className="card-body p-0">
                   {assignmentSubmissions.length === 0 ? (
                     <div className="text-center text-muted py-5">
-                      <h5>No assignment submissions found.</h5>
+                      <h5>No Theory Exam submissions found.</h5>
                     </div>
                   ) : (
                     <div className="table-responsive">
@@ -140,7 +140,7 @@ function StudentSubmissionHistory() {
                               <td>
                                 {s.FilePath ? (
                                   <a
-                                    href={`http://localhost:5129${s.FilePath}`}
+                                    href={`https://localhost:7163${s.FilePath}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="btn btn-sm btn-outline-primary"
@@ -165,12 +165,12 @@ function StudentSubmissionHistory() {
             {activeTab === "theory" && (
               <div className="card shadow-sm border-0">
                 <div className="card-header bg-primary text-white font-weight-bold">
-                  Assignment Submissions
+                  MCQs Theory & Assignment Submissions
                 </div>
                 <div className="card-body p-0">
                   {examSubmissions.length === 0 ? (
                     <div className="text-center text-muted py-5">
-                      <h5>No theory exams submitted.</h5>
+                      <h5>No Assignments submitted.</h5>
                     </div>
                   ) : (
                     <div className="table-responsive">
