@@ -3641,7 +3641,7 @@ background-size: cover; */
 
 
 /* ============================================
-   🌐 FIXED BOTTOM PRIVACY FOOTER
+   🌐 FIXED BOTTOM PRIVACY FOOTER start
    ============================================ */
 .privacy-footer {
   position: fixed;
@@ -3733,3 +3733,842 @@ background-size: cover; */
     font-size: 14px;
   }
 }
+
+/* ============================================
+   🌐 FIXED BOTTOM PRIVACY FOOTER end
+   ============================================ */
+
+
+
+   
+/* PaymentResult.css start */
+
+/* ==== Page background & layout ==== */
+
+.payres-page {
+  min-height: 100vh;
+  background: #f3f4f7;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+}
+
+/* Loading state */
+
+.payres-loading-page {
+  background: #f3f4f7;
+}
+
+.payres-loading-box {
+  text-align: center;
+  max-width: 400px;
+}
+
+.payres-loading-spinner {
+  width: 48px;
+  height: 48px;
+  color: #2563eb;
+  animation: payres-spin 0.9s linear infinite;
+  display: block;
+  margin: 0 auto 16px;
+}
+
+.payres-loading-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 4px;
+}
+
+.payres-loading-text {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.95rem;
+}
+
+/* Spinner animation */
+
+@keyframes payres-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==== Card ==== */
+
+.payres-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 480px;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.15);
+  border: 1px solid #e5e7eb;
+}
+
+.payres-strip {
+  height: 6px;
+  width: 100%;
+}
+
+.payres-strip-success {
+  background-color: #22c55e;
+}
+
+.payres-strip-failed {
+  background-color: #ef4444;
+}
+
+.payres-strip-pending {
+  background-color: #eab308;
+}
+
+.payres-inner {
+  padding: 28px 32px 24px;
+}
+
+/* Header */
+
+.payres-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.payres-icon {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 12px;
+}
+
+.payres-icon-success {
+  color: #22c55e;
+}
+
+.payres-icon-failed {
+  color: #ef4444;
+}
+
+.payres-icon-pending {
+  color: #eab308;
+}
+
+.payres-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.payres-subtitle {
+  margin-top: 4px;
+  margin-bottom: 0;
+  font-size: 0.95rem;
+  color: #6b7280;
+}
+
+/* Amount box */
+
+.payres-amount-box {
+  margin: 0 auto 24px;
+  padding: 14px 10px;
+  border-radius: 12px;
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+}
+
+.payres-amount-label {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.payres-amount-value {
+  margin-top: 4px;
+  font-size: 2rem;
+  font-weight: 800;
+  color: #111827;
+}
+
+/* Details section */
+
+.payres-details-section {
+  border-top: 1px solid #e5e7eb;
+  padding-top: 16px;
+  margin-top: 10px;
+}
+
+.payres-details-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 0.9rem;
+  gap: 8px;
+}
+
+.payres-details-label {
+  color: #6b7280;
+  flex: 0 0 40%;
+}
+
+.payres-details-value {
+  color: #111827;
+  font-weight: 500;
+  flex: 1;
+  text-align: right;
+  word-break: break-all;
+}
+
+.payres-details-mono {
+  font-family: "SF Mono", ui-monospace, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* Footer text in card */
+
+.payres-footer {
+  margin-top: 20px;
+  padding-top: 14px;
+  border-top: 1px dashed #e5e7eb;
+  text-align: center;
+}
+
+.payres-footer p {
+  margin: 0;
+  font-size: 0.75rem;
+  color: #9ca3af;
+}
+
+/* ==== Buttons / actions ==== */
+
+.payres-actions {
+  width: 100%;
+  max-width: 480px;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Buttons base styling */
+
+.payres-download-btn,
+.payres-home-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.25s ease-in-out;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+  width: 100%;
+}
+
+/* Download Invoice button */
+
+.payres-download-btn {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.payres-download-btn:hover {
+  background: #15803d;
+  transform: translateY(-1px);
+}
+
+.payres-download-btn:active {
+  transform: scale(0.97);
+}
+
+/* Go Home button */
+
+.payres-home-btn {
+  background: #0ea5e9;
+  color: #ffffff;
+}
+
+.payres-home-btn:hover {
+  background: #0284c7;
+  transform: translateY(-1px);
+}
+
+.payres-home-btn:active {
+  transform: scale(0.97);
+}
+
+/* Icons & text inside buttons */
+
+.payres-btn-icon,
+.payres-home-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.payres-btn-text,
+.payres-home-text {
+  letter-spacing: 0.3px;
+}
+
+/* Layout for wider screens */
+
+@media (min-width: 640px) {
+  .payres-actions {
+    flex-direction: row;
+  }
+
+  .payres-download-btn,
+  .payres-home-btn {
+    width: auto;
+    min-width: 180px;
+  }
+}
+
+/* ===== Responsive Card & Typography ===== */
+
+@media (max-width: 600px) {
+  .payres-card {
+    max-width: 100%;
+    border-radius: 16px;
+  }
+
+  .payres-inner {
+    padding: 20px 18px 18px;
+  }
+
+  .payres-title {
+    font-size: 1.25rem;
+  }
+
+  .payres-amount-value {
+    font-size: 1.6rem;
+  }
+
+  .payres-details-row {
+    font-size: 0.85rem;
+  }
+
+  .payres-loading-title {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 420px) {
+  .payres-page {
+    padding: 16px 10px;
+  }
+
+  .payres-inner {
+    padding: 18px 14px 16px;
+  }
+
+  .payres-title {
+    font-size: 1.1rem;
+  }
+
+  .payres-amount-value {
+    font-size: 1.4rem;
+  }
+
+  .payres-actions {
+    gap: 8px;
+  }
+
+  .payres-download-btn,
+  .payres-home-btn {
+    padding: 9px 12px;
+    font-size: 14px;
+    border-radius: 8px;
+  }
+
+  .payres-btn-icon,
+  .payres-home-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 340px) {
+  .payres-page {
+    padding: 12px 8px;
+  }
+
+  .payres-inner {
+    padding: 16px 10px;
+  }
+
+  .payres-download-btn,
+  .payres-home-btn {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+}
+
+/* Print styles – only print the card */
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+
+  #payres-invoice-card,
+  #payres-invoice-card * {
+    visibility: visible !important;
+  }
+
+  #payres-invoice-card {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    box-shadow: none;
+    border: none;
+  }
+
+  .payres-no-print {
+    display: none !important;
+  }
+
+  .payres-page {
+    padding: 0;
+    background: #ffffff;
+  }
+}
+
+/* PaymentResult.css end */
+
+
+
+/* PaymentStatus start */
+
+
+/* PaymentStatus Page Styles
+   Prefix: ps-
+   Fixed light colors so system dark mode will NOT affect it.
+*/
+
+.ps-card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 26px rgba(15, 23, 42, 0.12);
+  padding: 18px 18px 20px;
+  margin-bottom: 24px;
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  color: #111827;
+}
+
+/* Card header with back button */
+.ps-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.ps-back-btn {
+  border: none;
+  background-color: #eef2ff;
+  color: #3730a3;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: background-color 0.15s ease, transform 0.1s ease,
+    box-shadow 0.15s ease;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.18);
+}
+
+.ps-back-btn:hover {
+  background-color: #e0e7ff;
+  transform: translateY(-1px);
+}
+
+.ps-back-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(79, 70, 229, 0.25);
+}
+
+.ps-card-header-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Generic sections */
+.ps-section {
+  margin-bottom: 18px;
+}
+
+.ps-section-header {
+  margin-bottom: 10px;
+}
+
+.ps-section-title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
+}
+
+.ps-section-subtitle {
+  font-size: 0.88rem;
+  margin: 4px 0 0;
+  color: #4b5563;
+}
+
+.ps-api-code {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 3px 6px;
+  background-color: #f3f4f6;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  color: #111827;
+}
+
+/* Divider between sections */
+.ps-section-divider {
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 6px 0 16px;
+}
+
+/* Form */
+.ps-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 12px;
+  margin-top: 4px;
+}
+
+.ps-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.ps-input {
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  padding: 0 12px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.ps-input::placeholder {
+  color: #9ca3af;
+}
+
+.ps-input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.ps-button {
+  margin-top: 6px;
+  height: 42px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #ffffff;
+  transition: transform 0.12s ease, box-shadow 0.12s ease,
+    opacity 0.12s ease;
+  box-shadow: 0 8px 18px rgba(37, 99, 235, 0.35);
+}
+
+.ps-button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.ps-button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.45);
+}
+
+.ps-button:not(:disabled):active {
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.3);
+}
+
+/* Secondary button for recover */
+.ps-button-secondary {
+  background: linear-gradient(135deg, #6b7280, #4b5563);
+  box-shadow: 0 8px 18px rgba(55, 65, 81, 0.35);
+}
+
+/* Alerts */
+.ps-alert {
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ps-alert--error {
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+.ps-alert--info {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1d4ed8;
+}
+
+.ps-alert-title {
+  font-weight: 600;
+}
+
+.ps-alert-text {
+  font-size: 0.88rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+/* Result Section */
+.ps-result-section {
+  margin-top: 6px;
+  padding-top: 12px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.ps-result-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.ps-result-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
+}
+
+/* Status Badge */
+.ps-status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ps-status-badge--success {
+  background-color: #ecfdf3;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+}
+
+.ps-status-badge--pending {
+  background-color: #fefce8;
+  color: #92400e;
+  border: 1px solid #fef3c7;
+}
+
+.ps-status-badge--failed {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.ps-status-badge--other {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+  border: 1px solid #bfdbfe;
+}
+
+/* Result Grid */
+.ps-result-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.ps-result-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ps-result-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.ps-result-value {
+  font-size: 0.92rem;
+  color: #111827;
+  word-break: break-all;
+}
+
+/* Message Box */
+.ps-message-box {
+  margin-top: 4px;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background-color: #f3f4ff;
+  border: 1px solid #e0e7ff;
+}
+
+.ps-message-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #4338ca;
+  margin-bottom: 4px;
+}
+
+.ps-message-text {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #111827;
+}
+
+/* Raw JSON Section */
+.ps-raw-details {
+  margin-top: 8px;
+}
+
+.ps-raw-summary {
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: #2563eb;
+  font-weight: 500;
+}
+
+.ps-raw-json {
+  margin-top: 6px;
+  padding: 9px 11px;
+  background-color: #0b1120;
+  color: #e5e7eb;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  overflow-x: auto;
+}
+
+/* Recover table */
+.ps-recover-table-wrapper {
+  margin-top: 10px;
+  overflow-x: auto;
+}
+
+.ps-recover-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  background-color: #ffffff;
+}
+
+.ps-recover-table thead {
+  background-color: #f3f4f6;
+}
+
+.ps-recover-table th,
+.ps-recover-table td {
+  border: 1px solid #e5e7eb;
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+  color: #111827;
+}
+
+.ps-recover-table th {
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #4b5563;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ps-card {
+    border-radius: 12px;
+    padding: 14px 12px 16px;
+  }
+
+  .ps-card-header-title {
+    font-size: 0.95rem;
+  }
+
+  .ps-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ps-recover-table {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .ps-input {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .ps-button {
+    height: 40px;
+    font-size: 0.9rem;
+  }
+
+  .ps-result-value {
+    font-size: 0.88rem;
+  }
+
+  .ps-back-btn {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+  }
+
+  .ps-section-subtitle {
+    font-size: 0.82rem;
+  }
+}
+
+
+/* PaymentStatus end */

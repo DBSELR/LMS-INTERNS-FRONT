@@ -168,8 +168,13 @@ import CancellationPolicy from "./pages/Tc/CancellationPolicy";
 import TermsAndConditions from "./pages/Tc/TermsAndConditions";
 import ReturnExchangePolicy from "./pages/Tc/ReturnExchangePolicy";
 import RefundPolicy from "./pages/Tc/RefundPolicy";
+<<<<<<< Updated upstream
 import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
 import ApproveStudents from "./pages/ApproveStudentsPage.jsx";
+=======
+import PaymentResult from "./pages/PaymentResult";
+import PaymentStatus from "./pages/PaymentStatus";
+>>>>>>> Stashed changes
 
 
 function App() {
@@ -526,7 +531,9 @@ function App() {
         <Route path="/viewdiscussions" element={<ProtectedRoute><ViewDiscussions /></ProtectedRoute>} />
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
+        
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+<<<<<<< Updated upstream
         <Route
           path="/ApproveStudents"
           element={
@@ -535,6 +542,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+=======
+        <Route path="/payment-result" element={<PaymentResult />} />
+        <Route path="/payment-status" element={<ProtectedRoute><PaymentStatus /></ProtectedRoute>} />
+
+>>>>>>> Stashed changes
         <Route path="/content-read-analytics" element={<AdminContentReadAnalytics />} />
         <Route path="/live-class-attendance-analytics" element={<AdminLiveClassAttendanceAnalytics />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
