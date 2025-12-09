@@ -124,6 +124,9 @@ function Login() {
         case "Director":
           navigate("/director-dashboard");
           break;
+          case "AppGenesis":
+          navigate("/ApproveStudents");
+          break;
 
         default:
           alert("Unknown role in token. Please contact admin.");

@@ -168,6 +168,8 @@ import CancellationPolicy from "./pages/Tc/CancellationPolicy";
 import TermsAndConditions from "./pages/Tc/TermsAndConditions";
 import ReturnExchangePolicy from "./pages/Tc/ReturnExchangePolicy";
 import RefundPolicy from "./pages/Tc/RefundPolicy";
+import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
+import ApproveStudents from "./pages/ApproveStudentsPage.jsx";
 
 
 function App() {
@@ -525,6 +527,14 @@ function App() {
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
+        <Route
+          path="/ApproveStudents"
+          element={
+            <ProtectedRoute>
+              <ApproveStudents />
+            </ProtectedRoute>
+          }
+        />
         <Route path="/content-read-analytics" element={<AdminContentReadAnalytics />} />
         <Route path="/live-class-attendance-analytics" element={<AdminLiveClassAttendanceAnalytics />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -532,6 +542,11 @@ function App() {
 <Route path="/cancellation-policy" element={<CancellationPolicy />} />
 <Route path="/return-exchange-policy" element={<ReturnExchangePolicy />} />
 <Route path="/refund-policy" element={<RefundPolicy />} />
+<Route
+  path="/students/bulk-upload"
+  component={BulkUploadStudents}
+/>
+
       </Routes>
 
       {/* ✅ Global footer */}

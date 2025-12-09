@@ -7,6 +7,15 @@ import API_BASE_URL from "../../config";
 const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // 🔹 Tabs: "single" | "bulk"
+  const [activeTab, setActiveTab] = useState("single");
+
+  // 🔹 Bulk upload state
+  const [bulkFile, setBulkFile] = useState(null);
+  const [bulkUploading, setBulkUploading] = useState(false);
+  const [bulkResult, setBulkResult] = useState(null);
+  const [bulkError, setBulkError] = useState("");
+
   // Get UserId from JWT token once, at the top
   let userId = "";
   const token = localStorage.getItem("jwt");
@@ -74,6 +83,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     programmeId: "", // keep as string in state
     semester: "1",
     degree: "",
+    aBC_UniqueID: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -118,6 +128,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
         username: student.username || "",
         password: student.username || "", // Set password to username
         degree: student.degree || "",
+        aBC_UniqueID: student.aBC_UniqueID || "",
       }));
     }
   }, [student, programmeOptions]);
@@ -182,6 +193,7 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
     if (!fd.batch) err.batch = "Batch is required";
     if (!fd.programmeId) err.programmeId = "Board is required";
     if (!fd.degree?.trim()) err.degree = "Degree is required";
+    if (!fd.aBC_UniqueID?.trim()) err.aBC_UniqueID = "ABC Id is required";
 
     return err;
   };
@@ -362,222 +374,180 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  if (isSubmitting) return;
-  setIsSubmitting(true);
-  setSubmitted(true);
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    setSubmitted(true);
 
-  const trimmed = {
-    ...formData,
-    username: formData.username.trim(),
-    password: formData.password.trim(),
-    email: formData.email.trim(),
-    firstName: formData.firstName.trim(),
-    lastName: formData.lastName.trim(),
-    gender: formData.gender.trim(),
-    address: formData.address.trim(),
-    city: formData.city.trim(),
-    state: formData.state.trim(),
-    country: formData.country.trim(),
-    zipCode: formData.zipCode.trim(),
-    degree: formData.degree.trim(),
-  };
+    const trimmed = {
+      ...formData,
+      username: formData.username.trim(),
+      password: formData.password.trim(),
+      email: formData.email.trim(),
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      gender: formData.gender.trim(),
+      address: formData.address.trim(),
+      city: formData.city.trim(),
+      state: formData.state.trim(),
+      country: formData.country.trim(),
+      zipCode: formData.zipCode.trim(),
+      degree: formData.degree.trim(),
+      aBC_UniqueID: formData.aBC_UniqueID.trim(),
+    };
 
-  const validationErrors = validate(trimmed);
-  setErrors(validationErrors);
+    const validationErrors = validate(trimmed);
+    setErrors(validationErrors);
 
-  if (Object.keys(validationErrors).length) {
-    scrollToFirstError(validationErrors);
-    setIsSubmitting(false);
-    return;
-  }
-
-  // ✅ SAFEST: find the programme from dropdown list using the selected value
-  const selectedProgramme = programmeOptions.find(
-    (p) => String(p.programmeId) === String(formData.programmeId)
-  );
-
-  console.log("[AddStudent] formData.programmeId:", formData.programmeId);
-  console.log("[AddStudent] selectedProgramme:", selectedProgramme);
-
-  if (!selectedProgramme) {
-    // If for some reason we can't find it, stop and show error – never send 0
-    setErrors((prev) => ({
-      ...prev,
-      programmeId: "Please select a valid course",
-    }));
-    scrollToFirstError({ programmeId: true });
-    setIsSubmitting(false);
-    return;
-  }
-
-  const finalProgrammeId = selectedProgramme.programmeId; // <-- REAL INT FROM API
-  console.log("[AddStudent] finalProgrammeId to send:", finalProgrammeId);
-
-  const programmeName = selectedProgramme.programmeName || "";
-
-  const payload = {
-    Username: trimmed.username || "unknown",
-    Email: trimmed.email || `${trimmed.username || "user"}@example.com`,
-    FirstName: trimmed.firstName || "Unknown",
-    LastName: trimmed.lastName || trimmed.firstName || "Unknown",
-    PhoneNumber: trimmed.phoneNumber || "0000000000",
-    DateOfBirth: trimmed.dateOfBirth
-      ? new Date(trimmed.dateOfBirth).toISOString()
-      : new Date(2000, 0, 1).toISOString(),
-    Gender: trimmed.gender || "NotSpecified",
-    Address: trimmed.address || "N/A",
-    City: trimmed.city || "N/A",
-    State: trimmed.state || "N/A",
-    Country: trimmed.country || "N/A",
-    ZipCode: trimmed.zipCode || "000000",
-    ProfilePhotoUrl: trimmed.profilePhotoUrl || "N/A",
-    Batch: trimmed.batch || selectedProgramme.batchName || "Default",
-    Programme: programmeName || "Unknown",
-
-    // 🔥 send programmeId as a clean integer
-    programmeId: finalProgrammeId,
-    ProgrammeId: finalProgrammeId, // also send PascalCase for safety
-
-    sem: Number.parseInt(trimmed.semester || "1", 10) || 1,
-    semester: Number.parseInt(trimmed.semester || "1", 10) || 1,
-    degree: trimmed.degree || "NotSpecified",
-    RefCode: Number.parseInt(userId || "0", 10) || 0,
-    ...(editMode ? {} : { Password: trimmed.password || "" }),
-  };
-
-  console.log("RefCode for AddStudent:", userId);
-  console.log("Payload for AddStudent:", payload);
-
-  try {
-    const res = await onSubmit?.(payload);
-
-    if (res && res.ok === false) {
-      const info = buildErrInfo(res);
-      console.warn("[AddStudent] Non-OK response from parent:", res);
-      setErrInfo(info);
-      setShowErrModal(true);
+    if (Object.keys(validationErrors).length) {
+      scrollToFirstError(validationErrors);
       setIsSubmitting(false);
       return;
     }
-  } catch (err) {
-    const info = buildErrInfo(err);
-    console.warn("[AddStudent] Caught error from parent:", err);
-    setErrInfo(info);
-    setShowErrModal(true);
-  } finally {
-    setIsSubmitting(false);
-  }
-};
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (isSubmitting) return;
-  //   setIsSubmitting(true);
-  //   setSubmitted(true);
+    // ✅ SAFEST: find the programme from dropdown list using the selected value
+    const selectedProgramme = programmeOptions.find(
+      (p) => String(p.programmeId) === String(formData.programmeId)
+    );
 
-  //   const trimmed = {
-  //     ...formData,
-  //     username: formData.username.trim(),
-  //     password: formData.password.trim(),
-  //     email: formData.email.trim(),
-  //     firstName: formData.firstName.trim(),
-  //     lastName: formData.lastName.trim(),
-  //     gender: formData.gender.trim(),
-  //     address: formData.address.trim(),
-  //     city: formData.city.trim(),
-  //     state: formData.state.trim(),
-  //     country: formData.country.trim(),
-  //     zipCode: formData.zipCode.trim(),
-  //     degree: formData.degree.trim(),
-  //   };
+    console.log("[AddStudent] formData.programmeId:", formData.programmeId);
+    console.log("[AddStudent] selectedProgramme:", selectedProgramme);
 
-  //   const validationErrors = validate(trimmed);
-  //   setErrors(validationErrors);
+    if (!selectedProgramme) {
+      // If for some reason we can't find it, stop and show error – never send 0
+      setErrors((prev) => ({
+        ...prev,
+        programmeId: "Please select a valid course",
+      }));
+      scrollToFirstError({ programmeId: true });
+      setIsSubmitting(false);
+      return;
+    }
 
-  //   if (Object.keys(validationErrors).length) {
-  //     scrollToFirstError(validationErrors);
-  //     setIsSubmitting(false);
-  //     return;
-  //   }
+    const finalProgrammeId = selectedProgramme.programmeId; // <-- REAL INT FROM API
+    console.log("[AddStudent] finalProgrammeId to send:", finalProgrammeId);
 
-  //   // ✅ Correctly find selectedProgramme
-  //   const selectedProgramme = programmeOptions.find(
-  //     (p) => String(p.programmeId) === String(trimmed.programmeId || "")
-  //   );
+    const programmeName = selectedProgramme.programmeName || "";
 
-  //   console.log("[AddStudent] trimmed.programmeId:", trimmed.programmeId);
-  //   console.log("[AddStudent] selectedProgramme:", selectedProgramme);
+    const payload = {
+      Username: trimmed.username || "unknown",
+      Email: trimmed.email || `${trimmed.username || "user"}@example.com`,
+      FirstName: trimmed.firstName || "Unknown",
+      LastName: trimmed.lastName || trimmed.firstName || "Unknown",
+      PhoneNumber: trimmed.phoneNumber || "0000000000",
+      DateOfBirth: trimmed.dateOfBirth
+        ? new Date(trimmed.dateOfBirth).toISOString()
+        : new Date(2000, 0, 1).toISOString(),
+      Gender: trimmed.gender || "NotSpecified",
+      Address: trimmed.address || "N/A",
+      City: trimmed.city || "N/A",
+      State: trimmed.state || "N/A",
+      Country: trimmed.country || "N/A",
+      ZipCode: trimmed.zipCode || "000000",
+      ProfilePhotoUrl: trimmed.profilePhotoUrl || "N/A",
+      Batch: trimmed.batch || selectedProgramme.batchName || "Default",
+      Programme: programmeName || "Unknown",
 
-  //   // ✅ Compute programmeId safely
-  //   const progIdInt = parseInt(trimmed.programmeId, 10);
-  //   const finalProgrammeId = !Number.isNaN(progIdInt)
-  //     ? progIdInt
-  //     : selectedProgramme
-  //     ? selectedProgramme.programmeId
-  //     : 0;
+      // 🔥 send programmeId as a clean integer
+      programmeId: finalProgrammeId,
+      ProgrammeId: finalProgrammeId, // also send PascalCase for safety
 
-  //   console.log("[AddStudent] finalProgrammeId to send:", finalProgrammeId);
+      sem: Number.parseInt(trimmed.semester || "1", 10) || 1,
+      semester: Number.parseInt(trimmed.semester || "1", 10) || 1,
+      degree: trimmed.degree || "NotSpecified",
+      aBC_UniqueID: trimmed.aBC_UniqueID || "N/A",
+      RefCode: Number.parseInt(userId || "0", 10) || 0,
+      ...(editMode ? {} : { Password: trimmed.password || "" }),
+    };
 
-  //   const programmeName = selectedProgramme?.programmeName || "";
+    console.log("RefCode for AddStudent:", userId);
+    console.log("Payload for AddStudent:", payload);
 
-  //   const payload = {
-  //     Username: trimmed.username || "unknown",
-  //     Email: trimmed.email || `${trimmed.username || "user"}@example.com`,
-  //     FirstName: trimmed.firstName || "Unknown",
-  //     LastName: trimmed.lastName || trimmed.firstName || "Unknown",
-  //     PhoneNumber: trimmed.phoneNumber || "0000000000",
-  //     DateOfBirth: trimmed.dateOfBirth
-  //       ? new Date(trimmed.dateOfBirth).toISOString()
-  //       : new Date(2000, 0, 1).toISOString(),
-  //     Gender: trimmed.gender || "NotSpecified",
-  //     Address: trimmed.address || "N/A",
-  //     City: trimmed.city || "N/A",
-  //     State: trimmed.state || "N/A",
-  //     Country: trimmed.country || "N/A",
-  //     ZipCode: trimmed.zipCode || "000000",
-  //     ProfilePhotoUrl: trimmed.profilePhotoUrl || "N/A",
-  //     Batch: trimmed.batch || selectedProgramme?.batchName || "Default",
-  //     Programme: programmeName || selectedProgramme?.programmeName || "Unknown",
+    try {
+      const res = await onSubmit?.(payload);
 
-  //     // 🟢 SERVER EXPECTS INT programmeId
-  //     programmeId: finalProgrammeId,
+      if (res && res.ok === false) {
+        const info = buildErrInfo(res);
+        console.warn("[AddStudent] Non-OK response from parent:", res);
+        setErrInfo(info);
+        setShowErrModal(true);
+        setIsSubmitting(false);
+        return;
+      }
+    } catch (err) {
+      const info = buildErrInfo(err);
+      console.warn("[AddStudent] Caught error from parent:", err);
+      setErrInfo(info);
+      setShowErrModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-  //     sem: Number.parseInt(trimmed.semester || "1", 10) || 1,
-  //     semester: Number.parseInt(trimmed.semester || "1", 10) || 1,
-  //     degree: trimmed.degree || "NotSpecified",
-  //     RefCode: Number.parseInt(userId || "0", 10) || 0,
-  //     ...(editMode ? {} : { Password: trimmed.password || "" }),
-  //   };
+  /* ========= Bulk upload handlers ========= */
 
-  //   console.log("RefCode for AddStudent:", userId);
-  //   console.log("Payload for AddStudent:", payload);
+  const handleBulkDownloadTemplate = () => {
+    // match your backend route: /student/register/sample-excel
+    window.location.href = `${API_BASE_URL}/student/register/sample-excel`;
+  };
 
-  //   try {
-  //     const res = await onSubmit?.(payload);
+  const handleBulkFileChange = (e) => {
+    setBulkFile(e.target.files?.[0] || null);
+    setBulkResult(null);
+    setBulkError("");
+  };
 
-  //     if (res && res.ok === false) {
-  //       const info = buildErrInfo(res);
-  //       console.warn("[AddStudent] Non-OK response from parent:", res);
-  //       setErrInfo(info);
-  //       setShowErrModal(true);
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-  //   } catch (err) {
-  //     const info = buildErrInfo(err);
-  //     console.warn("[AddStudent] Caught error from parent:", err);
-  //     setErrInfo(info);
-  //     setShowErrModal(true);
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
+  const handleBulkUpload = async (e) => {
+    e.preventDefault();
+    if (!bulkFile) {
+      setBulkError("Please select an Excel file (.xlsx).");
+      return;
+    }
+
+    setBulkUploading(true);
+    setBulkError("");
+    setBulkResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", bulkFile);
+
+      const res = await fetch(`${API_BASE_URL}/student/register/bulk`, {
+        method: "POST",
+        headers: {
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: formData,
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setBulkError(
+          data?.error ||
+            data?.message ||
+            `Bulk upload failed with status ${res.status}`
+        );
+      } else {
+        setBulkResult(data);
+      }
+    } catch (err) {
+      console.error("Bulk upload error:", err);
+      setBulkError(err.message || "Bulk upload failed.");
+    } finally {
+      setBulkUploading(false);
+    }
+  };
 
   /* ========= UI helpers ========= */
   const showError = (name) => submitted && !!errors[name];
 
-  const renderInput = (label, name, type = "text", { placeholder, required = true } = {}) => (
+  const renderInput = (
+    label,
+    name,
+    type = "text",
+    { placeholder, required = true } = {}
+  ) => (
     <div className="form-group">
       <label htmlFor={name} className="mb-1">
         {label} {required && <span className="text-danger">*</span>}
@@ -634,84 +604,244 @@ const AddStudent = ({ student, onSubmit, editMode = false, readOnly = false }) =
   /* ========= Render ========= */
   return (
     <>
-      <form onSubmit={handleSubmit} noValidate>
-        <div className="student-form-grid">
-          <style>{`
-            .student-form-grid {
-              display: grid;
-              grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-              gap: 15px;
-              margin-bottom: 20px;
-            }
-            .student-form-actions {
-              display: flex;
-              gap: 10px;
-              justify-content: flex-start;
-              flex-wrap: wrap;
-            }
-          `}</style>
+      <style>{`
+        .student-tabs {
+          border-bottom: 1px solid #dee2e6;
+          margin-bottom: 1rem;
+          display: flex;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+        }
+        .student-tab-btn {
+          border: none;
+          background: transparent;
+          padding: 0.5rem 1rem;
+          border-bottom: 3px solid transparent;
+          font-weight: 500;
+          cursor: pointer;
+        }
+        .student-tab-btn.active {
+          border-bottom-color: #0d6efd;
+          color: #0d6efd;
+        }
+        .student-tab-content {
+          margin-top: 1rem;
+        }
+        .student-form-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 15px;
+          margin-bottom: 20px;
+        }
+        .student-form-actions {
+          display: flex;
+          gap: 10px;
+          justify-content: flex-start;
+          flex-wrap: wrap;
+        }
+      `}</style>
 
-          {renderInput("Registration Number", "username", "text", {
-            placeholder: "Enter registration number",
-          })}
-          {renderInput("Email", "email", "email", {
-            placeholder: "name@example.com",
-          })}
-          {renderInput("Name (As per SSC)", "firstName")}
-          {renderInput("Mobile Number", "phoneNumber", "tel", {
-            placeholder: "10-digit mobile number",
-          })}
-          {renderInput("Date of Birth", "dateOfBirth", "date")}
-          {renderInput("Gender", "gender", "text", {
-            placeholder: "Male / Female / Other",
-          })}
+      {/* ===== Tabs Header ===== */}
+      <div className="student-tabs">
+        <button
+          type="button"
+          className={`student-tab-btn ${
+            activeTab === "single" ? "active" : ""
+          }`}
+          onClick={() => setActiveTab("single")}
+        >
+          Add New Student
+        </button>
+        <button
+          type="button"
+          className={`student-tab-btn ${
+            activeTab === "bulk" ? "active" : ""
+          }`}
+          onClick={() => setActiveTab("bulk")}
+        >
+          Bulk Upload
+        </button>
+      </div>
 
-          {renderSelect(
-            "Batch",
-            "batch",
-            batchList,
-            (b) => b,
-            (b) => b,
-            { placeholder: "-- Select Batch --" }
-          )}
+      <div className="student-tab-content">
+        {/* ===== TAB 1: Single Student Form ===== */}
+        {activeTab === "single" && (
+          <form onSubmit={handleSubmit} noValidate>
+            <div className="student-form-grid">
+              {renderInput("Registration Number", "username", "text", {
+                placeholder: "Enter registration number",
+              })}
+              {renderInput("ABC ID", "aBC_UniqueID", "text", {
+                placeholder: "Enter ABC ID",
+              })}
+              {renderInput("Email", "email", "email", {
+                placeholder: "name@example.com",
+              })}
+              {renderInput("Name (As per SSC)", "firstName")}
+              {renderInput("Mobile Number", "phoneNumber", "tel", {
+                placeholder: "10-digit mobile number",
+              })}
+              {renderInput("Date of Birth", "dateOfBirth", "date")}
+              {renderInput("Gender", "gender", "text", {
+                placeholder: "Male / Female / Other",
+              })}
 
-          {renderSelect(
-            "Course",
-            "programmeId",
-            filteredProgrammes,
-            (p) => String(p.programmeId), // ✅ ALWAYS STRING
-            (p) => `${p.programmeName} (${p.programmeCode})`,
-            { placeholder: "-- Select Course --" }
-          )}
+              {renderSelect(
+                "Batch",
+                "batch",
+                batchList,
+                (b) => b,
+                (b) => b,
+                { placeholder: "-- Select Batch --" }
+              )}
 
-          {renderSelect(
-            "Pursuing Degree",
-            "degree",
-            degreeOptions,
-            (d) => d,
-            (d) => d,
-            { placeholder: "-- Select Degree --" }
-          )}
-        </div>
+              {renderSelect(
+                "Course",
+                "programmeId",
+                filteredProgrammes,
+                (p) => String(p.programmeId), // ✅ ALWAYS STRING
+                (p) => `${p.programmeName} (${p.programmeCode})`,
+                { placeholder: "-- Select Course --" }
+              )}
 
-        {!readOnly && (
-          <div className="student-form-actions mt-3 d-flex gap-2">
-            <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-              {isSubmitting
-                ? "Submitting..."
-                : (editMode ? "Update" : "Add") + " Student"}
-            </button>
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={() => window.history.back()}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </button>
+              {renderSelect(
+                "Pursuing Degree",
+                "degree",
+                degreeOptions,
+                (d) => d,
+                (d) => d,
+                { placeholder: "-- Select Degree --" }
+              )}
+            </div>
+
+            {!readOnly && (
+              <div className="student-form-actions mt-3 d-flex gap-2">
+                <button
+                  type="submit"
+                  className="btn btn-primary"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting
+                    ? "Submitting..."
+                    : (editMode ? "Update" : "Add") + " Student"}
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => window.history.back()}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </button>
+              </div>
+            )}
+          </form>
+        )}
+
+        {/* ===== TAB 2: Bulk Upload ===== */}
+        {activeTab === "bulk" && !readOnly && (
+          <div>
+            <h4>Bulk Upload Students via Excel</h4>
+            <p className="text-muted">
+              1) Download the sample Excel, 2) Fill student data, 3) Upload the file.
+            </p>
+
+            <div className="mb-3 d-flex gap-2">
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={handleBulkDownloadTemplate}
+              >
+                Download Sample Excel
+              </button>
+            </div>
+
+            <form onSubmit={handleBulkUpload}>
+              <div className="mb-3">
+                <label className="form-label">Select Excel File (.xlsx)</label>
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  className="form-control"
+                  onChange={handleBulkFileChange}
+                />
+              </div>
+
+              {bulkError && (
+                <div className="alert alert-danger py-2">
+                  <strong>Error:</strong> {bulkError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="btn btn-success"
+                disabled={bulkUploading}
+              >
+                {bulkUploading
+                  ? "Uploading..."
+                  : "Upload & Register Students"}
+              </button>
+            </form>
+
+            {bulkResult && (
+              <div className="mt-4">
+                <h5>Upload Summary</h5>
+                <ul>
+                  <li>Total: {bulkResult.total}</li>
+                  <li>Success: {bulkResult.success}</li>
+                  <li>Failed: {bulkResult.failed}</li>
+                </ul>
+
+                {bulkResult.rows && bulkResult.rows.length > 0 && (
+                  <div className="table-responsive mt-3">
+                    <table className="table table-sm table-bordered">
+                      <thead className="table-light">
+                        <tr>
+                          <th>Row</th>
+                          <th>Username</th>
+                          <th>Status</th>
+                          <th>Error / Conflicts</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {bulkResult.rows.map((r, idx) => (
+                          <tr key={idx}>
+                            <td>{r.rowNumber}</td>
+                            <td>{r.username}</td>
+                            <td>
+                              {r.success ? (
+                                <span className="text-success fw-bold">OK</span>
+                              ) : (
+                                <span className="text-danger fw-bold">
+                                  FAILED
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ whiteSpace: "pre-wrap" }}>
+                              {r.success
+                                ? "-"
+                                : r.error ||
+                                  (r.conflicts || [])
+                                    .map(
+                                      (c) =>
+                                        `${c.conflictType ?? ""}: ${
+                                          c.details ?? ""
+                                        }`
+                                    )
+                                    .join("\n")}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         )}
-      </form>
+      </div>
 
       <ErrorDetailsModal
         open={showErrModal}
