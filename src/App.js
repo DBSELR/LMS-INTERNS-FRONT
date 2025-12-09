@@ -171,6 +171,8 @@ import RefundPolicy from "./pages/Tc/RefundPolicy";
 import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
 import ApproveStudents from "./pages/ApproveStudentsPage.jsx";
 import PaymentResult from "./pages/PaymentResult.js";
+import AdminSubjectiveExamsAttendanceAnalytics from "./pages/AdminSubjectiveExamsAttendanceAnalytics";
+import AdminObjectiveExamsAttendanceAnalytics from "./pages/AdminObjectiveExamsAttendanceAnalytics";
 
 
 function App() {
@@ -538,6 +540,8 @@ function App() {
         />
         <Route path="/content-read-analytics" element={<AdminContentReadAnalytics />} />
         <Route path="/live-class-attendance-analytics" element={<AdminLiveClassAttendanceAnalytics />} />
+        <Route path="/SubjectiveExams-attendance-analytics" element={<AdminSubjectiveExamsAttendanceAnalytics />} />
+        <Route path="/ObjectiveExams-attendance-analytics" element={<AdminObjectiveExamsAttendanceAnalytics />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
 <Route path="/cancellation-policy" element={<CancellationPolicy />} />

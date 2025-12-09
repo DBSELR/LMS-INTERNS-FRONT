@@ -189,6 +189,18 @@ function CollegeDashboard() {
         icon: "fa-bar-chart",
         link: "/live-class-attendance-analytics", // you can change this route as needed
       },
+      {
+  label: "Objective Exam Attendance %",
+  value: summary.objectiveExamAttendancePercentPerBatch,
+  icon: "fa-check-circle",
+  link: "/ObjectiveExams-attendance-analytics",
+},
+{
+  label: "Subjective Exam Attendance %",
+  value: summary.subjectiveExamAttendancePercentPerBatch,
+  icon: "fa-clipboard",
+  link: "/SubjectiveExams-attendance-analytics",
+},
  
   ];
 

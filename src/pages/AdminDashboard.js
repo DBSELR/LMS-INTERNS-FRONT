@@ -22,6 +22,8 @@ function AdminDashboard() {
     leaves: 0,
     contentReadPercentPerBatch: 0,
     liveClassAttendancePercentPerBatch: 0,
+    objectiveExamAttendancePercentPerBatch: 0,
+  subjectiveExamAttendancePercentPerBatch: 0,
   });
   const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
@@ -81,6 +83,8 @@ function AdminDashboard() {
                   data.LiveClassAttendancePercentPerBatch !== null
                 ? Number(data.LiveClassAttendancePercentPerBatch)
                 : 0,
+                  objectiveExamAttendancePercentPerBatch: Number(data.objectiveExamAttendancePercentPerBatch || 0),
+  subjectiveExamAttendancePercentPerBatch: Number(data.subjectiveExamAttendancePercentPerBatch || 0),
           });
         } catch (err) {
           console.error("Failed to fetch dashboard summary", err);
@@ -174,6 +178,18 @@ function AdminDashboard() {
                     icon: "fa-line-chart",
                     link: "/live-class-attendance-analytics",
                   },
+                  {
+  label: "Objective Exam Attendance %",
+  value: summary.objectiveExamAttendancePercentPerBatch,
+  icon: "fa-check-circle",
+  link: "/ObjectiveExams-attendance-analytics",
+},
+{
+  label: "Subjective Exam Attendance %",
+  value: summary.subjectiveExamAttendancePercentPerBatch,
+  icon: "fa-clipboard",
+  link: "/SubjectiveExams-attendance-analytics",
+},
 
                   
                 ].map((item, idx) => (

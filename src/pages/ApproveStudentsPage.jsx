@@ -235,6 +235,7 @@ const ApproveStudentsPage = () => {
   const [approving, setApproving] = useState(false);
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState("");
+  const [userRole, setUserRole] = useState("");
 
   const token = useMemo(() => localStorage.getItem("jwt"), []);
 
@@ -318,7 +319,13 @@ const ApproveStudentsPage = () => {
         decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ??
         null;
       setUserId(id);
-      console.log("✅ User ID from token:", id);
+      // extract role from JWT
+      const role =
+        decoded?.[
+          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
+        ] ?? null;
+      setUserRole(role || "");
+      console.log("✅ User ID from token:", id, "Role:", role);
     } catch (err) {
       console.warn("Token decode failed:", err);
       // not fatal for page functionality
@@ -664,7 +671,7 @@ const ApproveStudentsPage = () => {
                     <Button
                       variant="success"
                       onClick={handleApprove}
-                      disabled={approving || selectedStudents.size === 0}
+                      disabled={approving || selectedStudents.size === 0 || userRole !== "AppGenesis"}
                     >
                       {approving ? (
                         <>
