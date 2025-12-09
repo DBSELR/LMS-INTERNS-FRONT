@@ -170,6 +170,7 @@ import ReturnExchangePolicy from "./pages/Tc/ReturnExchangePolicy";
 import RefundPolicy from "./pages/Tc/RefundPolicy";
 import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
 import ApproveStudents from "./pages/ApproveStudentsPage.jsx";
+import PaymentResult from "./pages/PaymentResult.js";
 
 
 function App() {
@@ -547,6 +548,9 @@ function App() {
   component={BulkUploadStudents}
 />
 
+
+<Route path="/payment-result" element={<PaymentResult />} />
+<Route path="/payments-page" element={<PaymentsPage />} />
       </Routes>
 
       {/* ✅ Global footer */}
