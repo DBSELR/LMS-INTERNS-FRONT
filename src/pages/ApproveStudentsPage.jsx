@@ -1,226 +1,9 @@
-// import React, { useState, useEffect, useMemo } from "react";
-// import { Table, Button, Form, Spinner } from "react-bootstrap";
-// import { toast } from "react-toastify";
-// import API_BASE_URL from "../config";
-// import { jwtDecode } from "jwt-decode";
-// import HeaderTop from "../components/HeaderTop";
-// import RightSidebar from "../components/RightSidebar";
-// import LeftSidebar from "../components/LeftSidebar";
-
-// const ApproveStudentsPage = () => {
-//   const [colleges, setColleges] = useState([]);
-//   const [selectedCollegeId, setSelectedCollegeId] = useState("");
-//   const [students, setStudents] = useState([]);
-//   const [selectedStudents, setSelectedStudents] = useState(new Set());
-//   const [loading, setLoading] = useState(false);
-//   const [approving, setApproving] = useState(false);
-//   const [userId, setUserId] = useState(null);
-//   const [error, setError] = useState("");
-
-//   const token = useMemo(() => localStorage.getItem("jwt"), []);
-
-//   // Helper: normalize college
-//   const normalizeCollege = (row) => ({
-//     id: Number(row.id || row.ColId || 0),
-//     name: row.college || row.Name || `College ${row.id || 0}`,
-//   });
-//   // Decode JWT to get user ID
-//   useEffect(() => {
-//     const token = localStorage.getItem("jwt");
-//     if (token) {
-//       try {
-//         const decoded = jwtDecode(token);
-//         const id = decoded["UserId"] || decoded.userId;
-//         setUserId(id);
-//         console.log("✅ User ID from token:", id);
-//       } catch (err) {
-//         console.error("❌ Token decode failed", err);
-//         setError("Failed to decode user token");
-//       }
-//     }
-//   }, []);
-
-//   // Load colleges
-//   useEffect(() => {
-//     const fetchColleges = async () => {
-//       setLoading(true);
-//       try {
-//         const res = await fetch(`${API_BASE_URL}/Programme/GetDbsInternsColleges`, {
-//           headers: token ? { Authorization: `Bearer ${token}` } : {},
-//         });
-//         const data = await res.json();
-//         setColleges(Array.isArray(data) ? data.map(normalizeCollege) : []);
-//       } catch (err) {
-//         console.error("Failed to load colleges:", err);
-//         toast.error("Failed to load colleges");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-//     fetchColleges();
-//   }, [token]);
-
-//   // Load students for selected college
-//   useEffect(() => {
-//     if (!selectedCollegeId) {
-//       setStudents([]);
-//       return;
-//     }
-
-//     const fetchStudents = async () => {
-//       setLoading(true);
-//       try {
-//         const url = `${API_BASE_URL}/Student/GetgetApprovependingstudentlist?colid=${encodeURIComponent(
-//           selectedCollegeId
-//         )}`;
-//         const res = await fetch(url, {
-//           headers: token ? { Authorization: `Bearer ${token}` } : {},
-//         });
-//         const data = await res.json();
-//         setStudents(Array.isArray(data) ? data : []);
-//         setSelectedStudents(new Set());
-//       } catch (err) {
-//         console.error("Failed to load students:", err);
-//         toast.error("Failed to load students");
-//       } finally {
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchStudents();
-//   }, [selectedCollegeId, token]);
-
-//   const handleSelectAll = (e) => {
-//     if (e.target.checked) setSelectedStudents(new Set(students.map((s) => s.userid)));
-//     else setSelectedStudents(new Set());
-//   };
-
-//   const handleSelectStudent = (e, userId) => {
-//     const updated = new Set(selectedStudents);
-//     if (e.target.checked) updated.add(userId);
-//     else updated.delete(userId);
-//     setSelectedStudents(updated);
-//   };
-
-//   const handleApprove = async () => {
-//     if (selectedStudents.size === 0) return toast.warning("Select at least one student.");
-//     setApproving(true);
-
-//     try {
-//       for (const userId of selectedStudents) {
-//         const res = await fetch(`${API_BASE_URL}/Student/ApproveStudent/${userId}`, {
-//           method: "POST",
-//           headers: token ? { Authorization: `Bearer ${token}` } : {},
-//         });
-//         if (!res.ok) {
-//           const errText = await res.text();
-//           console.error("Failed to approve user:", userId, errText);
-//         }
-//       }
-//       toast.success("Selected students approved successfully.");
-//       // Reload students
-//       setSelectedCollegeId(""); // reset triggers reload
-//       setSelectedCollegeId(selectedCollegeId);
-//     } catch (err) {
-//       console.error("Approval failed:", err);
-//       toast.error("Approval failed. See console.");
-//     } finally {
-//       setApproving(false);
-//     }
-//   };
-
-//   return (
-//     <div className="container mt-4">
-//         <HeaderTop />
-//               <RightSidebar />
-//               <LeftSidebar />
-//       <h3>Approve Students</h3>
-
-//       <div className="mb-3">
-//         <Form.Label>College</Form.Label>
-//         <Form.Select
-//           value={selectedCollegeId}
-//           onChange={(e) => setSelectedCollegeId(e.target.value)}
-//           disabled={loading}
-//         >
-//           <option value="">{loading ? "Loading colleges..." : "-- Select College --"}</option>
-//           {colleges.map((c) => (
-//             <option key={c.id} value={c.id}>
-//               {c.name}
-//             </option>
-//           ))}
-//         </Form.Select>
-//       </div>
-
-//       {loading ? (
-//         <Spinner animation="border" />
-//       ) : students.length === 0 ? (
-//         selectedCollegeId && <p>No pending students.</p>
-//       ) : (
-//         <div className="table-responsive">
-//           <Table bordered hover>
-//             <thead className="table-light">
-//               <tr>
-//                 <th>
-//                   <Form.Check
-//                     type="checkbox"
-//                     checked={selectedStudents.size === students.length}
-//                     onChange={handleSelectAll}
-//                   />
-//                 </th>
-//                 <th>Username</th>
-//                 <th>Full Name</th>
-//                 <th>Email</th>
-//                 <th>Gender</th>
-//                 <th>ABC Unique ID</th>
-//                 <th>College</th>
-//               </tr>
-//             </thead>
-//             <tbody>
-//               {students.map((s) => (
-//                 <tr key={s.userid}>
-//                   <td>
-//                     <Form.Check
-//                       type="checkbox"
-//                       checked={selectedStudents.has(s.userid)}
-//                       onChange={(e) => handleSelectStudent(e, s.userid)}
-//                     />
-//                   </td>
-//                   <td>{s.Username}</td>
-//                   <td>{s.FirstName}</td>
-//                   <td>{s.Email}</td>
-//                   <td>{s.Gender}</td>
-//                   <td>{s.ABC_UniqueID}</td>
-//                   <td>{s.College}</td>
-//                 </tr>
-//               ))}
-//             </tbody>
-//           </Table>
-//         </div>
-//       )}
-
-//       {students.length > 0 && (
-//         <Button
-//           variant="success"
-//           onClick={handleApprove}
-//           disabled={approving}
-//         >
-//           {approving ? "Approving..." : "Approve Selected Students"}
-//         </Button>
-//       )}
-//     </div>
-//   );
-// };
-
-// export default ApproveStudentsPage;
-
-
 // File: src/pages/ApproveStudentsPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import { Table, Button, Form, Spinner, Alert } from "react-bootstrap";
+import { Table, Button, Form, Spinner, Alert, Tab, Tabs } from "react-bootstrap";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../config";
-import { jwtDecode } from "jwt-decode"; // prefer default import
+import { jwtDecode } from "jwt-decode";
 import HeaderTop from "../components/HeaderTop";
 import RightSidebar from "../components/RightSidebar";
 import LeftSidebar from "../components/LeftSidebar";
@@ -230,13 +13,12 @@ const ApproveStudentsPage = () => {
   const [colleges, setColleges] = useState([]);
   const [selectedCollegeId, setSelectedCollegeId] = useState("");
   const [students, setStudents] = useState([]);
-  const [selectedStudents, setSelectedStudents] = useState(new Set());
   const [loading, setLoading] = useState(false);
-  const [approving, setApproving] = useState(false);
+  const [approvingIds, setApprovingIds] = useState(new Set());
   const [userId, setUserId] = useState(null);
   const [error, setError] = useState("");
   const [userRole, setUserRole] = useState("");
-
+  const [activeTab, setActiveTab] = useState("pending"); // "approved" or "pending"
   const token = useMemo(() => localStorage.getItem("jwt"), []);
 
   // -------------------------
@@ -254,7 +36,6 @@ const ApproveStudentsPage = () => {
     };
   }
 
-  // Normalize college row
   function normalizeCollege(row = {}, idx = 0) {
     const get = ci(row);
     const id = get(["id", "colid", "ColId", "Id"]) ?? idx + 1;
@@ -268,13 +49,13 @@ const ApproveStudentsPage = () => {
     };
   }
 
-  // Normalize student row to exact keys used in UI
   function normalizeStudent(row = {}, idx = 0) {
     const get = ci(row);
     return {
       userid: Number(get(["userid", "userId", "id"]) || 0),
-      // ApproveStatus comes from the modified stored procedure: 'Approved'|'Pending'
-      ApproveStatus: String(get(["ApproveStatus", "approvestatus", "IsApprove", "isapprove"]) ?? "Pending"),
+      ApproveStatus: String(
+        get(["ApproveStatus", "approvestatus", "IsApprove", "isapprove"]) ?? "Pending"
+      ),
       Username: String(
         get([
           "Username",
@@ -306,7 +87,7 @@ const ApproveStudentsPage = () => {
   }
 
   // -------------------------
-  // Read userId from JWT (optional)
+  // Read userId & role from JWT (optional)
   // -------------------------
   useEffect(() => {
     const t = localStorage.getItem("jwt");
@@ -319,16 +100,12 @@ const ApproveStudentsPage = () => {
         decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier"] ??
         null;
       setUserId(id);
-      // extract role from JWT
       const role =
-        decoded?.[
-          "http://schemas.microsoft.com/ws/2008/06/identity/claims/role"
-        ] ?? null;
+        decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ?? null;
       setUserRole(role || "");
       console.log("✅ User ID from token:", id, "Role:", role);
     } catch (err) {
       console.warn("Token decode failed:", err);
-      // not fatal for page functionality
     }
   }, []);
 
@@ -348,7 +125,6 @@ const ApproveStudentsPage = () => {
           throw new Error(`Failed to load colleges (${res.status}) ${txt}`);
         }
         const data = await res.json().catch(() => []);
-        console.debug("GetDbsInternsColleges raw response:", data);
         const list = Array.isArray(data) ? data : data?.rows ?? [];
         const normalized = list.map(normalizeCollege);
         setColleges(normalized);
@@ -360,7 +136,6 @@ const ApproveStudentsPage = () => {
         setLoading(false);
       }
     };
-
     fetchColleges();
   }, [token]);
 
@@ -388,15 +163,9 @@ const ApproveStudentsPage = () => {
           throw new Error(`Failed to load students (${res.status}) ${txt}`);
         }
         const data = await res.json().catch(() => []);
-        console.debug("GetgetApprovependingstudentlist raw response:", data);
-
-        // Support either array response or wrapper object
         const list = Array.isArray(data) ? data : data?.rows ?? data?.result ?? [];
-
         const normalized = (list || []).map(normalizeStudent);
-        console.debug("Normalized students (first 8):", normalized.slice(0, 8));
         setStudents(normalized);
-        setSelectedStudents(new Set());
       } catch (err) {
         console.error("fetchStudents error:", err);
         setError(err.message || "Failed to load students");
@@ -410,15 +179,23 @@ const ApproveStudentsPage = () => {
   }, [selectedCollegeId, token]);
 
   // -------------------------
-  // Search + Select handlers
+  // Search state
   // -------------------------
   const [searchQuery, setSearchQuery] = useState("");
 
-  // filteredStudents: check every key (except internal __ keys) for the search text
+  // Filter students based on activeTab and search
   const filteredStudents = useMemo(() => {
     const q = String(searchQuery || "").trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((row) => {
+    const byTab = (row) => {
+      const st = String(row.ApproveStatus || "").toLowerCase();
+      const isApproved = st === "approved" || st === "y" || st === "yes";
+      return activeTab === "approved" ? isApproved : !isApproved;
+    };
+
+    let list = (students || []).filter(byTab);
+
+    if (!q) return list;
+    return list.filter((row) => {
       for (const k of Object.keys(row || {})) {
         if (String(k || "").startsWith("__")) continue;
         const v = row[k];
@@ -431,86 +208,104 @@ const ApproveStudentsPage = () => {
       }
       return false;
     });
-  }, [students, searchQuery]);
+  }, [students, searchQuery, activeTab]);
 
-  // Counts based on currently loaded students for selected college
+  // Counts
   const studentCounts = useMemo(() => {
     const total = (students || []).length;
-    const approved = (students || []).filter((s) => String(s.ApproveStatus || "").toLowerCase() === "approved").length;
+    const approved = (students || []).filter((s) => {
+      const st = String(s.ApproveStatus || "").toLowerCase();
+      return st === "approved" || st === "y" || st === "yes";
+    }).length;
     const pending = total - approved;
     return { total, approved, pending };
   }, [students]);
 
-  const handleSelectAll = (e) => {
-    if (e.target.checked) {
-      // select only currently visible rows
-      setSelectedStudents(new Set((filteredStudents || students).filter((s) => String(s.ApproveStatus || "").toLowerCase() !== "approved").map((s) => s.userid)));
-    } else {
-      setSelectedStudents(new Set());
-    }
-  };
-
-  const handleSelectStudent = (e, uid) => {
-    // prevent selecting rows that are already approved
-    const row = (students || []).find((x) => Number(x.userid) === Number(uid));
-    if (row && String(row.ApproveStatus || "").toLowerCase() === "approved") return;
-
-    const updated = new Set(selectedStudents);
-    if (e.target.checked) updated.add(uid);
-    else updated.delete(uid);
-    setSelectedStudents(updated);
-  };
-
   // -------------------------
-  // Approve selected students (per-user loop)
+  // Approve single student (row-wise)
   // -------------------------
-  const handleApprove = async () => {
-    if (!selectedStudents || selectedStudents.size === 0) {
-      toast.warning("Select at least one student.");
+  const handleApproveRow = async (uid) => {
+    if (!uid) return;
+    if (userRole && userRole !== "AppGenesis") {
+      toast.error("You do not have permission to approve students.");
       return;
     }
-    setApproving(true);
-    setError("");
 
+    setApprovingIds((s) => new Set(s).add(uid));
     try {
-      // If you later expose a bulk API, call that instead of looping
-      const failures = [];
-      for (const uid of selectedStudents) {
-        try {
-          const res = await fetch(`${API_BASE_URL}/Student/ApproveStudent/${uid}`, {
-            method: "POST",
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          if (!res.ok) {
-            const text = await res.text().catch(() => "");
-            failures.push({ uid, status: res.status, text });
-            console.error("Approve failed for", uid, res.status, text);
-          }
-        } catch (err) {
-          failures.push({ uid, error: String(err) });
-          console.error("Approve exception for", uid, err);
-        }
-      }
+      const res = await fetch(`${API_BASE_URL}/Student/ApproveStudent/${uid}`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
 
-      if (failures.length) {
-        toast.warn(`Approval completed with ${failures.length} failures. See console for details.`);
-        console.warn("Approval failures:", failures);
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        console.error("Approve failed for", uid, res.status, text);
+        if (res.status === 404) toast.warn("Student not found or already approved.");
+        else toast.error(`Approve failed (${res.status}).`);
       } else {
-        toast.success("Selected students approved successfully.");
+        const data = await res.json().catch(() => null);
+        toast.success(data?.message ?? "Student approved.");
+        setStudents((prev) =>
+          (prev || []).map((r) =>
+            Number(r.userid) === Number(uid)
+              ? { ...r, ApproveStatus: "Approved" }
+              : r
+          )
+        );
       }
-
-      // Refresh students list for the same college
-      // quick flicker: clear then restore selectedCollegeId to trigger useEffect fetch
-      const cur = selectedCollegeId;
-      setSelectedCollegeId("");
-      setTimeout(() => setSelectedCollegeId(cur), 80);
     } catch (err) {
-      console.error("handleApprove error:", err);
-      setError("Approval failed. See console for details.");
-      toast.error("Approval failed. See console.");
+      console.error("Approve exception for", uid, err);
+      toast.error("Approval request failed.");
     } finally {
-      setApproving(false);
+      setApprovingIds((s) => {
+        const copy = new Set(s);
+        copy.delete(uid);
+        return copy;
+      });
     }
+  };
+
+  // small helper to render long names safely (truncation in select)
+  const renderCollegeOption = (c) => {
+    return (
+      <option key={c.id} value={c.id} title={c.name}>
+        {c.name}
+      </option>
+    );
+  };
+
+  // Styles used inline to avoid extra CSS file
+  // tableWrapperStyle: enables horizontal scroll on small screens, prevents layout collapse
+  const tableWrapperStyle = {
+    overflowX: "auto",
+    WebkitOverflowScrolling: "touch",
+    marginBottom: 8,
+    borderRadius: "4px",
+    border: "1px solid #dee2e6",
+  };
+  const tableMinWidth = 1100; // minimum width before scrollbar appears
+  // Cell text wrapping: truncate with ellipsis on mobile, wrap on desktop
+  const wrapCell = {
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+    maxWidth: "clamp(120px, 20vw, 300px)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
+  const collegeCell = {
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+    maxWidth: "clamp(120px, 18vw, 280px)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  };
+  const emailCell = {
+    whiteSpace: "normal",
+    wordBreak: "break-word",
+    maxWidth: "clamp(150px, 22vw, 320px)",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   };
 
   // -------------------------
@@ -525,20 +320,20 @@ const ApproveStudentsPage = () => {
       <div className="section-wrapper">
         <div className="page admin-dashboard pt-0">
           <div className="section-body mt-3 pt-0">
-            <div className="container-fluid ">
+            <div className="container-fluid px-3">
               <div className="jumbotron bg-light rounded shadow-sm mb-3 welcome-card dashboard-hero">
                 <h2 className="page-title text-primary pt-0 dashboard-hero-title">
                   <i className="fa-solid fa-user-check me-2" /> Approve Students
                 </h2>
                 <p className="text-muted mb-0 dashboard-hero-sub">
-                  Approve pending student registrations by college.
+                  Approve student registrations by college (per-row approve).
                 </p>
               </div>
             </div>
           </div>
 
           <div className="section-body mt-2">
-            <div className="container-fluid">
+            <div className="container-fluid px-3">
               <div className="card welcome-card animate-welcome">
                 <div className="card-header bg-primary text-white d-flex align-items-center ">
                   <h6 className="mb-0">Student Approvals</h6>
@@ -547,142 +342,169 @@ const ApproveStudentsPage = () => {
                 <div className="card-body">
                   {error && <Alert variant="warning">{error}</Alert>}
 
-                  <div className="row mb-3">
-                    <div className="col-md-4">
-                      <Form.Label>College</Form.Label>
+                  <div className="row mb-3 gx-2">
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                      <Form.Label className="mb-2">College</Form.Label>
                       <Form.Control
                         as="select"
                         value={selectedCollegeId}
-                        onChange={(e) => setSelectedCollegeId(e.target.value)}
+                        onChange={(e) => {
+                          setSelectedCollegeId(e.target.value);
+                          setSearchQuery("");
+                        }}
                         disabled={loading}
+                        style={{
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                          maxWidth: "100%",
+                        }}
+                        title={
+                          colleges.find((c) => String(c.id) === String(selectedCollegeId))?.name ||
+                          ""
+                        }
                       >
                         <option value="">{loading ? "Loading colleges..." : "-- Select College --"}</option>
-                        {colleges.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name}
-                          </option>
-                        ))}
+                        {colleges.map(renderCollegeOption)}
                       </Form.Control>
                     </div>
 
-                    <div className="col-md-4">
-                      <Form.Label>Search</Form.Label>
+                    <div className="col-12 col-sm-6 col-md-4 mb-3 mb-md-0">
+                      <Form.Label className="mb-2">Search</Form.Label>
                       <Form.Control
                         type="search"
-                        placeholder="Search across all columns"
+                        placeholder="Search within the active tab"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         disabled={loading || students.length === 0}
+                        maxLength={100}
                       />
                     </div>
+
+                    <div className="col-12 col-md-4">
+                      <div className="text-md-end">
+                        <div className="small text-muted mb-1">Total / Approved / Pending</div>
+                        <div className="fw-bold" style={{ fontSize: "1.1rem" }}>
+                          {studentCounts.total} / {studentCounts.approved} / {studentCounts.pending}
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
-                  {loading ? (
-                    <div className="text-center my-4">
-                      <Spinner animation="border" />
-                    </div>
-                  ) : students.length === 0 ? (
-                    selectedCollegeId ? (
-                      <p className="text-muted">No pending students for approval.</p>
-                    ) : (
-                      <p className="text-muted">Select a college to view pending students.</p>
-                    )
-                  ) : (
-                    <div className="table-responsive">
-                      <Table bordered hover className="mb-3">
-                        <thead className="table-light">
-                          <tr>
-                           
-                            <th>Username</th>
-                            <th>Full Name</th>
-                            <th>Email</th>
-                            <th>Gender</th>
-                            <th>ABC Unique ID</th>
-                            <th>College</th>
-                            <th>Approve Status</th>
-                             <th style={{ width: 40 }}>
-                              <Form.Check
-                                type="checkbox"
-                                checked={
-                                  (filteredStudents || []).length > 0 && selectedStudents.size === (filteredStudents || []).length
-                                }
-                                onChange={handleSelectAll}
-                              />
-                            </th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filteredStudents.map((s) => {
-                            const isApproved = String(s.ApproveStatus || "").toLowerCase() === "approved";
-                            const checkboxDisabled = isApproved;
-                            return (
-                            <tr key={s.userid || s.__idx || Math.random()}>
-                              
-                              <td>{s.Username}</td>
-                              <td>{s.FirstName}</td>
-                              <td>{s.Email}</td>
-                              <td>{s.Gender}</td>
-                              <td>{s.ABC_UniqueID}</td>
-                              <td>{s.College}</td>
-                              <td>{s.ApproveStatus || "Pending"}</td>
-                              <td>
-                                <Form.Check
-                                  type="checkbox"
-                                  checked={selectedStudents.has(s.userid)}
-                                  onChange={(e) => handleSelectStudent(e, s.userid)}
-                                  disabled={checkboxDisabled}
-                                />
-                              </td>
-                            </tr>
-                          );
-                          })}
-                        </tbody>
-                      </Table>
-                    </div>
-                  )}
-
-                  {/* Counts: Total / Approved / To Be Approved (Pending) */}
-                  {students.length > 0 && (
-                    <div className="mt-3 d-flex gap-2 align-items-center">
-                      <div className="p-2 rounded border bg-light">
-                        <div className="text-muted small">Total Students</div>
-                        <div className="fw-bold">{studentCounts.total}</div>
-                      </div>
-                      <div className="p-2 rounded border bg-light">
-                        <div className="text-muted small">Approved</div>
-                        <div className="fw-bold">{studentCounts.approved}</div>
-                      </div>
-                      <div className="p-2 rounded border bg-light">
-                        <div className="text-muted small">To Be Approved</div>
-                        <div className="fw-bold">{studentCounts.pending}</div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="d-flex gap-2">
-                    <Button
-                      variant="secondary"
-                      onClick={() => setSelectedStudents(new Set())}
-                      disabled={approving}
-                    >
-                      Clear Selection
-                    </Button>
-
-                    <Button
-                      variant="success"
-                      onClick={handleApprove}
-                      disabled={approving || selectedStudents.size === 0 || userRole !== "AppGenesis"}
-                    >
-                      {approving ? (
-                        <>
-                          <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
-                          Approving...
-                        </>
+                  <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k || "pending")} className="mb-3">
+                    <Tab eventKey="approved" title={`Approved (${studentCounts.approved})`}>
+                      {loading ? (
+                        <div className="text-center my-4">
+                          <Spinner animation="border" />
+                        </div>
+                      ) : filteredStudents.length === 0 ? (
+                        <p className="text-muted">No approved records.</p>
                       ) : (
-                        "Approve Selected Students"
+                        <div style={tableWrapperStyle}>
+                          <Table bordered hover className="mb-3" style={{ minWidth: tableMinWidth }}>
+                            <thead className="table-light">
+                              <tr>
+                                <th>Username</th>
+                                <th style={{ minWidth: 200 }}>Full Name</th>
+                                <th style={{ minWidth: 220 }}>Email</th>
+                                <th>Gender</th>
+                                <th>ABC Unique ID</th>
+                                <th style={{ minWidth: 220 }}>College</th>
+                                <th>Approve Status</th>
+                                <th style={{ width: 140 }}>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredStudents.map((s) => {
+                                const key = s.userid || s.__idx || `${s.__idx}-a`;
+                                return (
+                                  <tr key={key}>
+                                    <td>{s.Username}</td>
+                                    <td style={wrapCell}>{s.FirstName}</td>
+                                    <td style={emailCell}>{s.Email}</td>
+                                    <td>{s.Gender}</td>
+                                    <td>{s.ABC_UniqueID}</td>
+                                    <td style={collegeCell} title={s.College}>{s.College}</td>
+                                    <td>{s.ApproveStatus || "Approved"}</td>
+                                    <td>
+                                      <Button variant="outline-secondary" size="sm" disabled>
+                                        Approved
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </Table>
+                        </div>
                       )}
-                    </Button>
-                  </div>
+                    </Tab>
+
+                    <Tab eventKey="pending" title={`Pending (${studentCounts.pending})`}>
+                      {loading ? (
+                        <div className="text-center my-4">
+                          <Spinner animation="border" />
+                        </div>
+                      ) : filteredStudents.length === 0 ? (
+                        <p className="text-muted">No pending students for approval.</p>
+                      ) : (
+                        <div style={tableWrapperStyle}>
+                          
+                          <Table bordered hover className="mb-3" style={{ minWidth: tableMinWidth }}>
+                            <thead className="table-light">
+                              <tr>
+                                <th>Username</th>
+                                <th style={{ minWidth: 200 }}>Full Name</th>
+                                <th style={{ minWidth: 220 }}>Email</th>
+                                <th>Gender</th>
+                                <th>ABC Unique ID</th>
+                                <th style={{ minWidth: 220 }}>College</th>
+                                <th>Approve Status</th>
+                                <th style={{ width: 140 }}>Action</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {filteredStudents.map((s) => {
+                                const key = s.userid || s.__idx;
+                                const isApproved =
+                                  String(s.ApproveStatus || "").toLowerCase() === "approved" ||
+                                  String(s.ApproveStatus || "").toLowerCase() === "y";
+                                const isProcessing = approvingIds.has(s.userid);
+                                return (
+                                  <tr key={key}>
+                                    <td>{s.Username}</td>
+                                    <td style={wrapCell}>{s.FirstName}</td>
+                                    <td style={emailCell}>{s.Email}</td>
+                                    <td>{s.Gender}</td>
+                                    <td>{s.ABC_UniqueID}</td>
+                                    <td style={collegeCell} title={s.College}>{s.College}</td>
+                                    <td>{s.ApproveStatus || "Pending"}</td>
+                                    <td>
+                                      <Button
+                                        variant="success"
+                                        size="sm"
+                                        disabled={isApproved || isProcessing || (userRole && userRole !== "AppGenesis")}
+                                        onClick={() => handleApproveRow(s.userid)}
+                                      >
+                                        {isProcessing ? (
+                                          <>
+                                            <Spinner as="span" animation="border" size="sm" role="status" className="me-2" />
+                                            Approving...
+                                          </>
+                                        ) : (
+                                          "Approve"
+                                        )}
+                                      </Button>
+                                    </td>
+                                  </tr>
+                                );
+                              })}
+                            </tbody>
+                          </Table>
+                        </div>
+                      )}
+                    </Tab>
+                  </Tabs>
                 </div>
               </div>
             </div>
@@ -690,7 +512,7 @@ const ApproveStudentsPage = () => {
 
           {/* footer */}
           <div className="section-body mt-2">
-            <div className="container-fluid">
+            <div className="container-fluid px-3">
               <Footer />
             </div>
           </div>
@@ -701,4 +523,3 @@ const ApproveStudentsPage = () => {
 };
 
 export default ApproveStudentsPage;
-

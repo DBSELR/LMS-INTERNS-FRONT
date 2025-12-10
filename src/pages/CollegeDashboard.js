@@ -26,6 +26,8 @@ function CollegeDashboard() {
     examCount: 0,
     contentReadPercentPerBatch: 0,
     liveClassAttendancePercentPerBatch: 0,
+    objectiveExamAttendancePercentPerBatch: 0,
+  subjectiveExamAttendancePercentPerBatch: 0,
   });
 
   useEffect(() => {
@@ -131,6 +133,8 @@ function CollegeDashboard() {
         data.LiveClassAttendancePercentPerBatch !== null
       ? Number(data.LiveClassAttendancePercentPerBatch)
       : 0,
+      objectiveExamAttendancePercentPerBatch: Number(data.objectiveExamAttendancePercentPerBatch || 0),
+  subjectiveExamAttendancePercentPerBatch: Number(data.subjectiveExamAttendancePercentPerBatch || 0),
         };
         
         console.log("Processed summary data:", summaryData);

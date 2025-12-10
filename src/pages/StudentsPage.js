@@ -739,11 +739,11 @@ function StudentsPage() {
                                                                     <h5 className="font-weight-bold mb-1">
                                                                       {student.firstName ||
                                                                         ""}{" "}
-                                                                      {student.lastName ||
+                                                                      {/* {student.lastName ||
                                                                         ""}
                                                                       {!student.firstName &&
                                                                         !student.lastName &&
-                                                                        student.username}
+                                                                        student.username} */}
                                                                     </h5>
                                                                     <p className="text-muted small mb-1">
                                                                       <strong>
