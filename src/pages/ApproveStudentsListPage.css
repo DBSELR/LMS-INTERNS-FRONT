@@ -1,0 +1,526 @@
+/* File: ApproveStudentsListPage.css */
+
+/* ============================================= */
+/* Variables & Reset                             */
+/* ============================================= */
+:root {
+  --primary-color: #4f46e5;
+  /* Indigo 600 */
+  --primary-hover: #4338ca;
+  /* Indigo 700 */
+  --secondary-bg: #f3f4f6;
+  /* Gray 100 */
+  --surface-bg: #ffffff;
+  --text-main: #111827;
+  /* Gray 900 */
+  --text-muted: #6b7280;
+  /* Gray 500 */
+
+  --success-bg: #dcfce7;
+  /* Green 100 */
+  --success-text: #166534;
+  /* Green 800 */
+  --warning-bg: #fef9c3;
+  /* Yellow 100 */
+  --warning-text: #854d0e;
+  /* Yellow 800 */
+
+  --border-color: #e5e7eb;
+  /* Gray 200 */
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-highlight: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+.approve-students-page {
+  background-color: var(--secondary-bg);
+  min-height: 100vh;
+  padding-bottom: 2rem;
+  font-family: var(--font-sans);
+}
+
+/* ============================================= */
+/* Hero Section                                  */
+/* ============================================= */
+
+
+.dashboard-hero-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: auto;
+    align-items: center;
+    text-align: center;
+    justify-content: center;
+
+}
+
+.dashboard-hero-title i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.dashboard-hero-sub {
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  font-size: 1rem;
+}
+
+/* ============================================= */
+/* Filter Section                                */
+/* ============================================= */
+.filter-section {
+  background: var(--surface-bg);
+  padding: 1.25rem;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 0;
+  /* Connected to table */
+}
+
+/* Alert Modern */
+.approvals-alert-modern {
+  border-radius: var(--radius-md);
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+}
+
+.filter-grid {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-item {
+  flex: 1;
+  min-width: 260px;
+}
+
+.filter-item.overview-item {
+  flex: 0 0 auto;
+  min-width: auto;
+}
+
+.form-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+/* Modern Inputs */
+.modern-select,
+.modern-input {
+  display: block;
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-main);
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.modern-select:focus,
+.modern-input:focus {
+  border-color: var(--primary-color);
+  outline: 0;
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.select-wrapper {
+  position: relative;
+}
+
+/* Search Box */
+.search-input-wrapper {
+  position: relative;
+}
+
+.search-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding-left: 2.75rem !important;
+}
+
+/* Overview Stats Pills */
+.overview-stats {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--secondary-bg);
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  min-width: 80px;
+}
+
+.stat-pill--approved {
+  background: var(--success-bg);
+  border-color: #bbf7d0;
+}
+
+.stat-pill--pending {
+  background: var(--warning-bg);
+  border-color: #fef08a;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.stat-pill--approved .stat-label {
+  color: var(--success-text);
+  opacity: 0.8;
+}
+
+.stat-pill--pending .stat-label {
+  color: var(--warning-text);
+  opacity: 0.8;
+}
+
+.stat-value {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+
+.stat-pill--approved .stat-value {
+  color: var(--success-text);
+}
+
+.stat-pill--pending .stat-value {
+  color: var(--warning-text);
+}
+
+
+/* ============================================= */
+/* Tabs & Table                                  */
+/* ============================================= */
+.modern-tabs {
+  border-bottom: none;
+  background: var(--surface-bg);
+  padding: 0 1.25rem;
+  gap: 1.5rem;
+}
+
+.modern-tabs .nav-link {
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  padding: 1rem 0.5rem;
+  background: transparent !important;
+  transition: all 0.2s;
+  border-radius: 0;
+  margin: 0;
+}
+
+.modern-tabs .nav-link:hover {
+  color: var(--primary-color);
+}
+
+.modern-tabs .nav-link.active {
+  color: var(--primary-color);
+  border-bottom-color: var(--primary-color);
+}
+
+.tab-title-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tab-icon-main {
+  font-size: 1rem;
+}
+
+.tab-badge-count {
+  background: var(--text-muted);
+  color: white;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 10px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.tab-badge-count.success {
+  background: #10b981;
+}
+
+.tab-content-wrapper {
+  background: var(--surface-bg);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  min-height: 400px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* ============================================= */
+/* Modern Table                                  */
+/* ============================================= */
+.table-container {
+  overflow-x: auto;
+  overflow-y: auto;
+  padding-bottom: 1rem;
+  height: 400px;
+}
+
+.modern-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.modern-table thead th {
+  background: #f9fafb;
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  white-space: nowrap;
+}
+
+.modern-table tbody tr {
+  transition: background-color 0.15s;
+}
+
+.modern-table tbody tr:hover {
+  background-color: #f9fafb;
+}
+
+.modern-table tbody td {
+  padding: 1rem 1.5rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.9rem;
+}
+
+.modern-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Cell Contents */
+.student-cell {
+  display: flex;
+  align-items: center;
+}
+
+.student-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.student-username {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.email-cell-content {
+  color: var(--text-muted);
+  font-family: 'Segoe UI', sans-serif;
+  /* Keep monospace tweak simple */
+}
+
+/* Badges */
+.badge-soft {
+  display: inline-flex;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.badge-soft--id {
+  background: #eff6ff;
+  color: #2563eb;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.status-badge--approved {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid #bbf7d0;
+}
+
+.status-badge--pending {
+  background-color: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid #fef08a;
+}
+
+/* Action Buttons */
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  min-width: 110px;
+}
+
+.action-button--approve {
+  background-color: var(--primary-color);
+  color: white;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+.action-button--approve:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.action-button--approve:disabled {
+  background-color: var(--text-muted);
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.action-button--locked {
+  background-color: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  cursor: default;
+}
+
+/* ============================================= */
+/* Empty & Loading States                        */
+/* ============================================= */
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--text-muted);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 1rem;
+  text-align: center;
+}
+
+.empty-icon-bg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--secondary-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.empty-icon-bg i {
+  font-size: 2rem;
+  color: var(--text-muted);
+}
+
+.empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 0.5rem;
+}
+
+.empty-subtitle {
+  color: var(--text-muted);
+  max-width: 300px;
+}
+
+/* ============================================= */
+/* Mobile Responsive                             */
+/* ============================================= */
+@media (max-width: 768px) {
+  .filter-grid {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .filter-item {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .overview-stats {
+    width: 100%;
+  }
+
+  .stat-pill {
+    flex: 1;
+  }
+
+  .action-button {
+    width: 100%;
+  }
+}

@@ -169,10 +169,11 @@ import TermsAndConditions from "./pages/Tc/TermsAndConditions";
 import ReturnExchangePolicy from "./pages/Tc/ReturnExchangePolicy";
 import RefundPolicy from "./pages/Tc/RefundPolicy";
 import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
-import ApproveStudents from "./pages/ApproveStudentsPage.jsx";
 import PaymentResult from "./pages/PaymentResult.js";
 import AdminSubjectiveExamsAttendanceAnalytics from "./pages/AdminSubjectiveExamsAttendanceAnalytics";
 import AdminObjectiveExamsAttendanceAnalytics from "./pages/AdminObjectiveExamsAttendanceAnalytics";
+import ApproveStudentsPage from "./pages/ApproveStudentsPage.js";
+import ApproveStudentsListPage from "./pages/ApproveStudentsListPage.js";
 
 
 function App() {
@@ -530,11 +531,13 @@ function App() {
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
-        <Route
-          path="/ApproveStudents"
+       
+
+         <Route
+          path="/approve-students"
           element={
             <ProtectedRoute>
-              <ApproveStudents />
+              <ApproveStudentsListPage />
             </ProtectedRoute>
           }
         />

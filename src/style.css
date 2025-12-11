@@ -4572,3 +4572,199 @@ background-size: cover; */
 
 
 /* PaymentStatus end */
+
+
+
+/* ApproveStudentsListPage start */
+
+
+/* ApproveStudentsListPage end  *//* =========================================
+   ApproveStudentsListPage Mobile & Redesign
+   ========================================= */
+
+/* Mobile Student Card */
+.mobile-student-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+}
+
+.mobile-student-card:active {
+    transform: scale(0.98);
+}
+
+.mobile-card-header {
+    padding: 1rem;
+    border-bottom: 1px solid #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.mobile-card-body {
+    padding: 1rem;
+}
+
+.mobile-card-footer {
+    padding: 0.75rem 1rem;
+    background-color: #fbfffe;
+    border-top: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Enhancements for Avatar in Cards */
+.mobile-student-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.25rem;
+    margin-right: 12px;
+    box-shadow: 0 4px 10px rgba(118, 75, 162, 0.3);
+}
+
+.mobile-student-info h6 {
+    margin: 0;
+    font-weight: 700;
+    color: #333;
+    font-size: 1rem;
+}
+
+.mobile-student-info span {
+    font-size: 0.85rem;
+    color: #888;
+}
+
+/* Data Rows in Card */
+.card-data-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+}
+
+.card-data-row:last-child {
+    margin-bottom: 0;
+}
+
+.card-label {
+    color: #999;
+    font-weight: 500;
+}
+
+.card-value {
+    color: #333;
+    font-weight: 600;
+    text-align: right;
+    max-width: 65%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsive Table Visibility */
+@media (max-width: 767px) {
+    .responsive-table {
+        display: none;
+    }
+}
+
+/* Search bar refinements for mobile */
+@media (max-width: 576px) {
+    .dashboard-hero-title {
+        font-size: 1.5rem;
+    }
+
+    .approvals-chip {
+        padding: 0.25rem 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .form-row-top {
+        gap: 0.5rem;
+    }
+}
+
+/* Custom Approvals Chip (Top Summary) */
+.approvals-chip {
+    display: inline-flex;
+    align-items: center;
+    background: #f8f9fa;
+    border-radius: 20px;
+    padding: 0.35rem 0.85rem;
+    margin-right: 0.5rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    border: 1px solid #e9ecef;
+}
+
+.approvals-chip .chip-label {
+    color: #6c757d;
+    margin-right: 6px;
+    font-weight: 500;
+}
+
+.approvals-chip .chip-value {
+    font-weight: 700;
+    color: #343a40;
+}
+
+.approvals-chip--success {
+    background: #e6fffa;
+    border-color: #b2f5ea;
+}
+
+.approvals-chip--success .chip-value {
+    color: #28a745;
+}
+
+.approvals-chip--warning {
+    background: #fffaf0;
+    border-color: #fce588;
+}
+
+.approvals-chip--warning .chip-value {
+    color: #d69e2e;
+}
+/* Fix for Horizontal Scroll on Table Only */
+.table-scroll {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+}
+
+/* Ensure the table inside imposes width to cause scroll if needed */
+.table-scroll table {
+    width: 100%;
+    min-width: 1000px;
+    /* Forces scrollbar on screens smaller than 1000px if container is smaller */
+    margin-bottom: 0;
+}
+
+/* Ensure body doesn't scroll horizontally */
+body {
+    overflow-x: hidden;
+}
+
+/* Ensure main content wrapper doesn't overflow */
+.section-body,
+.container-fluid {
+    overflow-x: hidden;
+}
