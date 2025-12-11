@@ -172,8 +172,8 @@ import BulkUploadStudents from "./components/students/BulkUploadStudents.jsx";
 import PaymentResult from "./pages/PaymentResult.js";
 import AdminSubjectiveExamsAttendanceAnalytics from "./pages/AdminSubjectiveExamsAttendanceAnalytics";
 import AdminObjectiveExamsAttendanceAnalytics from "./pages/AdminObjectiveExamsAttendanceAnalytics";
-import ApproveStudentsPage from "./pages/ApproveStudentsPage.js";
 import ApproveStudentsListPage from "./pages/ApproveStudentsListPage.js";
+
 
 
 function App() {

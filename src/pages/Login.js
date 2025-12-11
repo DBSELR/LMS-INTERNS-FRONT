@@ -125,7 +125,7 @@ function Login() {
           navigate("/director-dashboard");
           break;
           case "AppGenesis":
-          navigate("/ApproveStudents");
+          navigate("/approve-students");
           break;
 
         default:
