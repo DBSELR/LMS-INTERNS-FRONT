@@ -24,6 +24,8 @@ function AdminDashboard() {
     liveClassAttendancePercentPerBatch: 0,
     objectiveExamAttendancePercentPerBatch: 0,
   subjectiveExamAttendancePercentPerBatch: 0,
+  studentApprovalSummary: { total: 0, approved: 0, pending: 0 },
+
   });
   const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
@@ -85,6 +87,11 @@ function AdminDashboard() {
                 : 0,
                   objectiveExamAttendancePercentPerBatch: Number(data.objectiveExamAttendancePercentPerBatch || 0),
   subjectiveExamAttendancePercentPerBatch: Number(data.subjectiveExamAttendancePercentPerBatch || 0),
+   studentApprovalSummary: {
+    total: data.studentApprovalSummary?.total || 0,
+    approved: data.studentApprovalSummary?.approved || 0,
+    pending: data.studentApprovalSummary?.pending || 0
+  }
           });
         } catch (err) {
           console.error("Failed to fetch dashboard summary", err);
@@ -191,34 +198,32 @@ function AdminDashboard() {
   link: "/SubjectiveExams-attendance-analytics",
 },
 
-                  
-                ].map((item, idx) => (
-                  <div className="col-12 col-sm-6 col-lg-3 mb-3" key={idx}>
-                    <div
-                      className="welcome-card dashboard-card animate-welcome text-center"
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => navigate(item.link)}
-                      onKeyDown={(e) =>
-                        (e.key === "Enter" || e.key === " ") &&
-                        navigate(item.link)
-                      }
-                      title={`Go to ${item.label}`}
-                      aria-label={`Open ${item.label}`}
-                    >
-                      <i
-                        className={`fa ${item.icon} dashboard-icon text-primary`}
-                        aria-hidden="true"
-                      />
-                      <div className="dashboard-label text-dark fw-1000">
-                        {item.label}
-                      </div>
-                      <div className="dashboard-count text-dark fw-bold">
-                        {item.value}
-                      </div>
-                    </div>
-                  </div>
-                ))}
+          {
+  label: "Total/Approved/Pending",
+  value: `${summary.studentApprovalSummary.total} / ${summary.studentApprovalSummary.approved} / ${summary.studentApprovalSummary.pending}`,
+  icon: "fa-users",
+  link: "/approve-students"
+},
+].map((item, idx) => (
+  <div className="col-12 col-sm-6 col-lg-3 mb-3" key={idx}>
+    <div
+      className="welcome-card dashboard-card animate-welcome text-center"
+      role="button"
+      tabIndex={0}
+      onClick={() => navigate(item.link)}
+      onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && navigate(item.link)}
+      title={`Go to ${item.label}`}
+      aria-label={`Open ${item.label}`}
+    >
+      <i className={`fa ${item.icon} dashboard-icon text-primary`} aria-hidden="true" />
+      <div className="dashboard-label text-dark fw-1000">{item.label}</div>
+      <div className="dashboard-count text-dark fw-bold">
+        {/* if value is JSX (approval card), render it; otherwise render value */}
+        {typeof item.value === "object" && !!item.value.props ? item.value : item.value}
+      </div>
+    </div>
+  </div>
+))}
               </div>
             </div>
           </div>
