@@ -1,3 +1,4 @@
+// File: src/pages/Collegewisestudents.jsx
 import React, { useState, useEffect } from "react";
 import HeaderTop from "../components/HeaderTop";
 import RightSidebar from "../components/RightSidebar";
@@ -28,6 +29,61 @@ function Collegewisestudents() {
 
   const [activeTab] = useState("batch");
   const [allOpen, setAllOpen] = useState(false);
+
+  // ---- Modern Dashboard Style (Option B) ----
+  const universityStyle = {
+    color: "#1E3A8A", // Dark Blue
+    fontWeight: 700,
+    fontSize: "16px",
+    padding: "12px 10px",
+  };
+
+  const collegeStyle = {
+    color: "#7C3AED", // Purple
+    fontWeight: 700,
+    fontSize: "15px",
+    padding: "10px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  };
+
+  const programmeStyle = {
+    color: "#0F766E", // Teal/Green
+    fontWeight: 600,
+    fontSize: "14px",
+    padding: "8px 8px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+  };
+
+  const groupStyle = {
+    color: "#374151", // Gray
+    fontWeight: 500,
+    fontSize: "13px",
+    padding: "6px 8px",
+  };
+
+  const countStyle = {
+    color: "#6B7280", // cool gray
+    fontSize: "13px",
+    fontWeight: 600,
+    marginLeft: "8px",
+  };
+
+  const cardWrapperStyle = {
+    background: "#FFFFFF",
+    border: "1px solid #E6E9EE",
+    borderRadius: "10px",
+    padding: "12px",
+    marginBottom: "10px",
+    boxShadow: "0 1px 4px rgba(18, 24, 39, 0.03)",
+  };
+
+  const smallToggleIconStyle = { marginLeft: 10, color: "#6B7280" };
+
+  // --------------------------------------------
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
@@ -230,28 +286,30 @@ function Collegewisestudents() {
 
   const groupedStudents = getGroupedStudents(filteredStudents);
 
-  // helper: count students in a college object (college -> programmes -> groups -> arrays)
-  const countStudentsInCollege = (collegeObj) => {
-    let c = 0;
-    Object.values(collegeObj).forEach((programmeObj) => {
-      Object.values(programmeObj).forEach((groupsObj) => {
-        Object.values(groupsObj).forEach((studentsArr) => {
-          c += Array.isArray(studentsArr) ? studentsArr.length : 0;
-        });
-      });
-    });
-    return c;
+  // New robust helpers:
+
+  // Count students in a programme (groups -> arrays of students)
+  const countStudentsInProgramme = (groupsObj) => {
+    if (!groupsObj) return 0;
+    // groupsObj structure: { groupName1: [students...], groupName2: [students...], ... }
+    return Object.values(groupsObj).reduce((sum, groupVal) => {
+      if (Array.isArray(groupVal)) return sum + groupVal.length;
+      // if groupVal is an object (rare), try to detect students array inside
+      if (groupVal && typeof groupVal === "object") {
+        if (Array.isArray(groupVal.students)) return sum + groupVal.students.length;
+        // fallback: count any nested arrays present
+        return Object.values(groupVal).reduce((s, v) => s + (Array.isArray(v) ? v.length : 0), 0);
+      }
+      return sum;
+    }, 0);
   };
 
-  // helper: count students in a programme (programme -> groups -> arrays)
-  const countStudentsInProgramme = (programmeObj) => {
-    let c = 0;
-    Object.values(programmeObj).forEach((groupsObj) => {
-      Object.values(groupsObj).forEach((studentsArr) => {
-        c += Array.isArray(studentsArr) ? studentsArr.length : 0;
-      });
-    });
-    return c;
+  // Count students in a college (programmesObj -> programmeName: groupsObj)
+  const countStudentsInCollege = (programmesObj) => {
+    if (!programmesObj) return 0;
+    return Object.values(programmesObj).reduce((sum, groupsObj) => {
+      return sum + countStudentsInProgramme(groupsObj);
+    }, 0);
   };
 
   useEffect(() => {
@@ -337,10 +395,6 @@ function Collegewisestudents() {
     }
   };
 
-  // styles you can tweak
-  const universityStyle = { color: "#0b5ed7", fontWeight: 600 }; // blue
-  const collegeStyle = { color: "#b045ff", fontWeight: 600 }; // purple-ish
-
   return (
     <div id="main_content" className="font-muli theme-blush">
       <HeaderTop />
@@ -394,34 +448,31 @@ function Collegewisestudents() {
                       value={searchText}
                       onChange={(e) => setSearchText(e.target.value)}
                     />
-
-                    {/* <div className="d-flex align-items-center mt-2 mt-md-0">
-                      {["College"].includes(role) && (
-                        <button className="btn btn-primary ml-2" onClick={handleAddNew}>
-                          <i className="fa fa-plus mr-1"></i> Add Student
-                        </button>
-                      )}
-                    </div> */}
                   </div>
 
                   {/* Render grouped students: batch -> university -> college -> programme -> group */}
                   {Object.entries(groupedStudents).map(([batchSemester, unis], bsIndex) => (
-                    <div key={batchSemester} className="mb-3 p-2">
+                    <div key={batchSemester} style={{ marginBottom: 14 }}>
+                      {/* Batch Header */}
                       <div
-                        className="d-flex justify-content-between align-items-center semester-toggle-btn text-blue"
                         onClick={() =>
                           setOpenBatch((prev) => ({
                             ...prev,
                             [bsIndex]: !prev[bsIndex],
                           }))
                         }
-                        style={{ cursor: "pointer" }}
+                        style={{
+                          cursor: "pointer",
+                          ...cardWrapperStyle,
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                        }}
                       >
-                        <div>
+                        <div style={{ fontWeight: 700 }}>
                           <strong>Batch:</strong> {batchSemester.split(" / ")[0]}
                         </div>
-
-                        <i className={`fa ml-2 ${openBatch[bsIndex] ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
+                        <i className={`fa ml-2 ${openBatch[bsIndex] ? "fa-chevron-up" : "fa-chevron-down"}`} style={smallToggleIconStyle}></i>
                       </div>
 
                       <Collapse in={!!openBatch[bsIndex]}>
@@ -429,105 +480,130 @@ function Collegewisestudents() {
                           {Object.entries(unis).map(([uniName, colleges], uniIndex) => {
                             const uniKey = `${bsIndex}-${uniIndex}`;
                             return (
-                              <div key={uniName} className="mb-2 border p-2">
+                              <div key={uniName} style={{ ...cardWrapperStyle }}>
+                                {/* University Header */}
                                 <div
-                                  className={`d-flex justify-content-between align-items-center semester-toggle-btn ${openUniversity[uniKey] ? "bg-secondary" : "bg-dark"}`}
                                   onClick={() =>
                                     setOpenUniversity((prev) => ({
                                       ...prev,
                                       [uniKey]: !prev[uniKey],
                                     }))
                                   }
-                                  style={{ cursor: "pointer" }}
+                                  style={{
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    justifyContent: "space-between",
+                                    alignItems: "center",
+                                    borderRadius: 8,
+                                    background: openUniversity[uniKey] ? "#F3F6FF" : "#FFFFFF",
+                                  }}
                                 >
                                   <div style={universityStyle}>
-                                    <strong>University:</strong> {uniName}
+                                    <strong></strong> {uniName}
                                   </div>
-                                  <i className={`fa ml-2 ${openUniversity[uniKey] ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
+                                  <i className={`fa ml-2 ${openUniversity[uniKey] ? "fa-chevron-up" : "fa-chevron-down"}`} style={smallToggleIconStyle}></i>
                                 </div>
 
                                 <Collapse in={!!openUniversity[uniKey]}>
                                   <div className="mt-2">
                                     {Object.entries(colleges).map(([collegeName, programmes], collegeIndex) => {
                                       const collegeKey = `${bsIndex}-${uniIndex}-${collegeIndex}`;
-                                      const collegeCount = countStudentsInCollege({ [collegeName]: programmes });
+                                      const collegeCount = countStudentsInCollege(programmes);
                                       return (
-                                        <div key={collegeName} className="mb-2 border p-2">
+                                        <div key={collegeName} style={{ ...cardWrapperStyle, marginTop: 10 }}>
+                                          {/* College Header */}
                                           <div
-                                            className={`d-flex justify-content-between align-items-center semester-toggle-btn ${openCollege[collegeKey] ? "bg-secondary" : "bg-dark"}`}
                                             onClick={() =>
                                               setOpenCollege((prev) => ({
                                                 ...prev,
                                                 [collegeKey]: !prev[collegeKey],
                                               }))
                                             }
-                                            style={{ cursor: "pointer" }}
+                                            style={{
+                                              cursor: "pointer",
+                                              display: "flex",
+                                              justifyContent: "space-between",
+                                              alignItems: "center",
+                                              borderRadius: 8,
+                                              background: openCollege[collegeKey] ? "#FAF7FF" : "#FFFFFF",
+                                            }}
                                           >
-                                            <div style={collegeStyle}>
-                                              <strong>College:</strong> {collegeName}{" "}
-                                              <small className="ml-2" style={{ fontWeight: 500, color: "#333" }}>
-                                                ({collegeCount} students)
-                                              </small>
+                                            <div style={{ display: "flex", alignItems: "center" }}>
+                                              <div style={collegeStyle}>
+                                                <span style={{ marginRight: 8, fontWeight: 700 }}>
+                                                  <strong>College:</strong> {collegeName}
+                                                </span>
+                                                <span style={countStyle}>({collegeCount} students)</span>
+                                              </div>
                                             </div>
-                                            <i className={`fa ml-2 ${openCollege[collegeKey] ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
+
+                                            <i className={`fa ml-2 ${openCollege[collegeKey] ? "fa-chevron-up" : "fa-chevron-down"}`} style={smallToggleIconStyle}></i>
                                           </div>
 
                                           <Collapse in={!!openCollege[collegeKey]}>
                                             <div className="mt-2">
                                               {Object.entries(programmes).map(([programmeName, groups], pIndex) => {
                                                 const progKey = `${bsIndex}-${uniIndex}-${collegeIndex}-${pIndex}`;
-                                                const progCount = countStudentsInProgramme({ [programmeName]: groups });
-                                                const groupNames = Object.keys(groups);
+                                                const progCount = countStudentsInProgramme(groups);
+                                                const groupNames = Object.keys(groups || {});
                                                 const hasOnlyDummyGroup =
                                                   groupNames.length === 1 && ["---", "", "Unknown Group", null].includes(groupNames[0]);
 
                                                 return (
-                                                  <div key={programmeName} className="mb-2 border p-2">
+                                                  <div key={programmeName} style={{ ...cardWrapperStyle, marginTop: 8 }}>
+                                                    {/* Programme Header */}
                                                     <div
-                                                      className={`d-flex justify-content-between align-items-center text-white semester-toggle-btn ${openProgramme[progKey] ? "bg-secondary" : "bg-dark"}`}
                                                       onClick={() =>
                                                         setOpenProgramme((prev) => ({
                                                           ...prev,
                                                           [progKey]: !prev[progKey],
                                                         }))
                                                       }
-                                                      style={{ cursor: "pointer" }}
+                                                      style={{
+                                                        cursor: "pointer",
+                                                        display: "flex",
+                                                        justifyContent: "space-between",
+                                                        alignItems: "center",
+                                                        borderRadius: 8,
+                                                        background: openProgramme[progKey] ? "#F0FFF9" : "#FFFFFF",
+                                                      }}
                                                     >
-                                                      <div>
-                                                        <strong>Course:</strong> {programmeName}{" "}
-                                                        <small style={{ fontWeight: 600, color: "#333" }}>
-                                                          ({progCount} students)
-                                                        </small>
+                                                      <div style={programmeStyle}>
+                                                        <span style={{ fontWeight: 700 }}>
+                                                          <strong>Course:</strong> {programmeName}
+                                                        </span>
+                                                        <span style={countStyle}>({progCount} students)</span>
                                                       </div>
-                                                      <i className={`fa ml-2 ${openProgramme[progKey] ? "fa-chevron-up" : "fa-chevron-down"}`}></i>
+
+                                                      <i className={`fa ml-2 ${openProgramme[progKey] ? "fa-chevron-up" : "fa-chevron-down"}`} style={smallToggleIconStyle}></i>
                                                     </div>
 
                                                     <Collapse in={!!openProgramme[progKey]}>
                                                       <div className="semester-panel-body mt-2">
                                                         {hasOnlyDummyGroup ? (
                                                           <div className="row">
-                                                            {groups[groupNames[0]].map((student, idx) => (
-                                                              <div key={`${student.userId || student.UserId}-${idx}`} className="col-lg-4 col-md-6 mb-3">
+                                                            {(groups && groups[groupNames[0]] || []).map((student, idx) => (
+                                                              <div key={`${(student && (student.userId || student.UserId)) || idx}-${idx}`} className="col-lg-4 col-md-6 mb-3">
                                                                 <div className="card shadow-sm h-100 border-0">
                                                                   <div className="card-body d-flex flex-column align-items-center text-center">
-                                                                    <div className="avatar d-inline-block rounded-circle mb-3" style={{ width: "100px", height: "100px", backgroundColor: "#6c757d", textAlign: "center", lineHeight: "100px", fontWeight: "bold", fontSize: "36px" }}>
-                                                                      {((student.firstName || student.FirstName || student.username || student.Username) || "U")[0].toUpperCase()}
+                                                                    <div className="avatar d-inline-block rounded-circle mb-3" style={{ width: "100px", height: "100px", backgroundColor: "#6c757d", textAlign: "center", lineHeight: "100px", fontWeight: "bold", fontSize: "36px", color: "#fff" }}>
+                                                                      {((student && (student.firstName || student.FirstName || student.username || student.Username)) || "U")[0].toUpperCase()}
                                                                     </div>
-                                                                    <h5 className="font-weight-bold mb-1">{student.firstName || student.FirstName || ""} {student.lastName || student.LastName || ""}</h5>
-                                                                    <p className="text-muted small mb-1"><strong>Username:</strong> {student.username || student.Username || "N/A"}</p>
-                                                                    <p className="text-muted small mb-1"><strong>Course:</strong> {student.programme || student.Programme || "N/A"}</p>
-                                                                    <p className="text-muted small mb-1"><strong>mentor:</strong> {(student.mentor || student.Mentor) || "N/A"}</p>
+                                                                    <h5 className="font-weight-bold mb-1">{(student && (student.firstName || student.FirstName)) || ""} {(student && (student.lastName || student.LastName)) || ""}</h5>
+                                                                    <p className="text-muted small mb-1"><strong>Username:</strong> {(student && (student.username || student.Username)) || "N/A"}</p>
+                                                                    <p className="text-muted small mb-1"><strong>Course:</strong> {(student && (student.programme || student.Programme)) || "N/A"}</p>
+                                                                    <p className="text-muted small mb-1"><strong>mentor:</strong> {(student && (student.mentor || student.Mentor)) || "N/A"}</p>
                                                                     <ul className="list-unstyled text-muted small mb-3 mt-2">
-                                                                      <li><i className="fa fa-envelope text-primary mr-1"></i>{student.email || student.Email || "No Email"}</li>
-                                                                      <li><i className="fa fa-phone text-success mr-1"></i>{student.phoneNumber || student.PhoneNumber || "No Phone"}</li>
+                                                                      <li><i className="fa fa-envelope text-primary mr-1"></i>{(student && (student.email || student.Email)) || "No Email"}</li>
+                                                                      <li><i className="fa fa-phone text-success mr-1"></i>{(student && (student.phoneNumber || student.PhoneNumber)) || "No Phone"}</li>
                                                                     </ul>
-                                                                    <span className={`badge px-3 py-2 ${(student.status || student.Status) === "Active" ? "badge-success" : "badge-danger"}`}>{student.status || student.Status || "Inactive"}</span>
+                                                                    <span className={`badge px-3 py-2 ${(student && (student.status || student.Status)) === "Active" ? "badge-success" : "badge-danger"}`}>{(student && (student.status || student.Status)) || "Inactive"}</span>
                                                                     <div className="mt-3">
                                                                       <button className="btn btn-sm btn-outline-primary mr-2" onClick={() => handleView(student)}><i className="fa fa-eye mr-1"></i> View</button>
                                                                       {(role === "Admin" || role === "College") && (
                                                                         <>
                                                                           <button className="btn btn-sm btn-outline-info mr-2 rounded-pill" onClick={() => handleEdit(student)}><i className="fa fa-edit mr-1"></i> Edit</button>
-                                                                          <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={() => handleDelete(student.userId || student.UserId)}><i className="fa fa-trash mr-1"></i> Delete</button>
+                                                                          <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={() => handleDelete((student && (student.userId || student.UserId)) || "")}><i className="fa fa-trash mr-1"></i> Delete</button>
                                                                         </>
                                                                       )}
                                                                     </div>
@@ -537,35 +613,32 @@ function Collegewisestudents() {
                                                             ))}
                                                           </div>
                                                         ) : (
-                                                          Object.entries(groups).map(([groupName, studentsList], gIndex) => (
-                                                            <div key={groupName} className="mb-2 border p-2">
+                                                          Object.entries(groups || {}).map(([groupName, studentsList], gIndex) => (
+                                                            <div key={groupName} style={{ ...cardWrapperStyle, marginBottom: 8 }}>
+                                                              {/* <div className="mt-2" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                                <div style={groupStyle}>
+                                                                  <strong>Group:</strong> {groupName}
+                                                                </div>
+                                                              </div> */}
+
                                                               <div className="mt-2 row">
                                                                 {Array.isArray(studentsList) && studentsList.length > 0 ? (
                                                                   studentsList.map((student, idx) => (
-                                                                    <div key={`${student.userId || student.UserId}-${idx}`} className="col-lg-4 col-md-6 mb-3">
+                                                                    <div key={`${(student && (student.userId || student.UserId)) || idx}-${idx}`} className="col-lg-4 col-md-6 mb-3">
                                                                       <div className="card shadow-sm h-100 border-0">
                                                                         <div className="card-body d-flex flex-column align-items-center text-center">
-                                                                          <div className="avatar d-inline-block rounded-circle mb-3" style={{ width: "100px", height: "100px", backgroundColor: "#6c757d", textAlign: "center", lineHeight: "100px", fontWeight: "bold", fontSize: "36px" }}>
-                                                                            {((student.firstName || student.FirstName || student.username || student.Username) || "U")[0].toUpperCase()}
+                                                                          <div className="avatar d-inline-block rounded-circle mb-3" style={{ width: "100px", height: "100px", backgroundColor: "#6c757d", textAlign: "center", lineHeight: "100px", fontWeight: "bold", fontSize: "36px", color: "#fff" }}>
+                                                                            {((student && (student.firstName || student.FirstName || student.username || student.Username)) || "U")[0].toUpperCase()}
                                                                           </div>
-                                                                          <h5 className="font-weight-bold mb-1">{student.firstName || student.FirstName || ""}</h5>
-                                                                          <p className="text-muted small mb-1"><strong>Username:</strong> {student.username || student.Username || "N/A"}</p>
-                                                                          <p className="text-muted small mb-1"><strong>Course:</strong> {student.programme || student.Programme || "N/A"}</p>
-                                                                          <p className="text-muted small mb-1"><strong>SRO:</strong> {student.mentor || student.Mentor || "N/A"}</p>
+                                                                          <h5 className="font-weight-bold mb-1">{(student && (student.firstName || student.FirstName)) || ""}</h5>
+                                                                          <p className="text-muted small mb-1"><strong>Username:</strong> {(student && (student.username || student.Username)) || "N/A"}</p>
+                                                                          <p className="text-muted small mb-1"><strong>Course:</strong> {(student && (student.programme || student.Programme)) || "N/A"}</p>
+                                                                          <p className="text-muted small mb-1"><strong>SRO:</strong> {(student && (student.mentor || student.Mentor)) || "N/A"}</p>
                                                                           <ul className="list-unstyled text-muted small mb-3 mt-2">
-                                                                            <li><i className="fa fa-envelope text-primary mr-1"></i>{student.email || student.Email || "No Email"}</li>
-                                                                            <li><i className="fa fa-phone text-success mr-1"></i>{student.phoneNumber || student.PhoneNumber || "No Phone"}</li>
+                                                                            <li><i className="fa fa-envelope text-primary mr-1"></i>{(student && (student.email || student.Email)) || "No Email"}</li>
+                                                                            <li><i className="fa fa-phone text-success mr-1"></i>{(student && (student.phoneNumber || student.PhoneNumber)) || "No Phone"}</li>
                                                                           </ul>
-                                                                          <span className={`badge px-3 py-2 ${(student.status || student.Status) === "Active" ? "badge-success" : "badge-danger"}`}>{student.status || student.Status || "Inactive"}</span>
-                                                                          {/* <div className="mt-3">
-                                                                            <button className="btn btn-sm btn-outline-primary mr-2" onClick={() => handleView(student)}><i className="fa fa-eye mr-1"></i> View</button>
-                                                                            {role === "Admin" && (
-                                                                              <>
-                                                                                <button className="btn btn-sm btn-outline-info mr-2 rounded-pill" onClick={() => handleEdit(student)}><i className="fa fa-edit mr-1"></i> Edit</button>
-                                                                                <button className="btn btn-sm btn-outline-danger rounded-pill" onClick={() => handleDelete(student.userId || student.UserId)}><i className="fa fa-trash mr-1"></i> Delete</button>
-                                                                              </>
-                                                                            )}
-                                                                          </div> */}
+                                                                          <span className={`badge px-3 py-2 ${(student && (student.status || student.Status)) === "Active" ? "badge-success" : "badge-danger"}`}>{(student && (student.status || student.Status)) || "Inactive"}</span>
                                                                         </div>
                                                                       </div>
                                                                     </div>
@@ -601,6 +674,12 @@ function Collegewisestudents() {
             </div>
           </div>
 
+          {/* Footer placeholder if needed */}
+          <div className="mt-4">
+            <Footer />
+          </div>
+
+          {/* Modal (kept commented in your original — enable if needed) */}
           {/* {showModal && (
             <div className="modal show fade d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
               <div className="modal-dialog modal-lg" role="document">
