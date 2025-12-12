@@ -54,10 +54,10 @@ const ProfessorsTable = ({
                     <i className="fa fa-phone text-success mr-1"></i>{" "}
                     {prof.phoneNumber}
                   </li>
-                  <li>
+                  {/* <li>
                     <i className="fa fa-calendar text-info mr-1"></i> Joined:{" "}
                     {new Date(prof.accountCreated).toLocaleDateString()}
-                  </li>
+                  </li> */}
                 </ul>
 
                 <span

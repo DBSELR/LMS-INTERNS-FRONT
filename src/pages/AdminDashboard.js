@@ -146,7 +146,7 @@ function AdminDashboard() {
                     label: "Students",
                     value: summary.students,
                     icon: "fa-user-graduate",
-                    link: "/students",
+                    link: "/collegewise-students",
                   },
                   {
                     label: "Courses",

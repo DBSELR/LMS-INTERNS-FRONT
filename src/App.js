@@ -46,6 +46,7 @@ import RegisterPage from "./pages/RegisterPage";
 import SettingsPage from "./pages/SettingsPage";
 import StaffPage from "./pages/StaffPage";
 import StudentsPage from "./pages/StudentsPage";
+import Collegewisestudents from "./pages/Collegewisestudents";
 import TaskboardPage from "./pages/TaskboardPage";
 import TransportPage from "./pages/TransportPage";
 import IndexPage from "./pages/IndexPage";
@@ -299,6 +300,7 @@ function App() {
         <Route path="/inbox" element={<ProtectedRoute><Inbox /></ProtectedRoute>} />
         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
         <Route path="/students" element={<ProtectedRoute><StudentsPage /></ProtectedRoute>} />
+        <Route path="/collegewise-students" element={<ProtectedRoute><Collegewisestudents /></ProtectedRoute>} />
         <Route path="/taskboard" element={<ProtectedRoute><TaskboardPage /></ProtectedRoute>} />
         <Route path="/transport" element={<ProtectedRoute><TransportPage /></ProtectedRoute>} />
         {/* <Route path="/" element={<IndexPage />} /> */}
