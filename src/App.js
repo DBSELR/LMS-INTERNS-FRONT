@@ -124,6 +124,7 @@ import InstructorExaminations from "./pages/InstructorExaminations";
 
 import StudentExaminations from "./pages/StudentExaminations";
 import CollegeDashboard from "./pages/CollegeDashboard";
+import AppGenesisDashboard from "./pages/AppGenesisDashboard";
 
 import InstructorEnterMarks from "./pages/InstructorEnterMarks";
 import AdminViewAllMarks from "./pages/AdminViewAllMarks";
@@ -530,6 +531,7 @@ function App() {
         <Route path="/viewdiscussions" element={<ProtectedRoute><ViewDiscussions /></ProtectedRoute>} />
         <Route path="/casestudy" element={<ProtectedRoute><CaseStudy /></ProtectedRoute>} />
         <Route path="/college-dashboard" element={<ProtectedRoute><CollegeDashboard /></ProtectedRoute>} />
+        <Route path="/appGenesis-dashboard" element={<ProtectedRoute><AppGenesisDashboard /></ProtectedRoute>} />
         <Route path="/transactions" element={<ProtectedRoute><Transactions /></ProtectedRoute>} />
        
 
