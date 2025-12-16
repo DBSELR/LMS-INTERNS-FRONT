@@ -81,14 +81,14 @@ const Recordedclasses = () => {
         );
         if (!res.ok) throw new Error((await res.text()) || "Failed to fetch classes");
         const classData = await res.json();
-
+        console.log('[Recordedclasses] fetched classes:', classData);
         const rc = await fetch(
           `${API_BASE_URL}/course/by-instructor/${instructorId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (!rc.ok) throw new Error((await rc.text()) || "Failed to fetch assigned courses");
         const courseData = await rc.json();
-
+        console.log('[Recordedclasses] fetched courses:', courseData);
         setClasses(Array.isArray(classData) ? classData : []);
         setAssignedCourses(Array.isArray(courseData) ? courseData : []);
       } catch (err) {
@@ -186,14 +186,22 @@ const Recordedclasses = () => {
 
   // ===== Actions =====
   const openPlayer = (src, title) => {
+    console.log('[Recordedclasses] openPlayer called with src:', src);
+    if (!src) console.warn('[Recordedclasses] openPlayer called without src');
     setActiveVideoSrc(src);
     setActiveTitle(title || "Recording");
     setShowPlayer(true);
   };
   const closePlayer = () => {
+    console.log('[Recordedclasses] closePlayer');
     setShowPlayer(false);
     setActiveVideoSrc(null);
   };
+
+  // Debug: log player state changes
+  useEffect(() => {
+    console.log('[Recordedclasses] player state:', { showPlayer, activeVideoSrc });
+  }, [showPlayer, activeVideoSrc]);
 
   /* ===== Styles matching InstructorLiveClassManage ===== */
   const styles = {
@@ -341,7 +349,7 @@ const Recordedclasses = () => {
                                     } ${c.batchName ? `• ${c.batchName}` : ""}`
                                   : cls.className;
 
-                                const playSrc = resolveUrl(cls._recording, API_BASE_URL);
+                                const playSrc = resolveUrl(cls._recording, API_BASE_URL.replace(/\/api$/i, ''));
 
                                 return (
                                   <div
@@ -418,6 +426,9 @@ const Recordedclasses = () => {
               key={activeVideoSrc}
               src={activeVideoSrc}
               controls
+              onLoadedMetadata={(e) => console.log('[Recordedclasses] video loadedmetadata', e)}
+              onCanPlay={() => console.log('[Recordedclasses] video canplay')}
+              onError={(e) => console.error('[Recordedclasses] video error', e)}
               style={{ width: "100%", borderRadius: 12 }}
             />
           ) : (
