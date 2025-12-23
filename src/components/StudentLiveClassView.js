@@ -217,7 +217,7 @@ const StudentLiveClassView = () => {
                 <button type="button" className="btn-close" onClick={() => setShowVideoModal(false)}></button>
               </div>
             <div className="modal-body">
-  <p className="text-muted">📺 URL: {selectedVideoUrl}</p>
+  {/* <p className="text-muted">📺 URL: {selectedVideoUrl}</p> */}
   <video width="100%" height="auto" controls onError={(e) => console.error("❌ Video load error:", e)}>
     <source
   src={selectedVideoUrl}

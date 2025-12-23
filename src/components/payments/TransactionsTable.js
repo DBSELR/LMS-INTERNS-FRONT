@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { jwtDecode } from "jwt-decode";
 import API_BASE_URL from "../../config";
 import { Button } from "react-bootstrap";
+import axios from "axios"; // ✅ FIX 1: axios imported
+
 
 function TransactionsTable() {
   const [transactions, setTransactions] = useState([]);
@@ -129,69 +131,61 @@ function TransactionsTable() {
     return sum + balance;
   }, 0);
 
-  const handleBulkPay = async () => {
-    if (selectedKeys.size === 0) {
-      setError("Please select at least one student to pay.");
-      return;
-    }
-
+// replace existing handlePayNow with this
+const handlePayNow = async () => {
+  try {
     const token = localStorage.getItem("jwt");
 
-    // Build payload: pay the *remaining balance* by default
-    const items = transactions
-      .filter((t) => selectedKeys.has(rowKey(t)))
-      .map((t) => {
-        const amountDue = Number(t.amountDue || 0);
-        const paid = Number(t.paid || 0);
-        const balance = Math.max(0, amountDue - paid);
+    // Build payments array (one row per selected item) using balance = amountDue - paid
+    const payments = selectedItems.map((r) => {
+      const amountDue = Number(r.amountDue || 0);
+      const paid = Number(r.paid || 0);
+      const balance = Math.max(0, amountDue - paid);
+      return {
+        userId: r.studentId || r.studentID, // matches backend UserPaymentDto.UserId
+        hid: r.hid,
+        amount: balance
+      };
+    });
 
-        return {
-          StudentID: String(t.studentId ?? t.studentID ?? ""), // backend expects string
-          Amount: balance, // pay remaining; change if you want custom input
-          Installment: Number(t.installment || 0),
-          PaymentMethod: "Cash", // or drive from a dropdown
-          TransactionId:
-            crypto?.randomUUID?.() ??
-            `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-          payHeadID: Number(t.hid), // maps to HeadID in SP
-          ftid: Number(t.ftid || 0), // fee transaction ID
-        };
-      })
-      .filter((x) => x.StudentID && x.Amount > 0);
-
-    if (items.length === 0) {
-      setError("Selected rows have no payable balance.");
+    if (payments.length === 0) {
+      alert("No selectable rows chosen.");
       return;
     }
 
-    try {
-      setLoading(true);
-      setError("");
+    const totalAmount = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
 
-      const res = await fetch(`${API_BASE_URL}/Fee/BulkPay`, {
-        method: "POST",
+    const payload = {
+      username: "TempCollegeName", // or loggedInUser.username
+      mobileNo: "9999999999",      // backend expects mobileNo (camelCase)
+      name: "TempUserName",
+      payments // list of { userId, hid, amount }
+    };
+
+    console.log("📤 Multi-payment payload:", payload, "total:", totalAmount);
+
+    const res = await axios.post(
+      `${API_BASE_URL}/payments/initiate-multi-payment`,
+      payload,
+      {
         headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify(items),
-      });
-
-      if (!res.ok) {
-        const txt = await res.text();
-        throw new Error(`${res.status} ${txt}`);
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
       }
+    );
 
-      // success: refresh table
-      await fetchTransactions(userId);
-      setSelectedKeys(new Set());
-    } catch (err) {
-      console.error("BulkPay failed:", err);
-      setError("Failed to save bulk payments.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // backend returns redirectUrl + merchantOrderId + insertedRows
+    window.location.href = res.data.redirectUrl;
+  } catch (err) {
+    console.error("❌ Payment initiation failed:", err);
+    alert("Unable to initiate payment. Please try again.");
+  }
+};
+
+
+
+
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
@@ -456,7 +450,7 @@ function TransactionsTable() {
             <div className="col-md-3">
               <Button
                 variant="primary"
-                onClick={handleBulkPay}
+                onClick={handlePayNow}
                 disabled={selectedKeys.size === 0 || loading}
               >
                 {loading
