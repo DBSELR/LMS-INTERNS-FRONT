@@ -18,7 +18,10 @@ const StudentFeeView = () => {
 
   const [studentInfo, setStudentInfo] = useState({
     studentId: "",
-    name: ""
+    sname: "",
+    mobile: "",
+    course: "",
+    batch: ""
   });
 
   // ---------------- FETCH DATA ----------------
@@ -45,10 +48,13 @@ const StudentFeeView = () => {
 
     setStudentInfo({
       studentId,
-      name:
+      mobile: decoded.mobile || "",
+      course: decoded.course || "",
+      batch: decoded.batch || "",
+      sname:
         decoded.FullName ||
         decoded.fullName ||
-        decoded.name ||
+        decoded.sname ||
         decoded.unique_name ||
         ""
     });
@@ -110,6 +116,8 @@ const StudentFeeView = () => {
 
       const studentName = fee.sname || studentInfo.name || "Student";
       const studentMobile = fee.mobile || "9999999999";
+      const studentCourse = fee.course || studentInfo.course || "Course";
+      const studentBatch = fee.batch || studentInfo.batch || "Batch";
 
       console.log("Student name from fee:", studentName);
       console.log("Student mobile from fee:", studentMobile);
@@ -118,6 +126,8 @@ const StudentFeeView = () => {
         username: studentName,
         mobileNo: studentMobile,
         name: studentName,
+        course: studentCourse,
+        batch: studentBatch,
         payments: [
           {
             userId: studentInfo.studentId,
@@ -156,31 +166,104 @@ const StudentFeeView = () => {
   };
 
   // ---------------- DOWNLOAD RECEIPT ----------------
-  const handleDownloadReceipt = (fee) => {
+  const handleDownloadReceipt = async (fee) => {
     console.log("Downloading receipt for fee:", fee);
     const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    // variables to hold logo draw metrics for centering title
+    let logoDrawX = null;
+    let logoDrawY = null;
+    let logoDrawW = null;
+    let logoDrawH = null;
 
     // Define Colors
     const primaryColor = [44, 62, 80];   // Dark Blue/Grey
     const accentColor = [52, 152, 219];  // Light Blue
     const lightGray = [240, 240, 240];
 
+    // Helper to load image and convert to dataURL
+    const loadImageAsDataURL = async (url) => {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Image load failed: ${res.status}`);
+      const blob = await res.blob();
+      return await new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(blob);
+      });
+    };
+
     // --- HEADER SECTION ---
-    // Institute/Company Name
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(22);
-    doc.setTextColor(...primaryColor);
-    doc.text("D Base Solutions Private Limited", 12, 18);
+    // Try to embed logo.png from public/assets; fallback to text
+    const logoPath = (process.env.PUBLIC_URL || "") + "/assets/dbase.png";
+    let logoDataUrl = null;
+    try {
+      logoDataUrl = await loadImageAsDataURL(logoPath);
+    } catch (e) {
+      console.warn("Logo not found at", logoPath, e);
+    }
 
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(100, 100, 100);
-    // doc.text("Excellence in Education", 14, 26);
+    if (logoDataUrl) {
+      // place logo scaled to available width while preserving aspect ratio
+      try {
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 12;
+        // create an Image to measure natural size
+        await new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const imgW = img.naturalWidth || img.width;
+              const imgH = img.naturalHeight || img.height;
+              // max width we want for logo area (leave room on right for title)
+              const maxLogoWidth = Math.min(220, pageWidth - margin * 2);
+              const scale = Math.min(1, maxLogoWidth / imgW);
+              const drawW = imgW * scale;
+              const drawH = imgH * scale;
+              // draw at left, vertically centered in header area
+              const drawX = margin;
+              const drawY = 6;
+              // store metrics for title centering
+              logoDrawX = drawX;
+              logoDrawY = drawY;
+              logoDrawW = drawW;
+              logoDrawH = drawH;
+              doc.addImage(logoDataUrl, "PNG", drawX, drawY, drawW, drawH);
+              resolve();
+            } catch (err) {
+              reject(err);
+            }
+          };
+          img.onerror = (err) => reject(err);
+          img.src = logoDataUrl;
+        });
+      } catch (e) {
+        console.warn("addImage failed or scaling failed:", e);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(...primaryColor);
+        doc.text("D Base Solutions Private Limited", 12, 18);
+      }
+    } else {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(18);
+      doc.setTextColor(...primaryColor);
+      doc.text("D Base Solutions Private Limited", 12, 18);
+    }
 
-    // Title
-    doc.setFontSize(16);
+    // doc.setFontSize(10);
+    // doc.setFont("helvetica", "normal");
+    // doc.setTextColor(100, 100, 100);
+
+    // Title: center under logo if available, otherwise center on page
+    const titleX = logoDrawX !== null ? logoDrawX + (logoDrawW / 2) : pageWidth / 2;
+    const dividerY = 32; // same Y as the divider line below
+    const titleY = dividerY + 8; // place title just below divider with small gap
+    doc.setFontSize(12);
     doc.setTextColor(...primaryColor);
-    doc.text("PAYMENT RECEIPT", 196, 20, { align: "right" });
+    doc.text("PAYMENT RECEIPT", titleX, titleY, { align: "center" });
 
     // Divider Line
     doc.setLineWidth(0.5);
@@ -191,21 +274,37 @@ const StudentFeeView = () => {
     let y = 45;
 
     // Left Column: Student Details
-    doc.setFontSize(10);
-    doc.setTextColor(130, 130, 130);
-    doc.text("BILLED TO:", 14, y);
+    // doc.setFontSize(10);
+    // doc.setTextColor(130, 130, 130);
+    // doc.text("BILLED TO:", 14, y);
 
     y += 5;
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.setFont("helvetica", "bold");
-    doc.text(studentInfo.name ? studentInfo.name.toUpperCase() : "STUDENT", 14, y);
+      const displayName = fee.sname || studentInfo.sname || "STUDENT";
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Name: ${displayName.toUpperCase()}`, 14, y);
 
-    y += 6;
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.setTextColor(50, 50, 50);
-    doc.text(`Student ID: ${studentInfo.studentId}`, 14, y);
+      y += 6;
+      const displayCourse = fee.course || studentInfo.course || "Course";
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Course: ${displayCourse}`, 14, y);
+
+      y += 7;
+      const displayBatch = fee.batch || studentInfo.batch || "Batch";
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Batch: ${displayBatch}`, 14, y);
+
+    y += 8;
+      const displayMobile = fee.mobile || studentInfo.mobile || "9999999999";
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      doc.text(`Phone: ${displayMobile}`, 14, y);
 
     // Right Column: Receipt Details
     y = 45;
@@ -213,7 +312,7 @@ const StudentFeeView = () => {
     // We align values to the right, labels slightly left of that
     doc.setFontSize(10);
     doc.setTextColor(130, 130, 130);
-    doc.text("RECEIPT DETAILS", 196, y, { align: "right" });
+    doc.text("", 196, y, { align: "right" });
 
     y += 10; // Increased spacing
     doc.setTextColor(50, 50, 50);
@@ -417,7 +516,7 @@ const StudentFeeView = () => {
                     <div className="card-body">
                       <h6>PAID</h6>
                       <h4>₹{dues[0]?.paid || 0}</h4>
-                      <small>{percentPaid}%</small>
+                      {/* <small>{percentPaid}%</small> */}
                     </div>
                   </div>
                 </div>
@@ -430,7 +529,7 @@ const StudentFeeView = () => {
                     <div className="card-body">
                       <h6>DUE</h6>
                       <h4>₹{dues[0]?.due || 0}</h4>
-                      <small>{percentDue}%</small>
+                      {/* <small>{percentDue}%</small> */}
                     </div>
                   </div>
                 </div>
