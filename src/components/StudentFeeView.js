@@ -160,35 +160,142 @@ const StudentFeeView = () => {
     console.log("Downloading receipt for fee:", fee);
     const doc = new jsPDF();
 
+    // Define Colors
+    const primaryColor = [44, 62, 80];   // Dark Blue/Grey
+    const accentColor = [52, 152, 219];  // Light Blue
+    const lightGray = [240, 240, 240];
+
+    // --- HEADER SECTION ---
+    // Institute/Company Name
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(...primaryColor);
+    doc.text("D Base Solutions Private Limited", 12, 18);
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(100, 100, 100);
+    // doc.text("Excellence in Education", 14, 26);
+
+    // Title
     doc.setFontSize(16);
-    doc.text("Fee Payment Receipt", 105, 15, { align: "center" });
+    doc.setTextColor(...primaryColor);
+    doc.text("PAYMENT RECEIPT", 196, 20, { align: "right" });
 
-    let y = 30;
-    doc.setFontSize(11);
+    // Divider Line
+    doc.setLineWidth(0.5);
+    doc.setDrawColor(200, 200, 200);
+    doc.line(14, 32, 196, 32);
 
-    doc.text(`Student ID: ${studentInfo.studentId}`, 14, y);
+    // --- INFO SECTION ---
+    let y = 45;
+
+    // Left Column: Student Details
+    doc.setFontSize(10);
+    doc.setTextColor(130, 130, 130);
+    doc.text("BILLED TO:", 14, y);
+
+    y += 5;
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.text(studentInfo.name ? studentInfo.name.toUpperCase() : "STUDENT", 14, y);
+
     y += 6;
-    doc.text(`Student Name: ${studentInfo.name}`, 14, y);
-    y += 8;
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(50, 50, 50);
+    doc.text(`Student ID: ${studentInfo.studentId}`, 14, y);
+
+    // Right Column: Receipt Details
+    y = 45;
+
+    // We align values to the right, labels slightly left of that
+    doc.setFontSize(10);
+    doc.setTextColor(130, 130, 130);
+    doc.text("RECEIPT DETAILS", 196, y, { align: "right" });
+
+    y += 10; // Increased spacing
+    doc.setTextColor(50, 50, 50);
+
+    const labelX = 130;
+    const valueX = 196;
+
+    doc.text("Receipt No:", labelX, y);
+    doc.text(fee.transactionId || "-", valueX, y, { align: "right" });
+
+    y += 6;
+    doc.text("Date:", labelX, y);
+    doc.text(
+      fee.paymentDate
+        ? new Date(fee.paymentDate).toLocaleDateString("en-GB")
+        : "-",
+      valueX,
+      y,
+      { align: "right" }
+    );
+
+    y += 6;
+    doc.text("Payment Mode:", labelX, y);
+    doc.text("Online", valueX, y, { align: "right" });
+
+    // --- FEE TABLE ---
+    const tableY = 75;
+    const amountVal = (fee.amountPaid || 0).toLocaleString("en-IN");
 
     autoTable(doc, {
-      startY: y,
-      head: [["Field", "Value"]],
+      startY: tableY,
+      head: [["DESCRIPTION", "AMOUNT"]],
       body: [
-        ["Fee Head", fee.feeHead || "-"],
-        ["Paid Amount", `₹${fee.amountPaid || 0}`],
-        ["Transaction ID", fee.transactionId || "-"],
-        [
-          "Payment Date",
-          fee.paymentDate
-            ? new Date(fee.paymentDate).toLocaleString("en-GB")
-            : "-"
-        ]
+        [fee.feeHead || "Tuition Fee", `INR ${amountVal}`]
       ],
-      theme: "grid"
+      theme: "grid",
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: 255,
+        fontSize: 10,
+        fontStyle: "bold",
+        halign: "left"
+      },
+      bodyStyles: {
+        fontSize: 10,
+        textColor: 50,
+        cellPadding: 8,
+      },
+      columnStyles: {
+        0: { cellWidth: 'auto' },
+        1: { cellWidth: 50, halign: "right" }
+      },
+      foot: [
+        ["TOTAL PAID", `INR ${amountVal}`]
+      ],
+      footStyles: {
+        fillColor: [245, 245, 245],
+        textColor: primaryColor,
+        fontSize: 11,
+        fontStyle: "bold",
+        halign: "right"
+      }
     });
 
-    const filename = `Receipt_${studentInfo.studentId}_${fee.transactionId || "payment"}.pdf`;
+    // --- FOOTER AND NOTES ---
+    const finalY = doc.lastAutoTable.finalY + 15;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(...primaryColor);
+    doc.text("Thank you for your payment!", 14, finalY);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(130, 130, 130);
+    doc.text("For any queries regarding this receipt, please contact support.", 14, finalY + 5);
+
+    doc.setFontSize(8);
+    doc.setTextColor(200, 200, 200);
+    doc.text("This is a computer-generated receipt.", 105, 285, { align: "center" });
+
+    const filename = `Receipt_${studentInfo.studentId}_${fee.transactionId || "pay"}.pdf`;
     console.log("Saving receipt as:", filename);
     doc.save(filename);
   };
@@ -261,8 +368,8 @@ const StudentFeeView = () => {
                               <td>
                                 {fee.dueDate
                                   ? new Date(fee.dueDate).toLocaleDateString(
-                                      "en-GB"
-                                    )
+                                    "en-GB"
+                                  )
                                   : "-"}
                               </td>
                               <td>
@@ -364,8 +471,8 @@ const StudentFeeView = () => {
                               <td>
                                 {f.paymentDate
                                   ? new Date(f.paymentDate).toLocaleDateString(
-                                      "en-GB"
-                                    )
+                                    "en-GB"
+                                  )
                                   : "-"}
                               </td>
                               <td>
