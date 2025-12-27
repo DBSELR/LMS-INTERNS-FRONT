@@ -108,8 +108,11 @@ const StudentFeeView = () => {
         return;
       }
 
-      const studentName = dues[0]?.sname || studentInfo.name || "Student";
-      const studentMobile = dues[0]?.mobile || "9999999999";
+      const studentName = fee.sname || studentInfo.name || "Student";
+      const studentMobile = fee.mobile || "9999999999";
+
+      console.log("Student name from fee:", studentName);
+      console.log("Student mobile from fee:", studentMobile);
 
       const payload = {
         username: studentName,
