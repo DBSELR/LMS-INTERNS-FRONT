@@ -8,6 +8,9 @@ import {
   Home,
   Loader2,
 } from "lucide-react";
+import HeaderTop from "../components/HeaderTop";
+import RightSidebar from "../components/RightSidebar";
+import LeftSidebar from "../components/LeftSidebar";
 // Make sure to import this CSS file in your project
 // import "./PaymentResult.css";
 
@@ -100,7 +103,21 @@ const PaymentResult = () => {
   }
 
   return (
-    <div className="payres-page">
+
+    <>
+
+       <div id="main_content" className="font-muli theme-blush">
+          {loading && (
+            <div className="page-loader-wrapper">
+              <div className="loader"></div>
+            </div>
+          )}
+    
+          <HeaderTop />
+          <RightSidebar />
+          <LeftSidebar  />
+    
+     <div className="payres-page">
       {/* Invoice Card – this will be printed */}
       <div id="payres-invoice-card" className="payres-card">
         {/* Top strip */}
@@ -228,6 +245,10 @@ const PaymentResult = () => {
         </button>
       </div>
     </div>
+
+</div>
+    </>
+   
   );
 };
 
