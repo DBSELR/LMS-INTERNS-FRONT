@@ -235,14 +235,7 @@ const PaymentResult = () => {
           </button>
         )}
 
-        <button
-          type="button"
-          className="payres-home-btn"
-          onClick={() => navigate("/", { replace: true })}
-        >
-          <Home className="payres-home-icon" />
-          <span className="payres-home-text">Go to Home</span>
-        </button>
+       
       </div>
     </div>
 
