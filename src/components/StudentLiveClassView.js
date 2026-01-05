@@ -335,7 +335,7 @@ const StudentLiveClassView = () => {
   className="btn btn-sm btn-info mt-2"
   onClick={() => {
    const fullUrl = cls.fileurl.startsWith("/")
-  ? `http://localhost:7163${cls.fileurl}`
+  ? `http://uginternsapi.dbasesolutions.in${cls.fileurl}`
   : cls.fileurl;
 
 console.log("🎬 Opening recording:", fullUrl);

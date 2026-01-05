@@ -43,7 +43,7 @@ const PaymentResult = () => {
     const fetchStatus = async () => {
       try {
         const res = await fetch(
-          `https://localhost:7163/api/payments/phonepe/status?merchantOrderId=${encodeURIComponent(
+          `https://uginternsapi.dbasesolutions.in/api/payments/phonepe/status?merchantOrderId=${encodeURIComponent(
             orderId
           )}`
         );
