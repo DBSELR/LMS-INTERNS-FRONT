@@ -155,10 +155,12 @@ const handlePayNow = async () => {
 
     const totalAmount = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
 
+    // Extract college info from first selected transaction
+    const firstItem = selectedItems[0];
     const payload = {
-      username: "TempCollegeName", // or loggedInUser.username
-      mobileNo: "9999999999",      // backend expects mobileNo (camelCase)
-      name: "TempUserName",
+      username: firstItem.colname || "Unknown",
+      mobileNo: firstItem.colmobile || "0000000000",
+      name: firstItem.colname || "Unknown",
       payments // list of { userId, hid, amount }
     };
 

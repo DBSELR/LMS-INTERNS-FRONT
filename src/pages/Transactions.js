@@ -103,14 +103,14 @@ function Transactions() {
                 </div>
 
                 {/* Test PhonePe button */}
-                <button
+                {/* <button
                   type="button"
                   className="btn btn-outline-primary"
                   onClick={openTestModal}
                 >
                   <i className="fa fa-credit-card mr-1" />
                   Test PhonePe Payment
-                </button>
+                </button> */}
               </div>
 
               <TransactionsTable />
@@ -120,7 +120,7 @@ function Transactions() {
       </div>
 
       {/* Test PhonePe Modal */}
-      <Modal show={showTestModal} onHide={closeTestModal} centered>
+      {/* <Modal show={showTestModal} onHide={closeTestModal} centered>
         <Form onSubmit={handleTestSubmit}>
           <Modal.Header closeButton={!testSubmitting}>
             <Modal.Title>Test PhonePe Payment</Modal.Title>
@@ -182,7 +182,7 @@ function Transactions() {
             </Button>
           </Modal.Footer>
         </Form>
-      </Modal>
+      </Modal> */}
 
       <Footer />
     </div>
