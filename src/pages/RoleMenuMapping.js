@@ -180,7 +180,7 @@ function RoleMenuMapping() {
       console.log("🚀 [DEBUG] Making API call to GetMainMenu");
       console.log("🚀 [DEBUG] Auth headers:", authHeaders());
       
-      const { res, json } = await apiFetch(label, "https://localhost:7163/api/RoleMenu/GetMainMenu", {
+      const { res, json } = await apiFetch(label, "https://uginternsapi.dbasesolutions.in/api/RoleMenu/GetMainMenu", {
         headers: { ...authHeaders() },
       });
       
@@ -493,7 +493,7 @@ function RoleMenuMapping() {
         updates.map(async (update, index) => {
           console.log(`🚀 [DEBUG] Processing update ${index + 1}/${updates.length}:`, update);
           
-          const url = `https://localhost:7163/api/RoleMenu/UpdateMenuorder/${update.mMId}/${update.displayOrder}`;
+          const url = `https://uginternsapi.dbasesolutions.in/api/RoleMenu/UpdateMenuorder/${update.mMId}/${update.displayOrder}`;
           console.log(`🚀 [DEBUG] Request URL:`, url);
           console.log(`🚀 [DEBUG] Auth headers:`, authHeaders());
           
