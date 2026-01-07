@@ -257,7 +257,7 @@ function PaymentStatus() {
                           className="ps-button"
                           disabled={loading || !merchantOrderId.trim()}
                         >
-                          {loading ? "Checking..." : "Check Status"}
+                          {loading ? "Checking..." : "Check and Update Status"}
                         </button>
                       </form>
 

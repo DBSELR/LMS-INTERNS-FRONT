@@ -175,6 +175,7 @@ import PaymentResult from "./pages/PaymentResult.js";
 import AdminSubjectiveExamsAttendanceAnalytics from "./pages/AdminSubjectiveExamsAttendanceAnalytics";
 import AdminObjectiveExamsAttendanceAnalytics from "./pages/AdminObjectiveExamsAttendanceAnalytics";
 import ApproveStudentsListPage from "./pages/ApproveStudentsListPage.js";
+import PaymentStatus from "./pages/PaymentStatus.js";
 
 
 
@@ -562,7 +563,10 @@ function App() {
 
 <Route path="/payment-result" element={<PaymentResult />} />
 <Route path="/payments-page" element={<PaymentsPage />} />
+<Route path="/payment-status" element={<ProtectedRoute><PaymentStatus /></ProtectedRoute>} />
       </Routes>
+
+      
 
       {/* ✅ Global footer */}
     <Footer />

@@ -172,8 +172,8 @@ const Recordedclasses = () => {
 
       const subjectTitle = c
         ? `Subject: ${c.paperCode || ""} - ${c.paperName || ""} (${
-            c.semester ? `Sem ${c.semester}` : "Sem N/A"
-          } / ${c.batchName || "Batch N/A"})`
+             "Batch"
+          } - ${c.batchName || "Batch N/A"})`
         : `Subject: ${cls.className}`;
 
       if (!groups[subjectKey]) {
@@ -226,7 +226,7 @@ const Recordedclasses = () => {
   };
 
   const headerBadge = (text) => (
-    <span className="badge bg-info text-dark px-2 py-1 ms-2" style={{ fontWeight: 600 }}>
+    <span className="badge bg-info px-2 py-1 ms-2" style={{ fontWeight: 600 }}>
       {text}
     </span>
   );
