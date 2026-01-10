@@ -17,14 +17,17 @@ function PaymentsPage() {
   const fetchAllFees = async () => {
     try {
       const token = localStorage.getItem("jwt");
+      console.log("[PaymentsPage] fetching all fees...");
       const response = await fetch(`${API_BASE_URL}/Fee/All`, {
         headers: {
           
           "Authorization": `Bearer ${token}`
         }
       });
+      console.log("[PaymentsPage] fetch status", response.status);
       if (!response.ok) throw new Error("Failed to fetch fees");
       const data = await response.json();
+      console.log("[PaymentsPage] fetched fees count", Array.isArray(data) ? data.length : "n/a");
       setAllFees(data);
     } catch (err) {
       console.error("Error fetching all fees:", err);

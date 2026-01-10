@@ -204,6 +204,12 @@ function AdminDashboard() {
   icon: "fa-users",
   link: "/approve-students"
 },
+          {
+  label: "Total / Paid / Due",
+  value: `${summary.studentApprovalSummary.total} / ${summary.studentApprovalSummary.approved} / ${summary.studentApprovalSummary.pending}`,
+  icon: "fa-users",
+  link: "/fee-summary"
+},
 ].map((item, idx) => (
   <div className="col-12 col-sm-6 col-lg-3 mb-3" key={idx}>
     <div

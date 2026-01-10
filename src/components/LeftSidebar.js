@@ -5,15 +5,6 @@ import { jwtDecode } from "jwt-decode";
 import "../App.css";
 
 function LeftSidebar({ role: propRole }) {
-  /* ===== Debug helpers ===== */
-  const DEBUG = true;
-  const log = (...args) => DEBUG && console.log("[LeftSidebar]", ...args);
-  const group = (label, fn) => {
-    if (!DEBUG) return fn?.();
-    console.groupCollapsed(`[LeftSidebar] ${label}`);
-    try { fn?.(); } finally { console.groupEnd(); }
-  };
-
   const isSmallScreen = () => (typeof window !== "undefined" ? window.innerWidth <= 767 : false);
 
   const location = useLocation();
@@ -32,10 +23,8 @@ function LeftSidebar({ role: propRole }) {
     setMobile(mobileNow);
     if (mobileNow) {
       document.body.classList.remove("sidebar-open"); // closed by default on mobile
-      log("Mounted: small screen, sidebar CLOSED by default");
     } else {
       document.body.classList.add("sidebar-open"); // open by default on desktop
-      log("Mounted: desktop, sidebar OPEN by default");
     }
   }, []);
 
@@ -50,10 +39,8 @@ function LeftSidebar({ role: propRole }) {
           setMobile(nowMobile);
           if (nowMobile) {
             document.body.classList.remove("sidebar-open"); // switch to closed on mobile
-            log("Resize -> now MOBILE: closing sidebar by default");
           } else {
             document.body.classList.add("sidebar-open"); // open on desktop
-            log("Resize -> now DESKTOP: opening sidebar by default");
           }
         }
       }, 120);
@@ -68,82 +55,68 @@ function LeftSidebar({ role: propRole }) {
   /* ===== Load user + menus from storage (and on storage updates) ===== */
   useEffect(() => {
     const loadFromStorage = () => {
-      group("loadFromStorage()", () => {
-        const token = localStorage.getItem("jwt");
-        log("jwt present?", !!token);
+      const token = localStorage.getItem("jwt");
 
-        if (token) {
-          try {
-            const decoded = jwtDecode(token);
-            log("decoded token:", decoded);
+      if (token) {
+        try {
+          const decoded = jwtDecode(token);
 
-            const resolvedRole =
-              decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
-              decoded?.role ||
-              "";
-            const name =
-              decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
-              decoded?.Username ||
-              decoded?.name ||
-              "User";
+          const resolvedRole =
+            decoded?.["http://schemas.microsoft.com/ws/2008/06/identity/claims/role"] ||
+            decoded?.role ||
+            "";
+          const tokenName =
+            decoded?.["http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name"] ||
+            decoded?.Username ||
+            decoded?.name ||
+            "User";
 
-            setRole(resolvedRole);
-            setUserName(name);
-            log("resolved role:", resolvedRole, "resolved name:", name);
-          } catch (err) {
-            console.error("[LeftSidebar] Token decode failed", err);
-            setRole(propRole || "");
-            setUserName("User");
-          }
-        } else {
+          setRole(resolvedRole);
+          setUserName(tokenName);
+        } catch (err) {
           setRole(propRole || "");
           setUserName("User");
-          log("no token; using propRole:", propRole || "");
         }
+      } else {
+        setRole(propRole || "");
+        setUserName("User");
+      }
 
-        const rawMenus = localStorage.getItem("menus");
-        log("raw menus in storage:", rawMenus);
+      const rawMenus = localStorage.getItem("menus");
 
-        if (rawMenus) {
-          try {
-            const parsed = JSON.parse(rawMenus);
+      if (rawMenus) {
+        try {
+          const parsed = JSON.parse(rawMenus);
 
-            // Normalize & sanitize menu items
-            const normalized = (Array.isArray(parsed) ? parsed : [])
-              .filter((m) => typeof m?.path === "string" && m.path.trim().length > 0)
-              .map((m) => {
-                let href = m.path.trim().replace(/\s+/g, " ");
-                if (!href.startsWith("/")) href = "/" + href;
-                href = href.replace(/\s+$/g, "");
-                return {
-                  icon: m?.icon || "fa fa-circle",
-                  label: (m?.text || m?.mainMenuName || "Menu").toString().trim(),
-                  href,
-                  order: Number.isFinite(m?.order) ? m.order : 0,
-                };
-              })
-              .sort((a, b) => a.order - b.order);
+          // Normalize & sanitize menu items
+          const normalized = (Array.isArray(parsed) ? parsed : [])
+            .filter((m) => typeof m?.path === "string" && m.path.trim().length > 0)
+            .map((m) => {
+              let href = m.path.trim().replace(/\s+/g, " ");
+              if (!href.startsWith("/")) href = "/" + href;
+              href = href.replace(/\s+$/g, "");
+              return {
+                icon: m?.icon || "fa fa-circle",
+                label: (m?.text || m?.mainMenuName || "Menu").toString().trim(),
+                href,
+                order: Number.isFinite(m?.order) ? m.order : 0,
+              };
+            })
+            .sort((a, b) => a.order - b.order);
 
-            setServerMenus(normalized);
-            log("normalized menus (sanitized):", normalized);
-          } catch (e) {
-            console.error("[LeftSidebar] Failed to parse menus from storage", e);
-            setServerMenus([]);
-          }
-        } else {
+          setServerMenus(normalized);
+        } catch (e) {
           setServerMenus([]);
-          log("no menus in storage; serverMenus cleared");
         }
-      });
+      } else {
+        setServerMenus([]);
+      }
     };
 
     loadFromStorage();
 
-    const onStorage = (evt) => {
-      group("storage event", () => {
-        log("key:", evt?.key, "oldValue:", evt?.oldValue, "newValue:", evt?.newValue);
-        loadFromStorage();
-      });
+    const onStorage = () => {
+      loadFromStorage();
     };
     window.addEventListener("storage", onStorage);
     return () => window.removeEventListener("storage", onStorage);
@@ -154,7 +127,6 @@ function LeftSidebar({ role: propRole }) {
   useEffect(() => {
     if (isSmallScreen()) {
       document.body.classList.remove("sidebar-open");
-      log("route changed ->", location.pathname, "auto-closing sidebar on MOBILE");
     }
   }, [location.pathname]);
 
@@ -168,14 +140,11 @@ function LeftSidebar({ role: propRole }) {
       const isMenuToggleClick = event.target.closest?.(".menu_toggle");
       if (!isInside && !isMenuToggleClick) {
         document.body.classList.remove("sidebar-open");
-        log("mobile: click outside sidebar -> closing");
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
-    log("mounted click-outside listener (mobile only)");
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
-      log("unmounted click-outside listener");
     };
   }, []);
 
@@ -185,7 +154,6 @@ function LeftSidebar({ role: propRole }) {
       if (!isSmallScreen()) return;
       if (e.key === "Escape") {
         document.body.classList.remove("sidebar-open");
-        log("mobile: ESC pressed -> closing sidebar");
       }
     };
     document.addEventListener("keydown", onKey);
@@ -235,7 +203,6 @@ function LeftSidebar({ role: propRole }) {
   const closeIfMobile = () => {
     if (isSmallScreen()) {
       document.body.classList.remove("sidebar-open");
-      log("menu item selected on MOBILE -> closing sidebar");
     }
   };
 
@@ -277,13 +244,6 @@ function LeftSidebar({ role: propRole }) {
             ) : (
               menuItems.map((item, index) => {
                 const active = isGroupedActive(item.href);
-
-                DEBUG &&
-                  console.debug(
-                    "[LeftSidebar] render menu",
-                    { idx: index, href: item.href, label: item.label },
-                    "active?", active
-                  );
 
                 return (
                   <li key={`${item.href || "menu"}-${index}`}>

@@ -157,7 +157,7 @@
 // export default PaymentsTable;
 
 
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { jwtDecode } from "jwt-decode";
 import API_BASE_URL from "../../config";
 
@@ -170,11 +170,35 @@ function PaymentsTable({ onRefresh }) {
 
   const fetchFees = async (studentId, token) => {
     try {
+      console.log("[PaymentsTable] fetching fees for", studentId);
       const res = await fetch(`${API_BASE_URL}/Fee/GetAllStudents`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+      console.log("[PaymentsTable] fetch status", res.status);
       if (!res.ok) throw new Error("Failed to fetch fee details");
       const data = await res.json();
+      console.log("[PaymentsTable] fetched fee records", Array.isArray(data) ? data.length : "n/a");
+      if (Array.isArray(data)) {
+        console.groupCollapsed("[PaymentsTable] Payment History preview");
+        console.table(
+          data.map((fee, idx) => ({
+            "S.No": idx + 1,
+            "Student Name": fee.studentName,
+            "Fee Head": fee.feeHead,
+            Installment: `Installment ${fee.installment}`,
+            "Paid Amount": `₹${(fee.amountPaid ?? 0).toLocaleString()}`,
+            "Transaction ID": fee.transactionId || "-",
+            "Transaction Date": fee.paymentDate
+              ? new Date(fee.paymentDate).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "-",
+          }))
+        );
+        console.groupEnd();
+      }
       setFees(data);
     } catch (err) {
       console.error(err);
@@ -185,6 +209,7 @@ function PaymentsTable({ onRefresh }) {
 
   useEffect(() => {
     const token = localStorage.getItem("jwt");
+    console.log("[PaymentsTable] jwt present?", !!token);
     if (!token) return;
 
     let decoded;
@@ -195,7 +220,10 @@ function PaymentsTable({ onRefresh }) {
       return;
     }
 
+    console.log("[PaymentsTable] decoded token", decoded);
+
     const studentId = decoded["UserId"] || decoded.userId || decoded.nameid;
+    console.log("[PaymentsTable] resolved studentId", studentId);
     if (!studentId) return;
 
     fetchFees(studentId, token);

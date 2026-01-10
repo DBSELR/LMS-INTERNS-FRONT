@@ -176,6 +176,8 @@ import AdminSubjectiveExamsAttendanceAnalytics from "./pages/AdminSubjectiveExam
 import AdminObjectiveExamsAttendanceAnalytics from "./pages/AdminObjectiveExamsAttendanceAnalytics";
 import ApproveStudentsListPage from "./pages/ApproveStudentsListPage.js";
 import PaymentStatus from "./pages/PaymentStatus.js";
+import InternshipFeeReminderPopup from "./components/InternshipFeeReminderPopup";
+import FeeSummary from "./pages/FeeSummary.js";
 
 
 
@@ -564,6 +566,7 @@ function App() {
 <Route path="/payment-result" element={<PaymentResult />} />
 <Route path="/payments-page" element={<PaymentsPage />} />
 <Route path="/payment-status" element={<ProtectedRoute><PaymentStatus /></ProtectedRoute>} />
+<Route path="/fee-summary" element={<ProtectedRoute><FeeSummary /></ProtectedRoute>} />
       </Routes>
 
       
@@ -571,6 +574,8 @@ function App() {
       {/* ✅ Global footer */}
     <Footer />
 
+    {/* ✅ Internship Fee Reminder Popup for Students */}
+    <InternshipFeeReminderPopup />
     
       {/* ✅ Place this once globally */}
       <ToastContainer

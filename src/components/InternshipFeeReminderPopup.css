@@ -1,0 +1,436 @@
+/* Modern Internship Fee Reminder Popup Styles */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* Modal Overlay & Container */
+.modern-fee-popup .modal-content {
+  border: none;
+  border-radius: 24px;
+  background: white;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden; /* keep rounded corners while inner area scrolls */
+  font-family: 'Outfit', sans-serif;
+  animation: popupScale 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+/* Remove default padding so custom layout controls spacing and scroll */
+.modern-fee-popup .modal-body {
+  padding: 0;
+}
+
+@keyframes popupScale {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Close Button */
+.popup-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: rgba(0, 0, 0, 0.05);
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s ease;
+}
+
+.popup-close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #ef4444;
+  transform: rotate(90deg);
+}
+
+/* Layout Wrapper */
+.popup-content-wrapper {
+  display: flex;
+  min-height: 450px;
+}
+
+/* Left Side - Visual Section */
+.popup-visual-section {
+  flex: 2;
+  background: linear-gradient(135deg, #dc2626 0%, #f59e0b 100%);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: white;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative circles */
+.visual-circle-1,
+.visual-circle-2 {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.visual-circle-1 {
+  width: 200px;
+  height: 200px;
+  top: -50px;
+  right: -50px;
+}
+
+.visual-circle-2 {
+  width: 150px;
+  height: 150px;
+  bottom: 20px;
+  left: -40px;
+}
+
+.visual-icon-container {
+  /* background: rgba(255, 255, 255, 0.2); */
+  padding: 24px;
+  border-radius: 50%;
+  margin-bottom: 24px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  z-index: 1;
+}
+
+.visual-icon {
+  color: #ffffff;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.2));
+}
+
+.popup-visual-section h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin-bottom: 12px;
+  position: relative;
+  z-index: 1;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popup-visual-section p {
+  font-size: 0.95rem;
+  opacity: 0.9;
+  line-height: 1.6;
+  max-width: 260px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Right Side - Content Section */
+.popup-text-section {
+  flex: 3;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  /* allow child overflow to scroll in flex parent contexts */
+  min-height: 0;
+}
+
+/* Header Badge & Title */
+.popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  width: 100%;
+}
+
+.header-icon-badge {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 8px #fef2f2, 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 4px solid #fff;
+}
+
+.popup-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.popup-header .subtitle {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+/* Body Content */
+.popup-body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.info-card {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  padding: 16px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.icon-highlight {
+  color: #4f46e5;
+}
+
+.info-card .label {
+  display: block;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.info-card .value {
+  display: block;
+  font-size: 1.1rem;
+  color: #0f172a;
+  font-weight: 600;
+}
+
+.message-text {
+  color: #475569;
+  line-height: 1.6;
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Action Buttons */
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btn-primary-action,
+.btn-secondary-action {
+  padding: 14px 24px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  font-family: inherit;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary-action {
+  background: #111827;
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-primary-action:hover {
+  background: #272e3f;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary-action {
+  background: white;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.btn-secondary-action:hover {
+  background: #f1f5f9;
+  color: #1e293b;
+  border-color: #cbd5e1;
+}
+
+/* Support Link */
+.support-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: 12px;
+}
+
+.highlight-text {
+  color: #4f46e5;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.highlight-text:hover {
+  color: #4338ca;
+  text-decoration: underline;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  /* Ensure dialog fits viewport with comfortable margins */
+  .modern-fee-popup .modal-dialog {
+    margin: 1rem;
+  }
+
+  /* Constrain content height and enable smooth vertical scroll on mobile */
+  .modern-fee-popup .modal-content {
+    height: calc(100vh - 2rem);
+    max-height: none;
+  }
+
+  .popup-content-wrapper {
+    height: calc(100vh - 2rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch; /* iOS momentum scroll */
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .popup-content-wrapper {
+    flex-direction: column;
+    min-height: auto;
+  }
+
+  .popup-visual-section {
+    padding: 32px 24px;
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 20px;
+    flex: 0 0 auto;
+  }
+
+  .visual-icon-container {
+    margin: 0;
+    padding: 16px;
+  }
+
+  .visual-circle-1 {
+    width: 100px;
+    height: 100px;
+  }
+
+  .popup-text-section {
+    padding: 24px;
+    /* keep the text column scrollable when stacked below visual */
+    max-height: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+
+  .popup-header {
+    margin-bottom: 24px;
+  }
+
+  .popup-header h2 {
+    font-size: 1.25rem;
+  }
+
+  .btn-primary-action,
+  .btn-secondary-action {
+    padding: 12px 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  /* Slightly tighter margins on very small screens */
+  .modern-fee-popup .modal-dialog {
+    margin: 0.75rem;
+  }
+
+  .modern-fee-popup .modal-content {
+    height: calc(100vh - 1.5rem);
+    max-height: none;
+  }
+
+  .popup-content-wrapper {
+    height: calc(100vh - 1.5rem);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+  }
+
+  .popup-visual-section {
+    padding: 24px 20px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  /* Grow visual section naturally; keep text section scrollable */
+  .popup-text-section {
+    max-height: none;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+  }
+}
+
+/* Keep support link reachable; stick to bottom of text column layout */
+.support-link {
+  margin-top: auto;
+
+  .popup-visual-section h3 {
+    font-size: 1.5rem;
+  }
+
+  .header-icon-badge {
+    padding: 10px;
+  }
+
+  .header-icon-badge svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .popup-header h2 {
+    font-size: 1.15rem;
+  }
+
+  .popup-header .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .info-card {
+    padding: 12px;
+  }
+
+  .info-card .value {
+    font-size: 1rem;
+  }
+}

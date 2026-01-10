@@ -28,6 +28,8 @@ function StudentDashboard() {
   const [loading, setLoading] = useState(true);
   const [liveClassNotifications, setLiveClassNotifications] = useState([]);
   const [examNotifications, setExamNotifications] = useState([]);
+  const [showFeeReminder, setShowFeeReminder] = useState(false);
+  const [feeDueDate, setFeeDueDate] = useState("");
   const [showModal, setShowModal] = useState(false);
 
   const fetchSummary = async () => {
@@ -147,6 +149,60 @@ function StudentDashboard() {
     }
   };
 
+  // Determine if student has any dues; also compute nearest unpaid installment due date
+  const fetchFeeStatus = async () => {
+    try {
+      const token = localStorage.getItem("jwt");
+      if (!token || !studentId) return;
+
+      // 1) Check dues summary
+      const duesRes = await fetch(`${API_BASE_URL}/Fee/StudentDues/${studentId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const duesData = await duesRes.json();
+      const dueAmount = Array.isArray(duesData) && duesData[0] ? Number(duesData[0].due || 0) : 0;
+      const hasDue = dueAmount > 0;
+      setShowFeeReminder(hasDue);
+
+      if (!hasDue) {
+        setFeeDueDate("");
+        return;
+      }
+
+      // 2) Find nearest upcoming unpaid installment
+      try {
+        const instRes = await fetch(`${API_BASE_URL}/Fee/StudentFeeInstallments/${studentId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const instData = await instRes.json();
+        if (Array.isArray(instData) && instData.length) {
+          const unpaid = instData.filter((it) => String(it.remarks).toUpperCase() !== "PD");
+          if (unpaid.length) {
+            unpaid.sort((a, b) => new Date(a.dueDate || 0) - new Date(b.dueDate || 0));
+            const first = unpaid.find((x) => x.dueDate) || unpaid[0];
+            if (first && first.dueDate) {
+              const d = new Date(first.dueDate);
+              const formatted = d.toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric" });
+              setFeeDueDate(formatted);
+            } else {
+              setFeeDueDate("");
+            }
+          } else {
+            setFeeDueDate("");
+          }
+        } else {
+          setFeeDueDate("");
+        }
+      } catch {
+        setFeeDueDate("");
+      }
+    } catch (err) {
+      console.error("Fee status fetch failed", err);
+      setShowFeeReminder(false);
+      setFeeDueDate("");
+    }
+  };
+
   const formatDateCustom = (dateObj) =>
     dateObj
       .toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })
@@ -170,7 +226,7 @@ function StudentDashboard() {
       const fetchAll = async () => {
         setLoading(true);
         try {
-          await Promise.all([fetchSummary(), fetchLiveClasses(), fetchExams()]);
+          await Promise.all([fetchSummary(), fetchLiveClasses(), fetchExams(), fetchFeeStatus()]);
         } catch (err) {
           console.error("Dashboard data load error", err);
         } finally {
@@ -239,6 +295,7 @@ function StudentDashboard() {
                       className="card-body p-2 position-relative"
                       style={{ height: "140px", overflow: "hidden", background: "#f9f9f9" }}
                     >
+                      
                       {([...liveClassNotifications, ...examNotifications].sort(
                         (a, b) => new Date(b.dateSent) - new Date(a.dateSent)
                       ).length > 0) ? (
@@ -282,6 +339,25 @@ function StudentDashboard() {
                 </div>
               </div>
 
+              {/* Fee Reminder (compact banner) — visible only if dues exist */}
+              {showFeeReminder && (
+                <div className="fee-reminder-card" onClick={() => navigate("/fees/student")}>
+                  <div className="fee-reminder-left">
+                    <span className="fee-reminder-badge">Action Required</span>
+                    <div className="fee-reminder-title">Internship Fee Payment</div>
+                  </div>
+                  <div className="fee-reminder-middle">
+                    <span className="fee-reminder-label">Due Date</span>
+                    <span className="fee-reminder-value">20-01-2026</span>
+                  </div>
+                  <div className="fee-reminder-right" onClick={(e) => e.stopPropagation()}>
+                    <button className="fee-pay-btn" onClick={() => navigate("/fees/student")}>Pay Now</button>
+                    <div className="fee-support">Need help? <span className="fee-support-highlight">+91 8297 222 302</span></div>
+                  </div>
+                </div>
+              )}
+
+
               {/* Summary cards — same style/classes as AdminDashboard */}
               <div className="row mt-3">
                 {cards.map((item, idx) => (
@@ -311,6 +387,48 @@ function StudentDashboard() {
                   flex-direction: column;
                   animation: scrollUp 8s linear infinite;
                 }
+                /* Fee Reminder Banner */
+                .fee-reminder-card {
+                  display: flex;
+                  align-items: center;
+                  gap: 14px;
+                  background: #ffffff;
+                  border: 1px solid #ffe0b2;
+                  border-left: 6px solid #f5170bff;
+                  border-radius: 12px;
+                  padding: 10px 12px;
+                  margin-bottom: 8px;
+                  box-shadow: 0 2px 8px rgba(245, 11, 11, 0.16);
+                  cursor: pointer;
+                }
+                .fee-reminder-card:hover { box-shadow: 0 4px 14px rgba(245, 158, 11, 0.25); }
+                .fee-reminder-left { display: flex; flex-direction: column; min-width: 180px; }
+                .fee-reminder-badge {
+                  display: inline-block;
+                  background: #fef3c7;
+                  color: #f5170bff;
+                  font-weight: 700;
+                  font-size: 11px;
+                  padding: 4px 8px;
+                  border-radius: 999px;
+                  border: 1px solid #fde68a;
+                  width: fit-content;
+                  letter-spacing: 0.3px;
+                }
+                .fee-reminder-title { font-weight: 700; color: #1f2937; margin-top: 4px; font-size: 14px; }
+                .fee-reminder-middle { display: flex; flex-direction: column; gap: 2px; }
+                .fee-reminder-label { font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 700; letter-spacing: .3px; }
+                .fee-reminder-value { font-size: 13px; color: #dc2626; font-weight: 800; }
+                .fee-reminder-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; margin-left: auto; }
+                .fee-pay-btn {
+                  background: linear-gradient(135deg, #111827, #374151);
+                  color: #fff; border: none; border-radius: 10px; padding: 8px 14px; font-weight: 700; font-size: 13px;
+                  box-shadow: 0 2px 8px rgba(17,24,39,.25); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease;
+                }
+                .fee-pay-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(17,24,39,.3); }
+                .fee-support { font-size: 11px; color: #6b7280; }
+                .fee-support-highlight { color: #4f46e5; font-weight: 700; }
+
                 .notif-item {
                   display: block;
                   margin-bottom: 10px;
@@ -330,6 +448,21 @@ function StudentDashboard() {
                   50% { transform: scale(1.2); }
                 }
                 .live-anim .live-badge { animation: zoomInOut 1s infinite; }
+
+                /* Responsive adjustments for fee reminder */
+                @media (max-width: 768px) {
+                  .fee-reminder-card { gap: 10px; padding: 10px; }
+                  .fee-reminder-left { min-width: 140px; }
+                  .fee-reminder-title { font-size: 13px; }
+                  .fee-reminder-value { font-size: 12px; }
+                  .fee-pay-btn { padding: 7px 12px; font-size: 12px; }
+                }
+                @media (max-width: 576px) {
+                  .fee-reminder-card { flex-direction: column; align-items: stretch; }
+                  .fee-reminder-right { align-items: stretch; }
+                  .fee-pay-btn { width: 100%; text-align: center; }
+                  .fee-support { text-align: center; }
+                }
               `}</style>
             </div>
           </div>
@@ -370,6 +503,8 @@ function StudentDashboard() {
                     <div className="small text-muted">
                       {formatDateCustom(new Date(note.dateSent))}
                     </div>
+
+                    
                   </li>
                 ))}
             </ul>
