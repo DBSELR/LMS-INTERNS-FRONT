@@ -137,7 +137,7 @@
                           <td>{new Date(s.submissionDate).toLocaleString()}</td>
                           <td>
                             <a
-                              href={`https://uginternsapi.dbasesolutions.in${s.filePath}`}
+                              href={`https://localhost:7163${s.filePath}`}
                               target="_blank"
                               rel="noopener noreferrer"
                             >

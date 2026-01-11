@@ -246,7 +246,7 @@ function ProfilePage() {
 
     setUpdateLoading(true);
 
-    const putUrl = `https://uginternsapi.dbasesolutions.in/api/User/${userId}`;
+    const putUrl = `https://localhost:7163/api/User/${userId}`;
     const bodyPayload = {
       Role: editProfile.role,
       Status: "Active", // or real status

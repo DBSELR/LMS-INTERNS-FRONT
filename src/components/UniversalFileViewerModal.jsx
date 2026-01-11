@@ -28,7 +28,7 @@ export default function UniversalFileViewerModal({
   show,
   onHide,
   fileUrl,        // absolute or relative URL
-  apiOrigin,      // absolute origin of your API (e.g. https://uginternsapi.dbasesolutions.in)
+  apiOrigin,      // absolute origin of your API (e.g. https://localhost:7163)
   jwt,            // full token string from localStorage (may include Bearer)
   title = "View file"
 }) {

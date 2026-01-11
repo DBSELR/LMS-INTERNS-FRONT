@@ -597,7 +597,7 @@ function InstructorExamCreate() {
   const fetchInitialData = async (token) => {
     try {
       const res = await fetch(
-        "https://uginternsapi.dbasesolutions.in/api/Programme/GetUniqueBatches",
+        "https://localhost:7163/api/Programme/GetUniqueBatches",
         {
           headers: { Authorization: `Bearer ${token}` },
         }

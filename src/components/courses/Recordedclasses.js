@@ -420,16 +420,32 @@ const Recordedclasses = () => {
         <Modal.Header closeButton>
           <Modal.Title>{activeTitle || "Recording"}</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
+        <Modal.Body
+          onContextMenu={(e) => e.preventDefault()}
+          style={{
+            userSelect: "none",
+            WebkitUserSelect: "none",
+            MozUserSelect: "none",
+            msUserSelect: "none",
+          }}
+        >
           {activeVideoSrc ? (
             <video
               key={activeVideoSrc}
               src={activeVideoSrc}
               controls
+              controlsList="nodownload"
               onLoadedMetadata={(e) => console.log('[Recordedclasses] video loadedmetadata', e)}
               onCanPlay={() => console.log('[Recordedclasses] video canplay')}
               onError={(e) => console.error('[Recordedclasses] video error', e)}
-              style={{ width: "100%", borderRadius: 12 }}
+              onContextMenu={(e) => e.preventDefault()}
+              onDragStart={(e) => e.preventDefault()}
+              style={{
+                width: "100%",
+                borderRadius: 12,
+                userSelect: "none",
+                WebkitUserSelect: "none",
+              }}
             />
           ) : (
             <div className="text-muted">No source.</div>

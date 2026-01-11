@@ -140,7 +140,7 @@ function StudentSubmissionHistory() {
                               <td>
                                 {s.FilePath ? (
                                   <a
-                                    href={`https://uginternsapi.dbasesolutions.in${s.FilePath}`}
+                                    href={`https://localhost:7163${s.FilePath}`}
                                     target="_blank"
                                     rel="noreferrer"
                                     className="btn btn-sm btn-outline-primary"
