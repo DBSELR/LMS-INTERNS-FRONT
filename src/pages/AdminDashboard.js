@@ -10,23 +10,27 @@ import API_BASE_URL from "../config";
 
 function AdminDashboard() {
   const navigate = useNavigate();
-  const [summary, setSummary] = useState({
-    students: 0,
-    professors: 0,
-    programmes: 0,
-    books: 0,
-    exams: 0,
-    assignments: 0,
-    liveClasses: 0,
-    tasks: 0,
-    leaves: 0,
-    contentReadPercentPerBatch: 0,
-    liveClassAttendancePercentPerBatch: 0,
-    objectiveExamAttendancePercentPerBatch: 0,
+ const [summary, setSummary] = useState({
+  students: 0,
+  professors: 0,
+  programmes: 0,
+  books: 0,
+  exams: 0,
+  assignments: 0,
+  liveClasses: 0,
+  tasks: 0,
+  leaves: 0,
+  contentReadPercentPerBatch: 0,
+  liveClassAttendancePercentPerBatch: 0,
+  objectiveExamAttendancePercentPerBatch: 0,
   subjectiveExamAttendancePercentPerBatch: 0,
   studentApprovalSummary: { total: 0, approved: 0, pending: 0 },
+  
+  totalFeeAmount: 0,
+  totalPaidAmount: 0,
+  totalDueAmount: 0
+});
 
-  });
   const [adminName, setAdminName] = useState("Admin");
   const [loading, setLoading] = useState(true);
 
@@ -61,38 +65,31 @@ function AdminDashboard() {
           const data = await res.json();
           console.log("Dashboard summary:", data);
 
-          setSummary({
-            students: data.students || 0,
-            professors: data.professors || 0,
-            programmes: data.programmes || 0,
-            books: data.books || 0,
-            exams: data.exams || 0,
-            assignments: data.assignments || 0,
-            liveClasses: data.liveClasses || 0,
-            tasks: data.tasks || 0,
-            leaves: data.leaves || 0,
-            // 👇 assuming your backend uses camelCase via JSON options
-            contentReadPercentPerBatch:
-              data.contentReadPercentPerBatch !== undefined &&
-              data.contentReadPercentPerBatch !== null
-                ? Number(data.contentReadPercentPerBatch)
-                : 0,
-            liveClassAttendancePercentPerBatch:
-              data.liveClassAttendancePercentPerBatch !== undefined &&
-              data.liveClassAttendancePercentPerBatch !== null
-                ? Number(data.liveClassAttendancePercentPerBatch)
-                : data.LiveClassAttendancePercentPerBatch !== undefined &&
-                  data.LiveClassAttendancePercentPerBatch !== null
-                ? Number(data.LiveClassAttendancePercentPerBatch)
-                : 0,
-                  objectiveExamAttendancePercentPerBatch: Number(data.objectiveExamAttendancePercentPerBatch || 0),
+         setSummary({
+  students: data.students || 0,
+  professors: data.professors || 0,
+  programmes: data.programmes || 0,
+  books: data.books || 0,
+  exams: data.exams || 0,
+  assignments: data.assignments || 0,
+  liveClasses: data.liveClasses || 0,
+  tasks: data.tasks || 0,
+  leaves: data.leaves || 0,
+  contentReadPercentPerBatch: Number(data.contentReadPercentPerBatch || 0),
+  liveClassAttendancePercentPerBatch: Number(data.liveClassAttendancePercentPerBatch || 0),
+  objectiveExamAttendancePercentPerBatch: Number(data.objectiveExamAttendancePercentPerBatch || 0),
   subjectiveExamAttendancePercentPerBatch: Number(data.subjectiveExamAttendancePercentPerBatch || 0),
-   studentApprovalSummary: {
-    total: data.studentApprovalSummary?.total || 0,
-    approved: data.studentApprovalSummary?.approved || 0,
-    pending: data.studentApprovalSummary?.pending || 0
-  }
-          });
+  studentApprovalSummary: {
+    total: data.studentApprovalSummary?.total ?? data.studentApprovalSummary?.TotalStudentsCount ?? 0,
+    approved: data.studentApprovalSummary?.approved ?? data.studentApprovalSummary?.Approved ?? 0,
+    pending: data.studentApprovalSummary?.pending ?? data.studentApprovalSummary?.pending ?? 0
+  },
+  
+  totalFeeAmount: Number(data.TotalFeeAmount ?? data.totalFeeAmount ?? 0),
+  totalPaidAmount: Number(data.TotalPaidAmount ?? data.totalPaidAmount ?? 0),
+  totalDueAmount: Number(data.TotalDueAmount ?? data.totalDueAmount ?? 0)
+});
+
         } catch (err) {
           console.error("Failed to fetch dashboard summary", err);
         } finally {
@@ -206,10 +203,11 @@ function AdminDashboard() {
 },
           {
   label: "Total / Paid / Due",
-  value: `${summary.studentApprovalSummary.total} / ${summary.studentApprovalSummary.approved} / ${summary.studentApprovalSummary.pending}`,
-  icon: "fa-users",
+  value: `${summary.totalFeeAmount} / ${summary.totalPaidAmount} / ${summary.totalDueAmount}`,
+  icon: "fa-money-bill",
   link: "/fee-summary"
 },
+
 ].map((item, idx) => (
   <div className="col-12 col-sm-6 col-lg-3 mb-3" key={idx}>
     <div

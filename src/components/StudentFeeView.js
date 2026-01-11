@@ -514,10 +514,17 @@ const StudentFeeView = () => {
                     style={{ background: "linear-gradient(135deg,#396afc,#2948ff)" }}
                   >
                     <div className="card-body">
-                      <h6>PAID</h6>
-                      <h4>₹{dues[0]?.paid || 0}</h4>
-                      {/* <small>{percentPaid}%</small> */}
-                    </div>
+                          <h6>PAID</h6>
+                              <h4>₹{dues[0]?.paid || 0}</h4>
+                              {(() => {
+                                const raw = dues[0] || {};
+                                const excessRaw = raw.excessPaid ?? raw.ExcessPaid ?? raw.Excesspaid ?? 0;
+                                const excessNum = Number(excessRaw) || 0;
+                                return excessNum > 0 ? (
+                                  <small>Excess Paid: ₹{excessNum.toLocaleString("en-IN")}</small>
+                                ) : null;
+                              })()}
+                        </div>
                   </div>
                 </div>
 
